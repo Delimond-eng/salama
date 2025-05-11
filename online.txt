@@ -1,0 +1,3 @@
+DB_NAME : ucorodmy_salama
+USER_NAME : ucorodmy_salama_uuid
+PASSWORD : salama@2025
