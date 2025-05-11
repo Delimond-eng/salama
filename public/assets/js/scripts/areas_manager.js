@@ -99,7 +99,9 @@ new Vue({
                     },
                 ],
             };
-            document.getElementById("btn-reset").click();
+            if ($("#btn-reset").length) {
+                document.getElementById("btn-reset").click();
+            }
             /* const myModal = tailwind.Modal.getInstance(document.querySelector("#modal-add-on"));
             myModal.hide(); */
         },
