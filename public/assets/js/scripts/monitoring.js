@@ -83,7 +83,7 @@ new Vue({
                         this.error =
                             "Erreur lors de la récupération des patrouilles en attente.";
                     });
-            }, 5000); // Rafraîchir toutes les 5 secondes
+            }, 3000); // Rafraîchir toutes les 5 secondes
         },
 
         // Méthode pour sélectionner une patrouille

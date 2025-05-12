@@ -1,4 +1,4 @@
-import {get, postJson } from "../modules/http.js";
+import { get, postJson } from "../modules/http.js";
 new Vue({
     el: "#App",
     data() {
@@ -8,16 +8,18 @@ new Vue({
             isLoading: false,
             pristine: null,
             sites: [],
-            reports:[],
-            filter_site:'',
-            filter_date:'',
-            selectedPatrol:null
+            reports: [],
+            filter_site: "",
+            filter_date: "",
+            selectedPatrol: null,
         };
     },
 
     mounted() {
         // Une fois que Vue.js est chargé, on cache le loader
-        document.getElementById('loader').style.display = 'none';
+        if ($("#loader").length) {
+            document.getElementById("loader").style.display = "none";
+        }
         this.viewAllSites();
         this.viewAllReports();
     },
@@ -31,7 +33,6 @@ new Vue({
                 .catch((err) => console.log("error"));
         },
 
-
         viewAllReports() {
             get("/patrols.reports")
                 .then((res) => {
@@ -41,13 +42,12 @@ new Vue({
         },
     },
 
-
     computed: {
         allSites() {
             return this.sites;
         },
 
-        allReports() {
+        allPatrolReports() {
             if (this.filter_site || this.filter_date) {
                 return this.reports.filter((el) => {
                     /**
@@ -59,7 +59,7 @@ new Vue({
                         // Si seul le site est défini, filtrer par site
                         return el.site_id === this.filter_site;
                     } else if (this.filter_date) {
-                        const [year, month, day] = this.filter_date.split('-');
+                        const [year, month, day] = this.filter_date.split("-");
                         // Formater en JJ/MM/AAAA
                         const formattedDate = `${day}/${month}/${year}`;
                         // Si seule la date est définie, filtrer par date
@@ -70,7 +70,6 @@ new Vue({
                 // Si aucun filtre n'est défini, retourner tous les rapports
                 return this.reports;
             }
-        }
-
-    }
+        },
+    },
 });

@@ -77,7 +77,7 @@
     </div>
     <!-- END: Top Bar -->
     <div class="grid grid-cols-12 gap-6" id="App">
-        <div class="col-span-12" :class="allPendingPatrols.length > 0 ? '2xl:col-span-9' : '2xl:col-span-12'">
+        <div class="col-span-12" :class="allPendingPatrols.length > 0 ? '2xl:col-span-8' : '2xl:col-span-12'">
             <div class="grid grid-cols-12 gap-6">
                 <!-- BEGIN: Official Store -->
                 <div class="col-span-12 mt-6 xl:col-span-12">
@@ -102,7 +102,7 @@
                 <!-- END: Official Store -->
             </div>
         </div>
-        <div class="col-span-12 2xl:col-span-3" v-if="allPendingPatrols.length > 0">
+        <div class="col-span-12 2xl:col-span-4" v-if="allPendingPatrols.length > 0">
             <div class="-mb-10 pb-10 2xl:border-l">
                 <div class="grid grid-cols-12 gap-x-6 gap-y-6 2xl:gap-x-0 2xl:pl-6">
                     <!-- BEGIN: Transactions -->
@@ -111,32 +111,65 @@
                             <h2 class="mr-5 truncate text-lg font-medium">Patrouilles en cours</h2>
                         </div>
                         <div class="mt-5">
-                            <div class="intro-x" v-for="i in 4" :key="i">
+                            <div class="intro-x" v-for="(data,i) in patrolPendings" :key="i" @click.prevent="selectedPatrol = data" data-tw-toggle="modal" data-tw-target="#patrol-view-modal" >
                                 <div class="box zoom-in mb-3 flex items-center px-5 py-3">
-                                    <div class="image-fit h-10 w-10 flex-none overflow-hidden rounded-full">
-                                        <img src="dist/images/fakers/profile-4.jpg"
-                                            alt="Midone - Tailwind Admin Dashboard Template">
+                                    <div class="image-fit h-10 w-10 flex-none overflow-hidden rounded-lg">
+                                        <img src="{{ asset("assets/images/patrol.gif") }}"
+                                            alt="illustration">
                                     </div>
                                     <div class="ml-4 mr-auto">
-                                        <div class="font-medium">Denzel Washington</div>
+                                        <div class="font-medium">@{{data.site.name}}</div>
                                         <div class="mt-0.5 text-xs text-slate-500">
-                                            1 September 2021
+                                            @{{data.agent.matricule }} | @{{data.agent.fullname}}
                                         </div>
                                     </div>
-                                    <div class="text-success">
-                                        +$33
+                                    <div v-if="data.scans">
+                                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white group-hover:bg-slate-100">
+                                           +@{{ data.scans.length }}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
-                            <a class="intro-x block w-full rounded-md border border-dotted border-slate-400 py-3 text-center text-slate-500 dark:border-darkmode-300"
-                                href="#">
-                                Vue large
-                            </a>
                         </div>
                     </div>
                     <!-- END: Transactions -->
                 </div>
             </div>
+        </div>
+
+        <div
+            data-tw-backdrop=""
+            aria-hidden="true"
+            tabindex="-1"
+            id="patrol-view-modal" class="modal group bg-black/60 transition-[visibility,opacity] w-screen h-screen fixed left-0 top-0 [&:not(.show)]:duration-[0s,0.2s] [&:not(.show)]:delay-[0.2s,0s] [&:not(.show)]:invisible [&:not(.show)]:opacity-0 [&.show]:visible [&.show]:opacity-100 [&.show]:duration-[0s,0.4s]">
+            <div
+                data-tw-merge
+                class="form-site w-[90%] mx-auto bg-white relative rounded-md shadow-md transition-[margin-top,transform] duration-[0.4s,0.3s] -mt-16 group-[.show]:mt-16 group-[.modal-static]:scale-[1.05] dark:bg-darkmode-600 sm:w-[600px]">
+                <div
+                    class="flex items-center px-5 py-3 border-b border-slate-200/60 dark:border-darkmode-400">
+                    <h2 class="mr-auto text-base font-medium" v-if="selectedPatrol">
+                        Patrouille en cours | site @{{ selectedPatrol.site.name }}
+                    </h2>
+                    <button id="btn-reset"
+                        data-tw-merge
+                        data-tw-dismiss="modal"
+                        class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed border-secondary text-slate-500 dark:border-darkmode-100/40 dark:text-slate-300 [&:hover:not(:disabled)]:bg-secondary/20 [&:hover:not(:disabled)]:dark:bg-darkmode-100/10 hidden sm:flex hidden sm:flex"><i
+                            data-tw-merge
+                            data-lucide="x"
+                            class="stroke-1.5 h-4 w-4"></i>
+                    </button>
+                </div>
+
+                <div data-lat="-6.2425342" data-long="106.8626478" data-sources=""
+                    class="leaflet z-0 [&_.leaflet-tile-pane]:contrast-105 [&_.leaflet-tile-pane]:grayscale [&_.leaflet-tile-pane]:dark:contrast-[.8] [&_.leaflet-tile-pane]:dark:invert mt-5 ml-5 mr-5 mb-5 rounded-md bg-slate-200" style="height: 300px;">
+                </div>
+               
+                <div
+                    class="px-5 py-3 text-right border-t border-slate-200/60 dark:border-darkmode-400"><button
+                        data-tw-merge
+                        data-tw-dismiss="modal" type="button" class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed border-secondary text-slate-500 dark:border-darkmode-100/40 dark:text-slate-300 [&:hover:not(:disabled)]:bg-secondary/20 [&:hover:not(:disabled)]:dark:bg-darkmode-100/10 mr-1 w-20 mr-1 w-20">Fermer</button>
+                </div>
+            </d>
         </div>
     </div>
 </div>

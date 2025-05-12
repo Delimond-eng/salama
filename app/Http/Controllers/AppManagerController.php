@@ -57,7 +57,7 @@ class AppManagerController extends Controller
             if ($patrolId) {
                 $scan["patrol_id"] = $data["patrol_id"];
                 $response = PatrolScan::updateOrCreate([
-                    "patrol_id"=>$scan["patrol_id"],
+                    "patrol_id"=>$scan["patrol_id"] ?? '',
                     "area_id"=>$scan["area_id"]
                 ],$scan);
 

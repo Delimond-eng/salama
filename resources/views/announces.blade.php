@@ -1,142 +1,250 @@
-push@extends("layouts.app")
+@extends("layouts.app")
 
 
 @section("content")
-    <!-- BEGIN: Content -->
-    <div class="content">
-        <div id="App" v-cloak>
-            <div class="grid grid-cols-12 gap-4 mt-5">
-                <div class="intro-y col-span-12 flex flex-wrap xl:flex-nowrap items-center mt-2">
-                    <a href="javascript:void(0);" data-tw-toggle="modal" data-tw-target="#modal-add-on" class="btn btn-primary shadow-md"> <i class="w-2 h-2 mr-2" data-lucide="plus"></i> Créer un nouveau communiqué</a>
-                    <div class="hidden xl:block mx-auto text-slate-500"></div>
-                    <div class="w-full xl:w-auto flex items-center mt-3 xl:mt-0">
-                        <div class="mr-2">FILTER PAR DATE</div>
-                        <div class="w-40 relative text-slate-500">
-                            <input type="date" v-model="filter_date" @input="filter_site=''" class="form-control">
+<!-- BEGIN: Content -->
+<div class="md:max-w-auto min-h-screen min-w-0 max-w-full flex-1 rounded-[30px] bg-slate-100 px-4 pb-10 before:block before:h-px before:w-full before:content-[''] dark:bg-darkmode-700 md:px-[22px]">
+    <!-- BEGIN: Top Bar -->
+    <div class="relative z-[51] flex h-[67px] items-center border-b border-slate-200">
+        <!-- BEGIN: Breadcrumb -->
+        <nav aria-label="breadcrumb" class="flex -intro-x mr-auto hidden sm:flex">
+            <ol class="flex items-center text-theme-1 dark:text-slate-300">
+                <li class="">
+                    <a href="#">Salama</a>
+                </li>
+                <li
+                    class="relative ml-5 pl-0.5 before:content-[''] before:w-[14px] before:h-[14px] before:bg-chevron-black before:transform before:rotate-[-90deg] before:bg-[length:100%] before:-ml-[1.125rem] before:absolute before:my-auto before:inset-y-0 dark:before:bg-chevron-white text-slate-800 cursor-text dark:text-slate-400">
+                    <a href="#">Communiqués & annonces</a>
+                </li>
+            </ol>
+        </nav>
+        <!-- END: Breadcrumb -->
+        <!-- BEGIN: Account Menu -->
+        <div data-tw-merge="" data-tw-placement="bottom-end" class="dropdown relative">
+            <button
+                data-tw-toggle="dropdown" aria-expanded="false"
+                class="cursor-pointer zoom-in intro-x block h-9 w-9 bg-success text-white overflow-hidden rounded-full shadow-lg">
+                <h1 style="font-weight: 900;">{{ substr(Auth::user()->name, 0, 1) }}</h1>
+            </button>
+            <div data-transition="" data-selector=".show"
+                data-enter="transition-all ease-linear duration-150"
+                data-enter-from="absolute !mt-5 invisible opacity-0 translate-y-1"
+                data-enter-to="!mt-1 visible opacity-100 translate-y-0"
+                data-leave="transition-all ease-linear duration-150"
+                data-leave-from="!mt-1 visible opacity-100 translate-y-0"
+                data-leave-to="absolute !mt-5 invisible opacity-0 translate-y-1"
+                class="dropdown-menu absolute z-[9999] hidden">
+                <div data-tw-merge=""
+                    class="dropdown-content rounded-md border-transparent p-2 shadow-[0px_3px_10px_#00000017] dark:border-transparent dark:bg-darkmode-600 mt-px w-56 bg-theme-1 text-white">
+                    <div class="p-2 font-medium font-normal">
+                        <div class="font-medium">{{ Auth::user()->name }}</div>
+                        <div class="mt-0.5 text-xs text-white/70 dark:text-slate-500">
+                            {{ Auth::user()->email }}
                         </div>
-                        <button class="btn btn-outline-primary ml-2" v-if="filter_date !==''" @click="filter_date=''">Tout</button>
                     </div>
+                    <div class="h-px my-2 -mx-2 bg-slate-200/60 dark:bg-darkmode-400 bg-white/[0.08]">
+                    </div>
+                    <a
+                        class="cursor-pointer flex items-center p-2 transition duration-300 ease-in-out rounded-md hover:bg-slate-200/60 dark:bg-darkmode-600 dark:hover:bg-darkmode-400 dropdown-item hover:bg-white/5"><i
+                            data-tw-merge="" data-lucide="user" class="stroke-1.5 mr-2 h-4 w-4"></i>
+                        Profile</a>
+                    <a
+                        class="cursor-pointer flex items-center p-2 transition duration-300 ease-in-out rounded-md hover:bg-slate-200/60 dark:bg-darkmode-600 dark:hover:bg-darkmode-400 dropdown-item hover:bg-white/5"><i
+                            data-tw-merge="" data-lucide="edit" class="stroke-1.5 mr-2 h-4 w-4"></i>
+                        Add Account</a>
+                    <a
+                        class="cursor-pointer flex items-center p-2 transition duration-300 ease-in-out rounded-md hover:bg-slate-200/60 dark:bg-darkmode-600 dark:hover:bg-darkmode-400 dropdown-item hover:bg-white/5"><i
+                            data-tw-merge="" data-lucide="lock" class="stroke-1.5 mr-2 h-4 w-4"></i>
+                        Reset Password</a>
+                    <a
+                        class="cursor-pointer flex items-center p-2 transition duration-300 ease-in-out rounded-md hover:bg-slate-200/60 dark:bg-darkmode-600 dark:hover:bg-darkmode-400 dropdown-item hover:bg-white/5"><i
+                            data-tw-merge="" data-lucide="help-circle" class="stroke-1.5 mr-2 h-4 w-4"></i>
+                        Help</a>
+                    <div class="h-px my-2 -mx-2 bg-slate-200/60 dark:bg-darkmode-400 bg-white/[0.08]">
+                    </div>
+                    <form id="logout-form" hidden action="{{ route('logout') }}" method="POST">
+                        @csrf
+                    </form>
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                        class="cursor-pointer flex items-center p-2 transition duration-300 ease-in-out rounded-md hover:bg-slate-200/60 dark:bg-darkmode-600 dark:hover:bg-darkmode-400 dropdown-item hover:bg-white/5"><i
+                            data-tw-merge="" data-lucide="toggle-right" class="stroke-1.5 mr-2 h-4 w-4"></i>
+                        Logout</a>
+
                 </div>
+            </div>
+        </div>
+        <!-- END: Account Menu -->
+    </div>
+    <!-- END: Top Bar -->
 
 
-                <!-- BEGIN: Important Notes -->
-                <div class="col-span-12 md:col-span-12 xl:col-span-12">
-                    <div class="intro-x flex items-center h-10">
-                        <h2 class="text-lg font-medium truncate mr-auto">
-                            Liste des communiqués
-                        </h2>
+    <div class="mt-5 grid grid-cols-12 gap-6" id="App">
+        <div class="intro-y col-span-12 2xl:col-span-7 lg:col-span-7">
+            <div class="flex items-center border-b border-slate-200/60 py-5 dark:border-darkmode-400">
+                <h2 class="mr-auto text-base font-medium">Liste des Communiqués & annonces</h2>
+                 <div class="mt-3 flex w-full items-center xl:mt-0 xl:w-auto">
+                    <div class="relative w-56 text-slate-500 mr-2">
+                        <input data-tw-merge="" v-model="filter_date" type="date" class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
+                        <i data-tw-merge="" data-lucide="search" class="stroke-1.5 absolute inset-y-0 right-0 my-auto mr-3 h-4 w-4"></i>
                     </div>
-                    <div class="grid grid-cols-12 gap-1">
-                        <div class="mt-5 intro-x col-span-12 md:col-span-12 xl:col-span-12" v-for="data in allAnnounces">
-                            <div class="box">
-                                <div id="important-notes">
-                                    <div class="p-5">
-                                        <div class="text-base font-medium truncate uppercase">@{{ data.title }}</div>
-                                        <div class="mt-1 flex">
-                                            <span class="mr-5 text-slate-400">@{{ data.created_at }}</span>
-                                            <span class="text-primary uppercase font-medium" v-if="data.site"> @{{ data.site.name }}</span>
-                                        </div>
-                                        <div class="text-slate-500 text-justify mt-1">@{{ data.content }}</div>
-                                        <div class="font-medium flex mt-5">
-                                            <div></div>
-                                            <button type="button" :disabled="delete_id === data.id" @click.prevent="deleteAnnounce(data.id)" class="btn btn-outline-secondary py-1 px-2 ml-auto ml-auto"> <span v-show="delete_id === data.id"><i data-loading-icon="oval" class="w-4 h-4 mr-2"></i> </span> Retirer</button>
-                                        </div>
-                                    </div>
-                                </div>
+                    <button @click="filter_date=''" class="bg-primary text-white transition duration-200 border border-primary shadow-sm inline-flex items-center justify-center py-2 px-2 rounded-lg font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 disabled:opacity-70 disabled:cursor-not-allowed hover:bg-opacity-90 hover:border-opacity-90">
+                        <span class="flex h-4 w-4 items-center justify-center">
+                            <i class="w-3 h-3" data-lucide="rotate-ccw"></i>
+                        </span>
+                    </button>
+                </div>
+            </div>
+            <div class="intro-y col-span-12 mb-4 md:col-span-6 lg:col-span-4" v-for="(data, index) in allAnnounces" :key="index">
+                <div class="box">
+                    <div class="flex items-start px-5 pt-5">
+                        <div class="flex w-full flex-col items-center lg:flex-row">
+                            <div class="mt-3 text-center lg:mt-3 lg:text-left">
+                                <a class="font-bold text-lg" href="#">
+                                    @{{ data.title }}
+                                </a>
                             </div>
                         </div>
-                        <div class="col-span-12" v-if="allAnnounces.length ===0">
-                            <div class="h-64 flex items-center">
-                                <div class="mx-auto text-center">
-                                    <div class="flex items-center flex-col">
-                                        <i data-lucide="alert-octagon" class="text-pending w-12 h-12 mb-3"></i>
-                                        <span>Aucune communiqué répertorié !</span>
-                                    </div>
-                                </div>
+                        <div class="absolute right-0 top-0 mr-5 mt-3" v-if="data.site">
+                            <div class="flex items-center font-medium text-xs">
+                                <i data-lucide="map-pin" class="w-3 h-3 mr-1 text-success"></i>
+                                @{{ data.site.code }} @{{ data.site.name }}
                             </div>
                         </div>
-
                     </div>
-
-                </div>
-                <!-- END: Important Notes -->
-                <!-- BEGIN: modal create -->
-                <div id="modal-add-on" class="modal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <form @submit.prevent="createAnnounce" method="POST" action="{{ route('announce.create') }}" class="modal-content form-announce">
-                            <!-- BEGIN: Modal Header -->
-                            <div class="modal-header">
-                                <h2 class="font-medium text-base mr-auto">
-                                    Création du nouveau communiqué
-                                </h2>
+                    <div class="p-5 text-center lg:text-left">
+                        <div>@{{ data.content }}</div>
+                        <div class="mt-5 flex items-center justify-between text-slate-500 lg:justify-between">
+                            <div class="flex items-center text-blue-500 text-xs">
+                                <i data-lucide="calendar" class="stroke-1.5 mr-2 h-3 w-3"></i>
+                                @{{ data.created_at }}
                             </div>
-                            <!-- END: Modal Header -->
-                            <!-- BEGIN: Modal Body -->
-                            <div class="modal-body">
-                                <div class="grid grid-cols-12 gap-2 gap-y-1">
-                                    <div class="input-form col-span-12">
-                                        <label for="validation-form-1" class="form-label w-full flex flex-col sm:flex-row">Titre <span class="sm:ml-auto mt-1 sm:mt-0 text-xs text-slate-500">*</span> </label>
-                                        <input id="validation-form-1" v-model="form.title" type="text" name="code" class="form-control" placeholder="Entrer le code du site" minlength="2" required>
-                                    </div>
-
-                                    <div class="input-form col-span-12">
-                                        <label for="validation-form-6" class="form-label w-full flex flex-col sm:flex-row"> Contenu <span class="sm:ml-auto mt-1 sm:mt-0 text-xs text-slate-500">*</span> </label>
-                                        <textarea id="validation-form-6" v-model="form.content" class="form-control" name="adresse" placeholder="Entrer le contenu du communiqué..." minlength="10" required></textarea>
-                                    </div>
-                                    <div class="input-form col-span-12">
-                                        <label for="validation-form-6" class="form-label w-full flex flex-col sm:flex-row"> Site concerné(optionnel si le communiqué sera destiné à tous les sites) <span class="sm:ml-auto mt-1 sm:mt-0 text-xs text-slate-500">*</span> </label>
-                                        <select class="form-select" v-model="form.site_id">
-                                            <option value="" hidden selected>Sélectionnez un site</option>
-                                            <option value="">Pour tous les site</option>
-                                            <option v-for="item in allSites" :value="item.id">@{{ item.name }}</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- END: Modal Body -->
-                            <!-- BEGIN: Modal Footer -->
-                            <div class="modal-footer">
-                                <button id="btn-reset" type="button" @click.prevent="reset" data-tw-dismiss="modal" class="btn btn-outline-secondary w-20 mr-1">Fermer</button>
-                                <button :disabled="isLoading" type="submit" class="btn btn-primary mt-5">Créer <span v-if="isLoading"><i data-loading-icon="oval" data-color="white" class="w-4 h-4 ml-2"></i> </span></button>
-                            </div>
-                            <!-- END: Modal Footer -->
-
-                            <!-- BEGIN: Success Notification Content -->
-                            <div id="success-notification-content" class="toastify-content hidden flex">
-                                <i class="text-success" data-lucide="check-circle"></i>
-                                <div class="ml-4 mr-4">
-                                    <div class="font-medium">Opération effectuée !</div>
-                                    <div class="text-slate-500 mt-1"> la création d'un nouveau communiqué effectuée ! </div>
-                                </div>
-                            </div>
-                            <!-- END: Success Notification Content -->
-
-                            <!-- BEGIN: Failed Notification Content -->
-                            <div id="failed-notification-content" class="toastify-content hidden flex">
-                                <i class="text-danger" data-lucide="x-circle"></i>
-                                <div class="ml-4 mr-4">
-                                    <div class="font-medium">Echec de traitement de la requête!</div>
-                                    <div class="text-slate-500 mt-1" v-if="error">@{{ error }} </div>
-                                </div>
-                            </div>
-                            <!-- END: Failed Notification Content -->
-                        </form>
+                            <button class="transition duration-200 border shadow-sm inline-flex items-center justify-center rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed border-secondary text-slate-500 dark:border-darkmode-100/40 dark:text-slate-300 [&:hover:not(:disabled)]:bg-secondary/20 [&:hover:not(:disabled)]:dark:bg-darkmode-100/10 px-3 py-3"><i class="w-3 h-3 text-danger" data-lucide="trash-2"></i></button>
+                        </div>
                     </div>
+                    
                 </div>
-                <!-- END: modal create -->
             </div>
 
+
+            <!-- BEGIN: Pagination -->
+            <div class="intro-y mt-5 col-span-12 flex flex-wrap items-center sm:flex-row sm:flex-nowrap">
+                <nav class="w-full sm:mr-auto sm:w-auto">
+                    <ul class="flex w-full mr-0 sm:mr-auto sm:w-auto">
+                        <li class="flex-1 sm:flex-initial">
+                            <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3"><i data-tw-merge="" data-lucide="chevrons-left" class="stroke-1.5 h-4 w-4"></i></a>
+                        </li>
+                        <li class="flex-1 sm:flex-initial">
+                            <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3"><i data-tw-merge="" data-lucide="chevron-left" class="stroke-1.5 h-4 w-4"></i></a>
+                        </li>
+                        <li class="flex-1 sm:flex-initial">
+                            <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3">...</a>
+                        </li>
+                        <li class="flex-1 sm:flex-initial">
+                            <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3">1</a>
+                        </li>
+                        <li class="flex-1 sm:flex-initial">
+                            <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3 !box dark:bg-darkmode-400">2</a>
+                        </li>
+                        <li class="flex-1 sm:flex-initial">
+                            <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3">3</a>
+                        </li>
+                        <li class="flex-1 sm:flex-initial">
+                            <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3">...</a>
+                        </li>
+                        <li class="flex-1 sm:flex-initial">
+                            <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3"><i data-tw-merge="" data-lucide="chevron-right" class="stroke-1.5 h-4 w-4"></i></a>
+                        </li>
+                        <li class="flex-1 sm:flex-initial">
+                            <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3"><i data-tw-merge="" data-lucide="chevrons-right" class="stroke-1.5 h-4 w-4"></i></a>
+                        </li>
+                    </ul>
+                </nav>
+                <select data-tw-merge="" class="disabled:bg-slate-100 disabled:cursor-not-allowed disabled:dark:bg-darkmode-800/50 [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md py-2 px-3 pr-8 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 group-[.form-inline]:flex-1 !box mt-3 w-20 sm:mt-0">
+                    <option>10</option>
+                    <option>25</option>
+                    <option>35</option>
+                    <option>50</option>
+                </select>
+            </div>
+            <!-- END: Pagination -->
         </div>
 
-        <div class="h-full flex items-center" id="loader">
-            <div class="mx-auto text-center">
-                <div>
-                    <img src="{{ asset('assets/images/loading.gif') }}" class="w-12 h-12" />
-                </div>
+        <div class="intro-y col-span-12 2xl:col-span-5">
+              <div class="grid grid-cols-1">
+                    <div class="col-span-12">
+                        <!-- BEGIN: Vertical Form -->
+                        <div class="intro-x box">
+                            <div class="flex flex-col items-center border-b border-slate-200/60 p-5 dark:border-darkmode-400 sm:flex-row">
+                                <h2 class="mr-auto text-base font-medium">
+                                   Création nouveau communiqué ou annonce
+                                </h2>
+                            </div>
+                            <div class="p-5">
+                                <div v-if="error" role="alert" class="alert relative border rounded-md px-5 py-4 bg-pending border-pending bg-opacity-20 border-opacity-5 text-pending dark:border-pending dark:border-opacity-20 mb-2 flex items-center"><i data-tw-merge data-lucide="alert-circle" class="stroke-1.5 w-5 h-5 mr-2 h-6 w-6 mr-2 h-6 w-6"></i>
+                                    <strong class="mr-2">Erreur : </strong> @{{ error }}
+                                    <button data-tw-merge data-tw-dismiss="alert" type="button" aria-label="Close" type="button" aria-label="Close" class="text-slate-800 py-2 px-3 absolute right-0 my-auto mr-2 btn-close"><i data-tw-merge data-lucide="x" class="stroke-1.5 w-5 h-5 h-4 w-4 h-4 w-4"></i></button>
+                                </div>
+                                
+                                <form class="preview form-announce relative [&.hide]:overflow-hidden [&.hide]:h-0" method="POST" @submit.prevent="createAnnounce">
+                                    <div>
+                                        <label for="vertical-form-1" class="inline-block mb-2 group-[.form-inline]:mb-2 group-[.form-inline]:sm:mb-0 group-[.form-inline]:sm:mr-5 group-[.form-inline]:sm:text-right">
+                                            Titre *
+                                        </label>
+                                        <input id="vertical-form-1" v-model="form.title" type="text" placeholder="Libellé." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
+                                    </div>
+                                    <div class="mt-3">
+                                        <label for="vertical-form-1" class="inline-block mb-2 group-[.form-inline]:mb-2 group-[.form-inline]:sm:mb-0 group-[.form-inline]:sm:mr-5 group-[.form-inline]:sm:text-right">
+                                            Déscription(contenu) *
+                                        </label>
+                                        <textarea id="vertical-form-1" v-model="form.content" type="text" placeholder="Libellé." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
+                                        </textarea>
+                                    </div>
+
+                                    <div class="mt-3">
+                                        <label for="vertical-form-2" class="inline-block mb-2 group-[.form-inline]:mb-2 group-[.form-inline]:sm:mb-0 group-[.form-inline]:sm:mr-5 group-[.form-inline]:sm:text-right">
+                                            Site ciblé (Optionnel)
+                                        </label>
+                                        <select v-model="form.site_id" class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
+                                            <option value="" selected hidden>--Sélectionnez un site--</option>
+                                            <option v-for="(data, index) in allSites" :value="data.id">@{{ data.name }}</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <button type="submit" class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-primary border-primary text-white dark:border-primary mt-5">Enregister
+                                        <span class="ml-2 h-4 w-4" v-if="isLoading">
+                                            <svg class="h-full w-full" width="25" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="white">
+                                                <g fill="none" fill-rule="evenodd">
+                                                    <g transform="translate(1 1)" stroke-width="4">
+                                                        <circle stroke-opacity=".5" cx="18" cy="18" r="18"></circle>
+                                                        <path d="M36 18c0-9.94-8.06-18-18-18">
+                                                            <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"></animateTransform>
+                                                        </path>
+                                                    </g>
+                                                </g>
+                                            </svg>
+                                        </span>
+                                    </button>
+                                    <button type="reset" @click.stop="reset" data-tw-merge="" class="transition duration-200 inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-white text-slate-800 dark:border-darkmode-100 mr-2 shadow-md">
+                                        Annuler</button>
+                                </form>
+
+                            </div>
+                        </div>
+                        <!-- END: Vertical Form -->
+                    </div>
+              </div>
+        </div>
+
+        <div id="success-notification-content" class="py-5 pl-5 pr-14 bg-white border border-slate-200/60 rounded-lg shadow-xl dark:bg-darkmode-600 dark:text-slate-300 dark:border-darkmode-600 hidden flex">
+            <i data-tw-merge="" data-lucide="check-circle" class="stroke-1.5 w-5 h-5 text-success"></i>
+            <div class="ml-4 mr-4">
+                <div class="font-medium">Opération reussi !</div>
+                <div class="text-slate-500 mt-1">La création du planning de patrouille effectuée ! </div>
             </div>
         </div>
     </div>
-    <!-- END: Content -->
+</div>
+<!-- END: Content -->
 @endsection
 
 @push("scripts")

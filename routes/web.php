@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\AppManagerController;
 use App\Models\Agent;
+use App\Models\Announce;
 use App\Models\Site;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -62,16 +63,25 @@ Route::middleware(["auth"])->group(function(){
     Route::get("/agents", [ApiController::class, "fetchAgents"])->name("agents");
 
     Route::view('/site.create', 'add_site_area')->name('site.create');
-    Route::view("/reports", "reports")->name("reports");
+    Route::view("/reports.patrols", "report_patrols")->name("reports.patrols");
+    Route::view("/reports.tasks", "report_tasks")->name("reports.tasks");
     Route::view("/announces", "announces")->name("announces");
     Route::view("/requests", "requests")->name("requests");
     Route::view("/signalements", "signalements")->name("signalements");
     Route::view("/schedules", "schedules")->name("schedules");
+    Route::view("/tasks", "tasks")->name("tasks");
+    Route::view("/presence.horaires", "presence_horaire")->name("presence.horaires");
+    Route::view("/reports.presences", "report_presences")->name("reports.presences");
+
+    Route::view("/log.phones", "log_phone")->name("log.phones");
+    Route::view("/log.activities", "log_activity")->name("log.activities");
+    Route::view("/log.panics", "log_panic")->name("log.panics");
+
 
     //VIEW ALL ANNOUNCES
     Route::get("/announces.all", function (){
         $agencyId = Auth::user()->agency_id;
-        $announces = \App\Models\Announce::with("site")
+        $announces = Announce::with("site")
             ->where("status", "actif")
             ->where("agency_id", $agencyId)
             ->get();
