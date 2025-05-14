@@ -1,4 +1,4 @@
-import { get, postJson } from "../modules/http.js";
+import {get, postJson } from "../modules/http.js";
 new Vue({
     el: "#App",
     data() {
@@ -7,10 +7,15 @@ new Vue({
             result: null,
             isLoading: false,
             pristine: null,
-            schedules: [],
+            horaires: [],
             delete_id: "",
             sites: [],
-            form: {},
+            form: {
+                libelle: "",
+                started_at: "",
+                ended_at: "",
+                tolerence: "",
+            },
             search: "",
             site_id: "",
             filter_date: "",
@@ -26,8 +31,7 @@ new Vue({
 
         if ($(".form-horaire").length) {
             this.pristine = new Pristine(
-                document.querySelector(".form-horaire"),
-                {
+                document.querySelector(".form-horaire"), {
                     classTo: "input-form",
                     errorClass: "has-error",
                     errorTextParent: "input-form",
@@ -36,49 +40,39 @@ new Vue({
             );
         }
 
-        this.viewAllSites();
+        this.viewAllHoraires();
     },
 
     methods: {
-        viewAllSites() {
-            get("/sites")
+        viewAllHoraires() {
+            get("/horaires")
                 .then((res) => {
-                    this.sites = res.data.sites;
+                    this.horaires = res.data.horaires;
                 })
                 .catch((err) => console.log("error"));
         },
 
-        reset() {},
+        reset() {
+            this.form = {
+                libelle: "",
+                started_at: "",
+                ended_at: "",
+                tolerence: "",
+            };
+        },
 
-        createSchedules(event) {
+        createHoraire(event) {
             const isValid = this.pristine.validate();
             if (isValid) {
-                const forms = [];
-                const url = "schedules.create";
-                for (let field of this.form.schedules) {
-                    field.site_id = this.form.site_id;
-                    forms.push(field);
-                }
+                const url = "/horaire.create";
+
                 this.isLoading = true;
-                postJson(url, { schedules: forms })
+                postJson(url, this.form)
                     .then(({ data, status }) => {
                         this.isLoading = false;
                         // Gestion des erreurs
                         if (data.errors !== undefined) {
                             this.error = data.errors.toString();
-                            setTimeout(() => {
-                                new Toastify({
-                                    node: $("#failed-notification-content")
-                                        .clone()
-                                        .removeClass("hidden")[0],
-                                    duration: 3000,
-                                    newWindow: true,
-                                    close: true,
-                                    gravity: "top",
-                                    position: "right",
-                                    stopOnFocus: true,
-                                }).showToast();
-                            }, 100);
                         }
                         if (data.result) {
                             this.error = null;
@@ -95,7 +89,8 @@ new Vue({
                                 position: "right",
                                 stopOnFocus: true,
                             }).showToast();
-                            this.viewAllSchedules();
+
+                            this.viewAllHoraires();
                             // clean fields
                             setTimeout(() => {
                                 this.reset();
@@ -116,13 +111,13 @@ new Vue({
             return this.sites;
         },
 
-        allSchedules() {
+        allHoraires() {
             if (this.search) {
-                return this.schedules.filter((el) => {
-                    return el.site_id === this.search;
+                return this.horaires.filter((el) => {
+                    return el.libelle.toLowerCase().includes(this.search.toLowerCase());
                 });
             } else {
-                return this.schedules;
+                return this.horaires;
             }
         },
 

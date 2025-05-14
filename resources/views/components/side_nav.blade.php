@@ -206,6 +206,16 @@
                      </a>
                  </li>
                  <li>
+                     <a href="" class="side-menu">
+                         <div class="side-menu__icon">
+                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                         </div>
+                         <div class="side-menu__title">
+                            Shift
+                         </div>
+                     </a>
+                 </li>
+                 <li>
                      <a href="{{ url("/reports.presences") }}" class="side-menu">
                          <div class="side-menu__icon">
                              <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>

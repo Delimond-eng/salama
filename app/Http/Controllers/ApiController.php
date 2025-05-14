@@ -21,7 +21,7 @@ class ApiController extends Controller
             ->with([
                 "site" => function ($query) {
                     return $query->where("status", "actif");
-            }])
+            }])->with("horaire")
             ->get();
         return response()->json([
             "agents" => $agents

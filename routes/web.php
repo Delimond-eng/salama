@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\AppManagerController;
+use App\Http\Controllers\PresenceController;
 use App\Models\Agent;
 use App\Models\Announce;
 use App\Models\Site;
@@ -125,6 +126,9 @@ Route::middleware(["auth"])->group(function(){
 
     //VIEW SCHEDULES
     Route::get("/schedules.all", [AppManagerController::class, "viewAllSchedulesByAdmin"])->name("schedules.all");
+
+    Route::get("/horaires",[PresenceController::class, "getAllHoraires"]);
+    Route::post("/horaire.create",[PresenceController::class, "createHoraire"])->name("horaire.create");
 
 
     //Emettre sur un canal de talkie walkie

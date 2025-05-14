@@ -226,11 +226,12 @@ class AdminController extends Controller
                 ]);
             }else{
                 $data = $request->validate([
-                    "matricule"=>"required|string|unique:agents,matricule",
+                    "matricule"=>"required|string",
                     "fullname"=>"required|string",
                     "password"=>"required|string",
                     "site_id"=>"nullable|int|exists:sites,id",
-                    "role"=>"nullable|string"
+                    "role"=>"nullable|string",
+                    "horaire_id"=>"nullable|int|exists:presence_horaires,id",
                 ]);
                 $data["agency_id"] = Auth::user()->agency_id;
                 $response = Agent::updateOrCreate(

@@ -85,21 +85,23 @@
                 <h2 class="mr-auto text-base font-medium">Horaires de travail</h2>
             </div>
             <div class="p-5">
-                <div class="flex items-center mb-3 bg-slate-100 rounded-md p-3 justify-between" v-for="i in 4" :key="i">
+                <div class="flex items-center mb-3 bg-slate-100 rounded-md p-3 justify-between" v-for="(data, i) in allHoraires" :key="i">
                     <div class="border-l-2 border-primary pl-4 dark:border-primary">
                         <a class="font-bold" href="#">
-                          Shift matinale
+                          @{{ data.libelle }}
                         </a>
-                        <div class="text-slate-500">08:30 -- 17:30</div>
+                        <div class="text-slate-500">@{{ data.started_at }} -- @{{ data.ended_at }}</div>
                     </div>
                     <div class="flex items-center font-medium">
-                        <i data-lucide="map-pin" class="w-3 h-3 mr-1 text-success"></i>
-                        Site Jean michelle
-                        <button class="bg-red-100 text-danger border border-white ml-3 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
+                        <button class="text-blue-500 border border-slate-400 ml-3 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+
+                        <button class="text-danger border border-slate-400 ml-1 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
-                    
+
                 </div>
 
                 <!-- BEGIN: Pagination -->
@@ -153,7 +155,7 @@
                         <div class="intro-x box">
                             <div class="flex flex-col items-center border-b border-slate-200/60 p-5 dark:border-darkmode-400 sm:flex-row">
                                 <h2 class="mr-auto text-base font-medium">
-                                    Ajout planning
+                                    Ajout horaire
                                 </h2>
                             </div>
                             <div class="p-5">
@@ -161,13 +163,14 @@
                                     <strong class="mr-2">Erreur : </strong> @{{ error }}
                                     <button data-tw-merge data-tw-dismiss="alert" type="button" aria-label="Close" type="button" aria-label="Close" class="text-slate-800 py-2 px-3 absolute right-0 my-auto mr-2 btn-close"><i data-tw-merge data-lucide="x" class="stroke-1.5 w-5 h-5 h-4 w-4 h-4 w-4"></i></button>
                                 </div>
-                                <form class="preview form-planning relative [&.hide]:overflow-hidden [&.hide]:h-0" method="POST" @submit.prevent="createSchedules">
+                                <form class="preview form-horaire relative [&.hide]:overflow-hidden [&.hide]:h-0" method="POST" @submit.prevent="createHoraire">
                                     <div>
                                         <label for="vertical-form-1" class="inline-block mb-2 group-[.form-inline]:mb-2 group-[.form-inline]:sm:mb-0 group-[.form-inline]:sm:mr-5 group-[.form-inline]:sm:text-right">
                                             Libellé de l'horaire
                                         </label>
-                                        <input id="vertical-form-1" type="text" placeholder="Libellé." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
+                                        <input v-model="form.libelle" id="vertical-form-1" type="text" placeholder="Libellé." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
                                     </div>
+
 
                                     <div class="grid grid-cols-12 gap-2 mt-3">
                                         <div class="col-span-6 2xl:col-span-6">
@@ -175,7 +178,7 @@
                                                 <label for="vertical-form-1" class="inline-block mb-2 group-[.form-inline]:mb-2 group-[.form-inline]:sm:mb-0 group-[.form-inline]:sm:mr-5 group-[.form-inline]:sm:text-right">
                                                     Heure début
                                                 </label>
-                                                <input id="vertical-form-1" type="time" class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
+                                                <input id="vertical-form-1" type="time" v-model="form.started_at" class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
                                             </div>
                                         </div>
                                         <div class="col-span-6 2xl:col-span-6">
@@ -184,39 +187,14 @@
                                                     Heure Fin
                                                 </label>
                                                 <div class="flex gap-2">
-                                                    <input id="vertical-form-1" type="time" class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
-                                                    <!-- <button
-                                                        v-if="index === 0"
-                                                        @click.prevent="addField"
-                                                        type="button"
-                                                        class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-slate-500 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-100 dark:bg-darkmode-700 dark:text-slate-300 dark:border-darkmode-400 dark:hover:bg-darkmode-600">
-                                                        <i data-lucide="plus" class="w-3 h-3"></i>
-                                                    </button>
-
-                                                    <button
-                                                        v-else
-                                                        @click.prevent="removeField(s)"
-                                                        type="button"
-                                                        class="inline-flex items-center text-danger justify-center px-3 py-2 text-sm font-medium text-red-600 bg-white border border-red-300 rounded-md shadow-sm hover:bg-red-50 dark:bg-darkmode-700 dark:border-darkmode-400 dark:hover:bg-darkmode-600">
-                                                        <i data-lucide="x" class="w-3 h-3"></i>
-                                                    </button> -->
+                                                    <input id="vertical-form-1" type="time" v-model="form.ended_at" class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="mt-3">
-                                        <label for="vertical-form-2" class="inline-block mb-2 group-[.form-inline]:mb-2 group-[.form-inline]:sm:mb-0 group-[.form-inline]:sm:mr-5 group-[.form-inline]:sm:text-right">
-                                            Site ciblé *
-                                        </label>
-                                        <select v-model="form.site_id" class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
-                                            <option value="" selected hidden>--Sélectionnez un site--</option>
-                                            <option value="">Tout les sites</option>
-                                            <option v-for="(data, index) in allSites" :value="data.id">@{{ data.name }}</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <button type="submit" class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-primary border-primary text-white dark:border-primary mt-5">Enregister
+
+                                    <button :disabled="isLoading" type="submit" class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-primary border-primary text-white dark:border-primary mt-5">Enregister
                                         <span class="ml-2 h-4 w-4" v-if="isLoading">
                                             <svg class="h-full w-full" width="25" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="white">
                                                 <g fill="none" fill-rule="evenodd">
@@ -247,7 +225,7 @@
             <i data-tw-merge="" data-lucide="check-circle" class="stroke-1.5 w-5 h-5 text-success"></i>
             <div class="ml-4 mr-4">
                 <div class="font-medium">Opération reussi !</div>
-                <div class="text-slate-500 mt-1">La création du planning de patrouille effectuée ! </div>
+                <div class="text-slate-500 mt-1">La création du shift est effectuée ! </div>
             </div>
         </div>
     </div>
