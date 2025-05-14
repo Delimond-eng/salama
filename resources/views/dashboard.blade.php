@@ -76,7 +76,7 @@
         <!-- END: Account Menu -->
     </div>
     <!-- END: Top Bar -->
-    <div class="grid grid-cols-12 gap-6" id="App">
+    <div class="grid grid-cols-12 gap-6" id="App" v-cloak>
         <div class="col-span-12" :class="allPendingPatrols.length > 0 ? '2xl:col-span-8' : '2xl:col-span-12'">
             <div class="grid grid-cols-12 gap-6">
                 <!-- BEGIN: Official Store -->
@@ -95,7 +95,7 @@
                             La cartographie de tous les sites qui utilisent la plateforme salama.
                         </div>
                         <div data-lat="-6.2425342" data-long="106.8626478" data-sources=""
-                            class="leaflet z-0 [&_.leaflet-tile-pane]:contrast-105 [&_.leaflet-tile-pane]:grayscale [&_.leaflet-tile-pane]:dark:contrast-[.8] [&_.leaflet-tile-pane]:dark:invert mt-5 rounded-md bg-slate-200" style="height: 500px;">
+                            class="main-leaflet leaflet z-0 [&_.leaflet-tile-pane]:contrast-105 [&_.leaflet-tile-pane]:grayscale [&_.leaflet-tile-pane]:dark:contrast-[.8] [&_.leaflet-tile-pane]:dark:invert mt-5 rounded-md bg-slate-200" style="height: 500px;">
                         </div>
                     </div>
                 </div>
@@ -111,14 +111,14 @@
                             <h2 class="mr-5 truncate text-lg font-medium">Patrouilles en cours</h2>
                         </div>
                         <div class="mt-5">
-                            <div class="intro-x" v-for="(data,i) in patrolPendings" :key="i" @click.prevent="selectedPatrol = data" data-tw-toggle="modal" data-tw-target="#patrol-view-modal" >
-                                <div class="box zoom-in mb-3 flex items-center px-5 py-3">
+                            <div class="intro-x" v-for="(data,i) in patrolPendings" :key="i" :data-id="data.id" @click.prevent="selectedPatrol = data; getPatrolDetailMap();" data-tw-toggle="modal" data-tw-target="#patrol-view-modal" >
+                                <div class="box zoom-in mb-3 flex items-center px-3 py-3">
                                     <div class="image-fit h-10 w-10 flex-none overflow-hidden rounded-lg">
                                         <img src="{{ asset("assets/images/patrol.gif") }}"
                                             alt="illustration">
                                     </div>
                                     <div class="ml-4 mr-auto">
-                                        <div class="font-medium">@{{data.site.name}}</div>
+                                        <div class="font-extrabold">@{{data.site.name}}</div>
                                         <div class="mt-0.5 text-xs text-slate-500">
                                             @{{data.agent.matricule }} | @{{data.agent.fullname}}
                                         </div>
@@ -144,10 +144,10 @@
             id="patrol-view-modal" class="modal group bg-black/60 transition-[visibility,opacity] w-screen h-screen fixed left-0 top-0 [&:not(.show)]:duration-[0s,0.2s] [&:not(.show)]:delay-[0.2s,0s] [&:not(.show)]:invisible [&:not(.show)]:opacity-0 [&.show]:visible [&.show]:opacity-100 [&.show]:duration-[0s,0.4s]">
             <div
                 data-tw-merge
-                class="form-site w-[90%] mx-auto bg-white relative rounded-md shadow-md transition-[margin-top,transform] duration-[0.4s,0.3s] -mt-16 group-[.show]:mt-16 group-[.modal-static]:scale-[1.05] dark:bg-darkmode-600 sm:w-[600px]">
+                class="form-site w-[25%] mx-auto bg-white relative rounded-md shadow-md transition-[margin-top,transform] duration-[0.4s,0.3s] -mt-16 group-[.show]:mt-16 group-[.modal-static]:scale-[1.05] dark:bg-darkmode-600 sm:w-[600px]">
                 <div
                     class="flex items-center px-5 py-3 border-b border-slate-200/60 dark:border-darkmode-400">
-                    <h2 class="mr-auto text-base font-medium" v-if="selectedPatrol">
+                    <h2 class="mr-auto text-base font-extrabold uppercase font-extrabold text-blue-500" v-if="selectedPatrol">
                         Patrouille en cours | site @{{ selectedPatrol.site.name }}
                     </h2>
                     <button id="btn-reset"
@@ -160,8 +160,8 @@
                     </button>
                 </div>
 
-                <div data-lat="-6.2425342" data-long="106.8626478" data-sources=""
-                    class="leaflet z-0 [&_.leaflet-tile-pane]:contrast-105 [&_.leaflet-tile-pane]:grayscale [&_.leaflet-tile-pane]:dark:contrast-[.8] [&_.leaflet-tile-pane]:dark:invert mt-5 ml-5 mr-5 mb-5 rounded-md bg-slate-200" style="height: 300px;">
+                <div data-lat="-6.2425342" data-long="106.8626478" data-sources="" 
+                    class="detail-leaflet leaflet z-0 [&_.leaflet-tile-pane]:contrast-105 [&_.leaflet-tile-pane]:grayscale [&_.leaflet-tile-pane]:dark:contrast-[.8] [&_.leaflet-tile-pane]:dark:invert mt-5 ml-5 mr-5 mb-5 rounded-md bg-slate-200" style="height: 320px;">
                 </div>
                
                 <div
@@ -172,10 +172,21 @@
             </d>
         </div>
     </div>
+    <x-dom-loader></x-dom-loader>
 </div>
 <!-- END: Content -->
 @endsection
 
 @push("scripts")
 <script type="module" src="{{ asset("assets/js/scripts/monitoring.js") }}"></script>
+
+@endpush
+
+@push("styles")
+<style>
+    .tooltip-red.leaflet-tooltip-top::before {
+        border-top-color: #dc2626 !important;
+        z-index: 2000;
+    }
+</style>
 @endpush

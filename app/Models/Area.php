@@ -42,7 +42,7 @@ class Area extends Model
      * @var array
      */
     protected $hidden = [
-
+        "qrcode"
     ];
 
 

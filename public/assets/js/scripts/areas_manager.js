@@ -6,6 +6,7 @@ new Vue({
             error: null,
             result: null,
             isLoading: false,
+            isDataLoading: false,
             pristine: null,
             sites: [],
             selectedAreas: [],
@@ -107,11 +108,16 @@ new Vue({
         },
 
         viewAllSites() {
+            this.isDataLoading = true;
             get("/sites")
                 .then((res) => {
+                    this.isDataLoading = false;
                     this.sites = res.data.sites;
                 })
-                .catch((err) => console.log("error"));
+                .catch((err) => {
+                    this.isDataLoading = false;
+                    console.log("error");
+                });
         },
         deleteArea(id) {
             let self = this;

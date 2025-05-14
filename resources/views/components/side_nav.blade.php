@@ -148,12 +148,12 @@
              </ul>
          </li>
          <li>
-             <a href="javascript:;" class="side-menu">
+             <a href="javascript:;" class="side-menu {{  Route::is("visit.creating") ? 'side-menu--active' : ''  }}">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="badge-check" class="stroke-1.5 w-5 h-5"></i>
                  </div>
                  <div class="side-menu__title">
-                     Gestion visites
+                     Gestion visiteurs
                      <div class="side-menu__sub-icon ">
                          <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-3 h-3"></i>
                      </div>
@@ -161,7 +161,7 @@
              </a>
              <ul class="">
                  <li>
-                     <a href="" class="side-menu">
+                     <a href="{{ url("/visit.creating") }}" class="side-menu">
                          <div class="side-menu__icon">
                              <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                          </div>
@@ -307,7 +307,7 @@
              </a>
              <ul class="">
                  <li>
-                     <a href="rubick-side-menu-categories-page.html" class="side-menu">
+                     <a href="zaaazazaz" class="side-menu">
                          <div class="side-menu__icon">
                              <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                          </div>
@@ -317,7 +317,7 @@
                      </a>
                  </li>
                  <li>
-                     <a href="rubick-side-menu-add-product-page.html" class="side-menu">
+                     <a href="azzezeezee" class="side-menu">
                          <div class="side-menu__icon">
                              <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                          </div>

@@ -75,7 +75,7 @@
         <!-- END: Account Menu -->
     </div>
     <!-- END: Top Bar -->
-    <div class="grid grid-cols-12 gap-6" id="App">
+    <div class="grid grid-cols-12 gap-6" id="App" v-cloak>
         <!-- BEGIN: Weekly Top Products -->
         <div class="col-span-12 mt-3">
             <div class="intro-y block h-10 items-center sm:flex">
@@ -247,6 +247,7 @@
         </div>
         <!-- END: Weekly Top Products -->
     </div>
+    <x-dom-loader></x-dom-loader>
 </div>
 <!-- END: Content -->
 @endsection

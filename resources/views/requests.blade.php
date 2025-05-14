@@ -76,7 +76,7 @@
         <!-- END: Account Menu -->
     </div>
     <!-- END: Top Bar -->
-    <div class="mt-8 grid grid-cols-12 gap-6" id="App">
+    <div class="mt-8 grid grid-cols-12 gap-6" id="App" v-cloak>
         <div class="col-span-12 lg:col-span-12 2xl:col-span-12">
             <!-- BEGIN: Inbox Filter -->
             <div class="intro-y flex flex-col-reverse justify-between items-center sm:flex-row">
@@ -161,9 +161,18 @@
                 </div>
             </div>
             <!-- END: Inbox Content -->
-            <x-empty-state message="Aucune requête disponible pour l'instant." v-else></x-empty-state>
+            <div v-else>
+                <div v-if="isDataLoading">
+                    <x-dom-loader></x-dom-loader>
+                </div>
+                <div v-else>
+                    <x-empty-state message="Aucune requête disponible pour l'instant." v-else></x-empty-state>
+                </div>
+            </div>
         </div>
     </div>
+
+    <x-dom-loader></x-dom-loader>
 </div>
 <!-- END: Content -->
 @endsection

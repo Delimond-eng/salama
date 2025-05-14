@@ -75,7 +75,6 @@
 <script src="{{ asset('dist/js/components/simple-line-chart-1.js') }}"></script>
 <script src="{{ asset('dist/js/components/base/tiny-slider.js') }}"></script>
 <script src="{{ asset('dist/js/themes/rubick.js') }}"></script>
-<script src="{{ asset('dist/js/components/base/leaflet-map-loader.js') }}"></script>
 <script src="{{ asset('dist/js/components/mobile-menu.js') }}"></script>
 <script src="{{ asset('dist/js/components/themes/rubick/top-bar.js') }}"></script>
 

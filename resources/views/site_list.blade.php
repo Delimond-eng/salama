@@ -75,7 +75,7 @@
         <!-- END: Account Menu -->
     </div>
     <!-- END: Top Bar -->
-    <div class="mt-5 grid grid-cols-12 gap-6" id="App">
+    <div class="mt-5 grid grid-cols-12 gap-6" id="App" v-cloak>
         <div class="intro-y box col-span-12 lg:col-span-8">
             <div class="flex flex-wrap items-center border-b border-slate-200/60 px-5 py-5 dark:border-darkmode-400 sm:py-3">
                 <h2 class="mr-auto text-base font-medium">Liste des sites</h2>
@@ -91,7 +91,7 @@
                     </button>
                 </div>
             </div>
-            <div class="space-y-4">
+            <div class="space-y-4" v-if="allSites.length > 0">
                 <div v-for="(data, i) in allSites" :key="i" class="border border-slate-200 rounded-bottom overflow-hidden">
                     <!-- Header -->
                     <div
@@ -196,6 +196,14 @@
                             </button>
                         </div>
                     </transition>
+                </div>
+            </div>
+            <div class="space-y-4" v-else>
+                <div v-if="isDataLoading">
+                    <x-dom-loader></x-dom-loader>
+                </div>
+                <div v-else>
+                    <x-empty-state message="Aucune requête disponible pour l'instant." v-else></x-empty-state>
                 </div>
             </div>
         </div>
@@ -305,6 +313,10 @@
         </div>
         <!-- end toast -->
     </div>
+
+
+
+    
 
 </div>
 <!-- END: Content -->

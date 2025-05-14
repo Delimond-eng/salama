@@ -6,6 +6,7 @@ new Vue({
             error: null,
             result: null,
             isLoading: false,
+            isDataLoading: false,
             pristine: null,
             requests: [],
             selectedRequest: null,
@@ -19,7 +20,7 @@ new Vue({
 
     mounted() {
         // Une fois que Vue.js est chargé, on cache le loader
-        if ($("loader").length) {
+        if ($("#loader").length) {
             document.getElementById("loader").style.display = "none";
         }
         this.viewAllSites();
@@ -36,11 +37,16 @@ new Vue({
                 .catch((err) => console.log("error"));
         },
         viewAllRequests() {
+            this.isDataLoading = true;
             get("/requests.all")
                 .then((res) => {
+                    this.isDataLoading = false;
                     this.requests = res.data.requests;
                 })
-                .catch((err) => console.log("error"));
+                .catch((err) => {
+                    this.isDataLoading = false;
+                    console.log("error");
+                });
         },
 
         viewAllSignalements() {

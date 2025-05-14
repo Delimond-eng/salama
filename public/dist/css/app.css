@@ -11851,3 +11851,7 @@
      content: var(--tw-content);
      background-color: #00000080
  }
+
+ [v-cloak] {
+     display: none;
+ }

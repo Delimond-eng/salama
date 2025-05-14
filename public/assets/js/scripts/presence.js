@@ -13,6 +13,8 @@ new Vue({
             form: {},
             search: "",
             site_id: "",
+            filter_date: "",
+            filter_site: "",
         };
     },
 
@@ -21,12 +23,19 @@ new Vue({
         if ($("#loader").length) {
             document.getElementById("loader").style.display = "none";
         }
-        this.pristine = new Pristine(document.querySelector(".form-planning"), {
-            classTo: "input-form",
-            errorClass: "has-error",
-            errorTextParent: "input-form",
-            errorTextClass: "text-danger mt-2",
-        });
+
+        if ($(".form-horaire").length) {
+            this.pristine = new Pristine(
+                document.querySelector(".form-horaire"),
+                {
+                    classTo: "input-form",
+                    errorClass: "has-error",
+                    errorTextParent: "input-form",
+                    errorTextClass: "text-danger mt-2",
+                }
+            );
+        }
+
         this.viewAllSites();
     },
 
@@ -115,6 +124,10 @@ new Vue({
             } else {
                 return this.schedules;
             }
+        },
+
+        allPresenceReports() {
+            return [];
         },
     },
 });

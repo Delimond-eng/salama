@@ -5,6 +5,7 @@ new Vue({
         return {
             error: null,
             result: null,
+            isDataLoading: false,
             isLoading: false,
             pristine: null,
             reports: [],
@@ -36,11 +37,16 @@ new Vue({
 
     methods: {
         viewAllSites() {
+            this.isDataLoading = true;
             get("/sites")
                 .then((res) => {
+                    this.isDataLoading = false;
                     this.sites = res.data.sites;
                 })
-                .catch((err) => console.log("error"));
+                .catch((err) => {
+                    this.isDataLoading = false;
+                    console.log("error");
+                });
         },
     },
 

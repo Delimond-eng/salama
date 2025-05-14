@@ -78,7 +78,7 @@
     <!-- END: Top Bar -->
 
 
-    <div class="mt-5 grid grid-cols-12 gap-6" id="App">
+    <div class="mt-5 grid grid-cols-12 gap-6" id="App" v-cloak>
         <div class="intro-y col-span-12 2xl:col-span-7 lg:col-span-7">
             <div class="flex items-center border-b border-slate-200/60 py-5 dark:border-darkmode-400">
                 <h2 class="mr-auto text-base font-medium">Liste des Communiqués & annonces</h2>
@@ -124,10 +124,8 @@
                     
                 </div>
             </div>
-
-
             <!-- BEGIN: Pagination -->
-            <div class="intro-y mt-5 col-span-12 flex flex-wrap items-center sm:flex-row sm:flex-nowrap">
+            <div class="intro-y mt-5 col-span-12 flex flex-wrap items-center sm:flex-row sm:flex-nowrap" v-if="allAnnounces.length > 0">
                 <nav class="w-full sm:mr-auto sm:w-auto">
                     <ul class="flex w-full mr-0 sm:mr-auto sm:w-auto">
                         <li class="flex-1 sm:flex-initial">
@@ -167,6 +165,15 @@
                 </select>
             </div>
             <!-- END: Pagination -->
+
+            <div class="col-span-12" v-if="allAnnounces.length ==0">
+                <div v-if="isDataLoading">
+                    <x-dom-loader></x-dom-loader>
+                </div>
+                <div v-else>
+                    <x-empty-state message="Pas de communiqué disponible."></x-empty-state>
+                </div>
+            </div>
         </div>
 
         <div class="intro-y col-span-12 2xl:col-span-5">
@@ -243,6 +250,7 @@
             </div>
         </div>
     </div>
+    <x-dom-loader></x-dom-loader>
 </div>
 <!-- END: Content -->
 @endsection

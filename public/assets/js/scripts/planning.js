@@ -6,6 +6,7 @@ new Vue({
             error: null,
             result: null,
             isLoading: false,
+            isDataLoading: false,
             pristine: null,
             schedules: [],
             delete_id: "",
@@ -50,11 +51,16 @@ new Vue({
                 .catch((err) => console.log("error"));
         },
         viewAllSchedules() {
+            this.isDataLoading = true;
             get("/schedules.all")
                 .then((res) => {
+                    this.isDataLoading = false;
                     this.schedules = res.data.schedules;
                 })
-                .catch((err) => console.log("error"));
+                .catch((err) => {
+                    this.isDataLoading = false;
+                    console.log("error");
+                });
         },
 
         addField() {

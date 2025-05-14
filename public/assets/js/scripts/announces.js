@@ -6,6 +6,7 @@ new Vue({
             error: null,
             result: null,
             isLoading: false,
+            isDataLoading: false,
             pristine: null,
             form: {
                 title: "",
@@ -101,11 +102,16 @@ new Vue({
             };
         },
         viewAllAnnounces() {
+            this.isDataLoading = true;
             get("/announces.all")
                 .then((res) => {
+                    this.isDataLoading = false;
                     this.announces = res.data.announces;
                 })
-                .catch((err) => console.log("error"));
+                .catch((err) => {
+                    this.isDataLoading = false;
+                    console.log("error");
+                });
         },
 
         viewAllSites() {

@@ -79,7 +79,7 @@
     <!-- END: Top Bar -->
 
 
-    <div class="mt-5 grid grid-cols-12 gap-6" id="App">
+    <div class="mt-5 grid grid-cols-12 gap-6" id="App" v-cloak>
         <div class="intro-y box col-span-12 2xl:col-span-8 lg:col-span-8">
             <div class="flex items-center border-b border-slate-200/60 px-5 py-5 dark:border-darkmode-400">
                 <h2 class="mr-auto text-base font-medium">Liste des planning</h2>
@@ -125,7 +125,7 @@
                 </div>
 
                 <!-- BEGIN: Pagination -->
-                <div class="intro-y col-span-12 flex flex-wrap items-center sm:flex-row sm:flex-nowrap">
+                <div v-if="allSchedules.length > 0" class="intro-y col-span-12 flex flex-wrap items-center sm:flex-row sm:flex-nowrap">
                     <nav class="w-full sm:mr-auto sm:w-auto">
                         <ul class="flex w-full mr-0 sm:mr-auto sm:w-auto">
                             <li class="flex-1 sm:flex-initial">
@@ -165,6 +165,14 @@
                     </select>
                 </div>
                 <!-- END: Pagination -->
+                <div v-else>
+                    <div v-if="isDataLoading">
+                        <x-dom-loader></x-dom-loader>
+                    </div>
+                    <div v-else>
+                        <x-empty-state message="Aucune requête disponible pour l'instant." v-else></x-empty-state>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -272,6 +280,8 @@
             </div>
         </div>
     </div>
+
+    <x-dom-loader></x-dom-loader>
 </div>
 <!-- END: Content -->
 @endsection

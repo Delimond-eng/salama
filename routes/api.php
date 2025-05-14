@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\AppManagerController;
+use App\Models\Site;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -49,6 +51,23 @@ Route::middleware(["cors"])->group(function(){
 
     //Emettre sur un canal de talkie walkie
     Route::post('/send.talk', [\App\Http\Controllers\TalkieWalkieController::class, 'sendTalkAudio']);
+
+    Route::get("/patrols.reports", [AppManagerController::class, "viewPatrolReports"])->name("patrols.reports");
+
+    Route::get("/sites", function () {
+        $agencyId = Auth::user()->agency_id ?? 1;
+        $sites = Site::where("agency_id", $agencyId)
+            ->with([
+                "areas" => function ($query) {
+                    return $query->where("status", "actif");
+            }])
+            ->get();
+        return response()->json([
+            "sites" => $sites
+        ]);
+    });
+
+     Route::get("/patrols.pending", [AppManagerController::class, "viewPendingPatrols"])->name("patrols.pending");
 });
 
 

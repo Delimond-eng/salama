@@ -12,7 +12,9 @@ new Vue({
 
     mounted() {
         // Une fois que Vue.js est chargé, on cache le loader
-        document.getElementById("loader").style.display = "none";
+        if ($("#loader").length) {
+            document.getElementById("loader").style.display = "none";
+        }
 
         //init pristine
         this.pristine = new Pristine(document.querySelector(".login-form"), {

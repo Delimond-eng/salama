@@ -75,7 +75,7 @@
         <!-- END: Account Menu -->
     </div>
     <!-- END: Top Bar -->
-    <div class="mt-5 grid grid-cols-12 gap-6" id="App">
+    <div class="mt-5 grid grid-cols-12 gap-6" id="App" v-cloak>
         <div class="intro-y col-span-12 mt-2 flex flex-wrap items-center xl:flex-nowrap">
             <button data-tw-merge="" onclick="location.href='/agent.create'" class="transition duration-200 border inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-primary border-primary text-white dark:border-primary mr-2 shadow-md"> <i class="w-3 h-3" data-lucide="plus"></i> Nouveau agent</button>
             <button data-tw-merge="" class="transition duration-200 inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-white text-slate-800 dark:border-darkmode-100 mr-2 shadow-md"><i data-tw-merge="" data-lucide="file-text" class="stroke-1.5 mr-2 h-4 w-4"></i>
@@ -96,7 +96,7 @@
             </div>
         </div>
         <!-- BEGIN: Data List -->
-        <div class="intro-y col-span-12 overflow-auto 2xl:overflow-visible">
+        <div class="intro-y col-span-12 overflow-auto 2xl:overflow-visible" v-if="allAgents.length > 0">
             <table data-tw-merge="" class="w-full text-left -mt-2 border-separate border-spacing-y-[10px]">
                 <thead data-tw-merge="" class="">
                     <tr data-tw-merge="" class="">
@@ -121,7 +121,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr data-tw-merge="" class="intro-y" v-for="(data, index) in allAgents" :key="data">
+                    <tr data-tw-merge="" class="intro-y" v-for="(data, index) in allAgents" :key="index">
                         <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
                             <div class="flex items-center">
                                 <div class="image-fit zoom-in h-9 w-9">
@@ -143,12 +143,13 @@
                             </a>
                         </td>
                         <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 text-center shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
-                             <a class="whitespace-nowrap font-medium" href="#">
+                             <a v-if="data.site" class="whitespace-nowrap font-medium" href="#">
                                 @{{ data.site.name }}
                             </a>
-                            <div class="mt-0.5 whitespace-nowrap text-xs text-slate-500">
+                            <div v-if="data.site" class="mt-0.5 whitespace-nowrap text-xs text-slate-500">
                                 @{{ data.site.code }}
                             </div>
+                            <span v-else>Non assigné.</span>
                         </td>
                         
                         <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 text-center shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
@@ -177,7 +178,7 @@
         </div>
         <!-- END: Data List -->
         <!-- BEGIN: Pagination -->
-        <div class="intro-y col-span-12 flex flex-wrap items-center sm:flex-row sm:flex-nowrap">
+        <div class="intro-y col-span-12 flex flex-wrap items-center sm:flex-row sm:flex-nowrap" v-if="allAgents.length > 0">
             <nav class="w-full sm:mr-auto sm:w-auto">
                 <ul class="flex w-full mr-0 sm:mr-auto sm:w-auto">
                     <li class="flex-1 sm:flex-initial">
@@ -217,7 +218,17 @@
             </select>
         </div>
         <!-- END: Pagination -->
+         <div class="col-span-12" v-else>
+            <div v-if="isDataLoading">
+                <x-dom-loader></x-dom-loader>
+            </div>
+            <div v-else>
+                <x-empty-state></x-empty-state>
+            </div>
+         </div>
     </div>
+
+    <x-dom-loader></x-dom-loader>
 </div>
 <!-- END: Content -->
 @endsection

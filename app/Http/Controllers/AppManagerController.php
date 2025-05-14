@@ -10,6 +10,7 @@ use App\Models\Patrol;
 use App\Models\PatrolScan;
 use App\Models\Schedules;
 use App\Models\Signalement;
+use App\Models\Site;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -41,8 +42,8 @@ class AppManagerController extends Controller
             $area = Area::find($scan['area_id']);
 
             // Extraction des coordonnées GPS de la zone et du scan
-            list($areaLat, $areaLng) = explode(':', $area->latlng ?? "8844757:30934949");
-            list($scanLat, $scanLng) = explode(':', $scan['latlng']);
+            list($areaLat, $areaLng) = explode(',', $area->latlng ?? "8844757:30934949");
+            list($scanLat, $scanLng) = explode(',', $scan['latlng']);
 
             // Calcul de la distance en mètres entre les deux points GPS
             $distance = $this->calculateDistance($areaLat, $areaLng, $scanLat, $scanLng);
@@ -78,6 +79,9 @@ class AppManagerController extends Controller
             if ($patrol) {
                 $scan["patrol_id"] = $patrol->id;
                 PatrolScan::create($scan);
+                $site = Site::find($data["site_id"]);
+                $site->status = 'pending';
+                $site->save();
 
                 return response()->json([
                     "status" => "success",
@@ -278,8 +282,10 @@ class AppManagerController extends Controller
      * View all pending Patrol
      * @return JsonResponse
     */
-    public function viewPendingPatrols():JsonResponse{
+    public function viewPendingPatrols(): JsonResponse
+    {
         $agencyId = Auth::user()->agency_id ?? 1;
+
         $patrols = Patrol::with("site.areas")
             ->with("agent")
             ->with("scans.agent")
@@ -288,9 +294,29 @@ class AppManagerController extends Controller
             ->where("agency_id", $agencyId)
             ->orderByDesc("id")
             ->get();
+
+        // Traitement de chaque patrol
+        $patrols = $patrols->map(function ($patrol) {
+            $scannedAreaIds = $patrol->scans->pluck('area_id')->toArray();
+
+            $mapDatas = $patrol->site->areas->map(function ($area) use ($scannedAreaIds) {
+                return [
+                    'id' => $area->id,
+                    'libelle' => $area->libelle,
+                    'latlng' => $area->latlng,
+                    'scan_status' => in_array($area->id, $scannedAreaIds) ? 'scanned' : 'none',
+                ];
+            });
+
+            // Ajout de la clé map_datas à l'objet patrol
+            $patrol->map_datas = $mapDatas;
+
+            return $patrol;
+        });
+
         return response()->json([
-            "status"=>"success",
-            "pending_patrols"=>$patrols
+            "status" => "success",
+            "pending_patrols" => $patrols
         ]);
     }
 
@@ -299,21 +325,101 @@ class AppManagerController extends Controller
      * View all Patrol reports
      * @return JsonResponse
     */
-    public function viewPatrolReports():JsonResponse{
+    public function viewPatrolReports(): JsonResponse
+    {
+        $agencyId = Auth::user()->agency_id ?? 1;
+        $patrols = Patrol::with(["agent", "site", "scans.agent", "scans.area"])
+            ->where("agency_id", $agencyId)
+            ->orderByDesc("id")
+            ->paginate(10);
+
+        $patrols->getCollection()->transform(function ($patrol) {
+            // 1. Durée réelle de la patrouille
+            $start = $patrol->started_at ? Carbon::parse($patrol->started_at) : null;
+            $end = $patrol->ended_at ? Carbon::parse($patrol->ended_at) : now();
+            $durationMinutes = $start ? $start->diffInMinutes($end) : null;
+
+            // 2. Zones scannées vs attendues
+            $scannedZoneIds = $patrol->scans->pluck('area_id')->unique();
+            $zonesScanned = $scannedZoneIds->count();
+            $zonesExpected = Area::where("site_id", $patrol->site_id)->count();
+            $coverageRate = $zonesExpected > 0 ? round(($zonesScanned / $zonesExpected) * 100, 2) : 0;
+
+            // 3. Estimation du périmètre basé sur les areas du site
+            $areas = Area::where("site_id", $patrol->site_id)->get();
+            $totalDistance = 0;
+
+            for ($i = 0; $i < count($areas); $i++) {
+                $j = ($i + 1) % count($areas); // fermeture du périmètre
+                [$lat1, $lng1] = explode(',', $areas[$i]->latlng);
+                [$lat2, $lng2] = explode(',', $areas[$j]->latlng);
+                $totalDistance += $this->calculateDistance($lat1, $lng1, $lat2, $lng2);
+            }
+
+            // 4. Durée estimée théorique (en minutes) pour parcourir le périmètre à 1.11 m/s
+            $estimatedDurationMinutes = $totalDistance / 1.11 / 60;
+
+            // 5. Comparaison et efficacité
+            $efficiency = null;
+            if ($durationMinutes && $estimatedDurationMinutes > 0) {
+                $efficiency = round(($estimatedDurationMinutes / $durationMinutes) * 100, 2);
+            }
+
+            // 6. Statistiques par scan avec durée entre scans
+            $scans = $patrol->scans->sortBy('time')->values();
+            $scansStats = $scans->map(function ($scan, $index) use ($scans) {
+                [$lat1, $lng1] = explode(",", $scan->latlng);
+                [$lat2, $lng2] = explode(",", $scan->area->latlng);
+                $distance = $this->calculateDistance($lat1, $lng1, $lat2, $lng2);
+
+                $time = Carbon::parse($scan->time);
+                $durationSincePrevious = 0;
+                if ($index > 0) {
+                    $previousTime = Carbon::parse($scans[$index - 1]->time);
+                    $durationSincePrevious = $previousTime->diffInSeconds($time);
+                }
+
+                return [
+                    "area" => $scan->area->libelle,
+                    "time" => $time->format('H:i'),
+                    "distance_meters" => $distance,
+                    "duration_since_previous_seconds" => $durationSincePrevious,
+                ];
+            });
+
+            // Enrichissement de l'objet
+            $patrol->duration_minutes = $durationMinutes;
+            $patrol->zones_scanned = $zonesScanned;
+            $patrol->zones_expected = $zonesExpected;
+            $patrol->coverage_rate = $coverageRate;
+            $patrol->estimated_duration_minutes = round($estimatedDurationMinutes, 2);
+            $patrol->total_distance_meters = round($totalDistance, 2);
+            $patrol->efficiency_score = $efficiency;
+            $patrol->scans_stats = $scansStats;
+            return $patrol;
+        });
+
+        return response()->json([
+            "status" => "success",
+            "patrols" => $patrols
+        ]);
+    }
+
+
+    /* public function viewPatrolReports():JsonResponse{
         $agencyId = Auth::user()->agency_id ?? 1;
         $patrols = Patrol::with("agent")
             ->with("site")
             ->with("scans.agent")
             ->with("scans.area")
-            ->where("status", "closed")
             ->where("agency_id", $agencyId)
             ->orderByDesc("id")
-            ->get();
+            ->paginate(10);
         return response()->json([
             "status"=>"success",
             "patrols"=>$patrols
         ]);
-    }
+    } */
 
 
 
@@ -353,6 +459,9 @@ class AppManagerController extends Controller
             $patrol->comment_audio = $data["comment_audio"] ?? null;
             $patrol->status = $data["status"];
             $patrol->save();
+            $site = Site::find($patrol->site_id);
+            $site->status = 'actif';
+            $site->save();
             return response()->json([
                 "status" => "success",
                 "result" => $patrol
@@ -558,6 +667,89 @@ class AppManagerController extends Controller
             return response()->json(['errors' => $e->getMessage()], );
         }
     }
+
+
+    public function generatePatrolPdfReport()
+    {
+        $agencyId = Auth::user()->agency_id ?? 1;
+
+        $patrols = Patrol::with(['agent', 'site', 'scans.agent', 'scans.area'])
+            ->where('agency_id', $agencyId)
+            ->orderByDesc('id')
+            ->get();
+
+        $patrols->transform(function ($patrol) {
+            // 1. Durée réelle de la patrouille
+            $start = $patrol->started_at ? Carbon::parse($patrol->started_at) : null;
+            $end = $patrol->ended_at ? Carbon::parse($patrol->ended_at) : now();
+            $durationMinutes = $start ? $start->diffInMinutes($end) : null;
+
+            // 2. Zones scannées vs attendues
+            $scannedZoneIds = $patrol->scans->pluck('area_id')->unique();
+            $zonesScanned = $scannedZoneIds->count();
+            $zonesExpected = Area::where("site_id", $patrol->site_id)->count();
+            $coverageRate = $zonesExpected > 0 ? round(($zonesScanned / $zonesExpected) * 100, 2) : 0;
+
+            // 3. Estimation du périmètre basé sur les areas du site
+            $areas = Area::where("site_id", $patrol->site_id)->get();
+            $totalDistance = 0;
+
+            for ($i = 0; $i < count($areas); $i++) {
+                $j = ($i + 1) % count($areas); // fermeture du périmètre
+                [$lat1, $lng1] = explode(',', $areas[$i]->latlng);
+                [$lat2, $lng2] = explode(',', $areas[$j]->latlng);
+                $totalDistance += $this->calculateDistance($lat1, $lng1, $lat2, $lng2);
+            }
+
+            // 4. Durée estimée théorique (en minutes) pour parcourir le périmètre à 1.11 m/s
+            $estimatedDurationMinutes = $totalDistance / 1.11 / 60;
+
+            // 5. Comparaison et efficacité
+            $efficiency = null;
+            if ($durationMinutes && $estimatedDurationMinutes > 0) {
+                $efficiency = round(($estimatedDurationMinutes / $durationMinutes) * 100, 2);
+            }
+
+            // 6. Statistiques par scan avec durée entre scans
+            $scans = $patrol->scans->sortBy('time')->values();
+            $scansStats = $scans->map(function ($scan, $index) use ($scans) {
+                [$lat1, $lng1] = explode(",", $scan->latlng);
+                [$lat2, $lng2] = explode(",", $scan->area->latlng);
+                $distance = $this->calculateDistance($lat1, $lng1, $lat2, $lng2);
+
+                $time = Carbon::parse($scan->time);
+                $durationSincePrevious = 0;
+                if ($index > 0) {
+                    $previousTime = Carbon::parse($scans[$index - 1]->time);
+                    $durationSincePrevious = $previousTime->diffInSeconds($time);
+                }
+
+                return [
+                    "area" => $scan->area->libelle,
+                    "time" => $time->format('H:i'),
+                    "distance_meters" => $distance,
+                    "duration_since_previous_seconds" => $durationSincePrevious,
+                ];
+            });
+
+            // Enrichissement de l'objet
+            $patrol->duration_minutes = $durationMinutes;
+            $patrol->zones_scanned = $zonesScanned;
+            $patrol->zones_expected = $zonesExpected;
+            $patrol->coverage_rate = $coverageRate;
+            $patrol->estimated_duration_minutes = round($estimatedDurationMinutes, 2);
+            $patrol->total_distance_meters = round($totalDistance, 2);
+            $patrol->efficiency_score = $efficiency;
+            $patrol->scans_stats = $scansStats;
+            return $patrol;
+        });
+        $pdf = PDF::loadView('pdf.reports.patrols', ['patrols' => $patrols]);
+        $pdf->setPaper('A4', 'portrait');
+        return $pdf->stream('rapport-patrouilles.pdf');
+    }
+
+   
+
 
 
 

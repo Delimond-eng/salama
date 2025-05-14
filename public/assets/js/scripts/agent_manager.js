@@ -6,6 +6,7 @@ new Vue({
             error: null,
             result: null,
             isLoading: false,
+            isDataLoading: false,
             pristine: null,
             agents: [],
             search: "",
@@ -110,11 +111,16 @@ new Vue({
         },
 
         viewAllAgents() {
+            this.isDataLoading = true;
             get("/agents")
                 .then((res) => {
+                    this.isDataLoading = false;
                     this.agents = res.data.agents;
                 })
-                .catch((err) => console.log("error"));
+                .catch((err) => {
+                    this.isDataLoading = false;
+                    console.log("error");
+                });
         },
     },
 

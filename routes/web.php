@@ -27,7 +27,7 @@ Route::middleware(["auth"])->group(function(){
 
     Route::get('/agent.create', function () {
         $agencyId = Auth::user()->agency_id;
-        $sites = Site::where("status", "actif")->where("agency_id", $agencyId)->get();
+        $sites = Site::where("agency_id", $agencyId)->get();
         return view('add_agent',[
             "sites"=>$sites
         ]);
@@ -47,8 +47,7 @@ Route::middleware(["auth"])->group(function(){
 
     Route::get("/sites", function () {
         $agencyId = Auth::user()->agency_id;
-        $sites = Site::where("status", "actif")
-            ->where("agency_id", $agencyId)
+        $sites = Site::where("agency_id", $agencyId)
             ->with([
                 "areas" => function ($query) {
                     return $query->where("status", "actif");
@@ -70,6 +69,7 @@ Route::middleware(["auth"])->group(function(){
     Route::view("/signalements", "signalements")->name("signalements");
     Route::view("/schedules", "schedules")->name("schedules");
     Route::view("/tasks", "tasks")->name("tasks");
+    Route::view("/visit.creating", "visit_create")->name("visit.creating");
     Route::view("/presence.horaires", "presence_horaire")->name("presence.horaires");
     Route::view("/reports.presences", "report_presences")->name("reports.presences");
 
@@ -108,6 +108,8 @@ Route::middleware(["auth"])->group(function(){
 
     //LOAD & DOWNLOAD AREA PDF CONTENT QRCODE FOR SCANNING
     Route::get("/loadpdf/{siteId}", [AppManagerController::class, "generatePdfWithQRCodes"])->name("loadpdf");
+
+    Route::get("/pdf.patrols.reports", [AppManagerController::class, "generatePatrolPdfReport"])->name("pdf.patrols.reports");
 
     //VIEW ALL PENDING PATROLS
     Route::get("/patrols.pending", [AppManagerController::class, "viewPendingPatrols"])->name("patrols.pending");

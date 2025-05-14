@@ -79,7 +79,7 @@
     <!-- END: Top Bar -->
 
 
-    <div class="mt-5 grid grid-cols-12 gap-6" id="App">
+    <div class="mt-5 grid grid-cols-12 gap-6" id="App" v-cloak>
         <div class="intro-y box col-span-12">
             <div class="p-5">
                 <!-- BEGIN: Weekly Top Products -->
@@ -329,6 +329,8 @@
             </form>
         </div>
     </div>
+
+    <x-dom-loader></x-dom-loader>
 </div>
 <!-- END: Content -->
 @endsection

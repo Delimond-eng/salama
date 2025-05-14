@@ -79,10 +79,10 @@
     <!-- END: Top Bar -->
 
 
-    <div class="mt-5 grid grid-cols-12 gap-6" id="App">
+    <div class="mt-5 grid grid-cols-12 gap-6" id="App" v-cloak>
         <div class="intro-y box col-span-12 2xl:col-span-8 lg:col-span-8">
             <div class="flex items-center border-b border-slate-200/60 px-5 py-5 dark:border-darkmode-400">
-                <h2 class="mr-auto text-base font-medium">Liste des planning</h2>
+                <h2 class="mr-auto text-base font-medium">Horaires de travail</h2>
             </div>
             <div class="p-5">
                 <div class="flex items-center mb-3 bg-slate-100 rounded-md p-3 justify-between" v-for="i in 4" :key="i">
@@ -251,6 +251,7 @@
             </div>
         </div>
     </div>
+    <x-dom-loader></x-dom-loader>
 </div>
 <!-- END: Content -->
 @endsection

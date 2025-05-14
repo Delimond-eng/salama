@@ -6,7 +6,9 @@ new Vue({
             error: null,
             result: null,
             isLoading: false,
+            isDataLoading: false,
             pristine: null,
+            selectedPatrol: null,
             sites: [],
             reports: [],
             filter_site: "",
@@ -34,11 +36,88 @@ new Vue({
         },
 
         viewAllReports() {
+            this.isDataLoading = true;
             get("/patrols.reports")
                 .then((res) => {
-                    this.reports = res.data.patrols;
+                    this.isDataLoading = false;
+                    this.reports = res.data.patrols.data;
                 })
-                .catch((err) => console.log("error"));
+                .catch((err) => {
+                    this.isDataLoading = false;
+                    console.log("error");
+                });
+        },
+
+        loadChart(item) {
+            this.selectedPatrol = item;
+
+            if ($("#report-donut-chart").length) {
+                console.log("chart");
+
+                let colors = () => [
+                    getColor("primary", 0.9), // Scanned
+                    getColor("warning", 0.9), // Not scanned
+                ];
+
+                const scanned = item.zones_scanned;
+                const notScanned = item.zones_expected - scanned;
+                const efficiency = Math.round(item.efficiency_score); // arrondi
+
+                let ctx = $("#report-donut-chart")[0].getContext("2d");
+
+                // Détruire l'ancien graphique si nécessaire
+                if (window.patrolChart) {
+                    window.patrolChart.destroy();
+                }
+
+                window.patrolChart = new Chart(ctx, {
+                    type: "doughnut",
+                    data: {
+                        labels: ["Zones scannées", "Non scannées"],
+                        datasets: [
+                            {
+                                data: [
+                                    scanned,
+                                    notScanned > 0 ? notScanned : 0,
+                                ],
+                                backgroundColor: colors,
+                                hoverBackgroundColor: colors,
+                                borderWidth: 5,
+                                borderColor: () =>
+                                    $("html").hasClass("dark")
+                                        ? getColor("darkmode.700")
+                                        : getColor("white"),
+                            },
+                        ],
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return (
+                                            context.label +
+                                            ": " +
+                                            context.parsed +
+                                            " zones"
+                                        );
+                                    },
+                                },
+                            },
+                        },
+                        cutout: "80%",
+                    },
+                });
+
+                // Mise à jour du texte au centre du donut
+                $(".donut-score").text(`${efficiency}%`);
+            }
+        },
+
+        downloadPatrolPDF() {
+            location.href = "/pdf.patrols.reports";
         },
     },
 
