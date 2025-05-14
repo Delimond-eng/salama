@@ -8,7 +8,7 @@
  */
 export async function post(url, form) {
     try {
-        const  csrfToken = document
+        const csrfToken = document
             .querySelector('meta[name="csrf-token"]')
             .getAttribute("content");
         const response = await fetch(url, {
@@ -45,6 +45,7 @@ export async function postJson(url, form) {
             headers: {
                 "X-CSRF-TOKEN": csrfToken,
                 "Content-Type": "application/json",
+                "accept": "application/json",
             },
             body: JSON.stringify(form),
         });

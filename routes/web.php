@@ -6,9 +6,9 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\AppManagerController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\TalkieWalkieController;
-use App\Models\Site;
+use App\Models\Agent;
 use App\Models\Announce;
+use App\Models\Site;
 
 Auth::routes();
 
@@ -130,17 +130,8 @@ Route::middleware(['auth'])->group(function () {
     */
     Route::get('/loadpdf/{siteId}', [AppManagerController::class, 'generatePdfWithQRCodes'])->name('loadpdf');
 
-    /*
-    |--------------------------------------------------------------------------
-    | SUPPRESSION GÉNÉRIQUE
-    |--------------------------------------------------------------------------
-    */
-    Route::post('/delete', [AppManagerController::class, 'triggerDelete'])->name('delete');
 
-    /*
-    |--------------------------------------------------------------------------
-    | TALKIE-WALKIE
-    |--------------------------------------------------------------------------
-    */
-    Route::post('/send.talk', [TalkieWalkieController::class, 'sendTalkAudio'])->name('send.talk');
+    //Emettre sur un canal de talkie walkie
+    Route::post('/send.talk', [\App\Http\Controllers\TalkieWalkieController::class, 'sendTalkAudio'])->name('send.talk');
+
 });

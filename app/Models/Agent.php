@@ -35,7 +35,8 @@ class Agent extends Model
         "password",
         "role",
         "agency_id",
-        "site_id"
+        "site_id",
+        "horaire_id",
     ];
 
     /**
@@ -85,6 +86,14 @@ class Agent extends Model
     */
     public function agencie() : BelongsTo{
         return $this->belongsTo(Agencie::class, foreignKey:"agency_id",);
+    }
+
+    /**
+     * Belongs to agency
+     * @return BelongsTo
+    */
+    public function horaire() : BelongsTo{
+        return $this->belongsTo(PresenceHoraire::class, foreignKey:"horaire_id",);
     }
 
 }

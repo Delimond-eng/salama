@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string("role")->default("guard");
             $table->unsignedBigInteger("agency_id");
             $table->unsignedBigInteger("site_id")->nullable();
+            $table->unsignedBigInteger("horaire_id")->nullable();
             $table->string("status")->default("actif");
             $table->timestamps();
         });
