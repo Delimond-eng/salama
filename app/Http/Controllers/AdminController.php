@@ -156,6 +156,9 @@ class AdminController extends Controller
             if($area){
                 $area->latlng = $data["latlng"];
                 $area->save();
+                $site = Site::find($area->site_id);
+                $site->latlng = $data["latlng"];
+                $site->save();
                 return response()->json([
                     "status" => "success",
                     "result" => $area

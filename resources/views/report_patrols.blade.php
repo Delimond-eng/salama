@@ -284,7 +284,10 @@
 
                                 <div class="col-span-12"  v-if="selectedPatrol">
                                     <div class="flex">
-                                        <div class="mr-auto">Efficacité</div>
+                                        <div class="mr-auto flex align-items-center">Efficacité <div class="rounded-lg ml-2 bg-dark py-[3px] px-2 text-xs font-normal text-white">
+                                                                 @{{ selectedPatrol.efficiency_label }}
+                                                            </div>
+                                        </div>
                                         <div>@{{ selectedPatrol.efficiency_score.toFixed(1) }}%</div>
                                     </div>
                                     <div class="w-full bg-slate-200 rounded dark:bg-black/20 mt-2 h-1">

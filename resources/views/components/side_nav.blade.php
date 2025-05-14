@@ -161,7 +161,7 @@
              </a>
              <ul class="">
                  <li>
-                     <a href="{{ url("/visit.creating") }}" class="side-menu">
+                     <a href="ezuyezueze" class="side-menu">
                          <div class="side-menu__icon">
                              <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                          </div>
@@ -171,7 +171,7 @@
                      </a>
                  </li>
                  <li>
-                     <a href="" class="side-menu">
+                     <a href="euzeiuzie" class="side-menu">
                          <div class="side-menu__icon">
                              <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                          </div>

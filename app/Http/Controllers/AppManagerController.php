@@ -351,9 +351,11 @@ class AppManagerController extends Controller
 
             for ($i = 0; $i < count($areas); $i++) {
                 $j = ($i + 1) % count($areas); // fermeture du périmètre
-                [$lat1, $lng1] = explode(',', $areas[$i]->latlng);
-                [$lat2, $lng2] = explode(',', $areas[$j]->latlng);
-                $totalDistance += $this->calculateDistance($lat1, $lng1, $lat2, $lng2);
+               if($areas[$i]->latlng){
+                    [$lat1, $lng1] = explode(',', $areas[$i]->latlng);
+                    [$lat2, $lng2] = explode(',', $areas[$j]->latlng);
+                    $totalDistance += $this->calculateDistance($lat1, $lng1, $lat2, $lng2);
+               }
             }
 
             // 4. Durée estimée théorique (en minutes) pour parcourir le périmètre à 1.11 m/s
@@ -361,8 +363,21 @@ class AppManagerController extends Controller
 
             // 5. Comparaison et efficacité
             $efficiency = null;
+
+            $efficiency_label = null;
             if ($durationMinutes && $estimatedDurationMinutes > 0) {
-                $efficiency = round(($estimatedDurationMinutes / $durationMinutes) * 100, 2);
+                $efficiency = round(max(min(($estimatedDurationMinutes / $durationMinutes) * 100, 100), 0), 2);
+                if ($efficiency !== null) {
+                    if ($efficiency >= 90) {
+                        $efficiency_label = "Rapide";
+                    } elseif ($efficiency >= 70) {
+                        $efficiency_label = "Correct";
+                    } elseif ($efficiency >= 40) {
+                        $efficiency_label = "Lent";
+                    } else {
+                        $efficiency_label = "Très lent";
+                    }
+                }
             }
 
             // 6. Statistiques par scan avec durée entre scans
@@ -395,6 +410,8 @@ class AppManagerController extends Controller
             $patrol->estimated_duration_minutes = round($estimatedDurationMinutes, 2);
             $patrol->total_distance_meters = round($totalDistance, 2);
             $patrol->efficiency_score = $efficiency;
+            $patrol->efficiency_label = $efficiency_label;
+            
             $patrol->scans_stats = $scansStats;
             return $patrol;
         });
