@@ -97,7 +97,7 @@
                             <i data-lucide="eye" class="w-4 h-4"></i>
                         </button>
 
-                        <button class="text-danger border border-slate-400 ml-1 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
+                        <button class="text-danger border   border-slate-400 ml-1 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -236,4 +236,5 @@
 
 @push("scripts")
 <script type="module" src="{{ asset("assets/js/scripts/presence.js") }}"></script>
+
 @endpush

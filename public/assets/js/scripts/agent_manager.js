@@ -1,4 +1,4 @@
-import { get, postJson } from "../modules/http.js";
+import {get, postJson } from "../modules/http.js";
 new Vue({
     el: "#App",
     data() {
@@ -29,8 +29,7 @@ new Vue({
         //init pristine script
         if (document.querySelector(".form-agent") !== null) {
             this.pristine = new Pristine(
-                document.querySelector(".form-agent"),
-                {
+                document.querySelector(".form-agent"), {
                     classTo: "input-form",
                     errorClass: "has-error",
                     errorTextParent: "input-form",
@@ -39,6 +38,7 @@ new Vue({
             );
         }
         this.viewAllAgents();
+        this.viewAllHoraires()
     },
 
     methods: {
@@ -99,6 +99,22 @@ new Vue({
                     });
             }
         },
+        exportToExcel() {
+            const data = this.allAgents.map(p => ({
+                "Nom complet": p.fullname || '',
+                "Matricule": p.matricule || '',
+                "Role": p.role || '',
+                "Site": p.site.name || '',
+                "Password": p.password || '',
+                "Date": p.created_at.substring(0, 10) || ''
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Agents");
+
+            XLSX.writeFile(workbook, "agents.xlsx");
+        },
 
         reset() {
             this.form = {
@@ -106,6 +122,7 @@ new Vue({
                 fullname: "",
                 password: "",
                 site_id: "",
+                horaire_id: "",
                 role: "",
             };
         },
@@ -122,6 +139,18 @@ new Vue({
                     console.log("error");
                 });
         },
+        viewAllHoraires() {
+            this.isDataLoading = true;
+            get("/horaires")
+                .then((res) => {
+                    this.isDataLoading = false;
+                    this.horaires = res.data.horaires;
+                })
+                .catch((err) => {
+                    this.isDataLoading = false;
+                    console.log("error");
+                });
+        },
     },
 
     computed: {
@@ -129,12 +158,12 @@ new Vue({
             if (this.search && this.search.trim()) {
                 return this.agents.filter(
                     (el) =>
-                        el.fullname
-                            .toLowerCase()
-                            .includes(this.search.toLowerCase()) ||
-                        el.matricule
-                            .toLowerCase()
-                            .includes(this.search.toLowerCase())
+                    el.fullname
+                    .toLowerCase()
+                    .includes(this.search.toLowerCase()) ||
+                    el.matricule
+                    .toLowerCase()
+                    .includes(this.search.toLowerCase())
                 );
             } else {
                 return this.agents;

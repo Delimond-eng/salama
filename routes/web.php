@@ -10,6 +10,8 @@ use App\Models\Agent;
 use App\Models\Announce;
 use App\Models\Site;
 
+ Route::post('/horaire.create', [\App\Http\Controllers\PresenceController::class, 'createHoraire'])->name('horaire.create');
+
 Auth::routes();
 
 Route::middleware(['auth'])->group(function () {
@@ -129,6 +131,27 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get('/loadpdf/{siteId}', [AppManagerController::class, 'generatePdfWithQRCodes'])->name('loadpdf');
+
+
+
+     /*
+    |--------------------------------------------------------------------------
+    | PRESENCES HORAIRES
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post('/horaire.create', [\App\Http\Controllers\PresenceController::class, 'createHoraire'])->name('horaire.create');
+
+    Route::get('/horaires', [\App\Http\Controllers\PresenceController::class, 'getAllHoraires'])->name('horaires');
+
+     /*
+    |--------------------------------------------------------------------------
+    | PRESENCES DES AGENTS
+    |--------------------------------------------------------------------------
+    */
+    Route::post('/presence.create', [\App\Http\Controllers\PresenceController::class, 'createPresenceAgent'])->name('presence.create');
+
+    Route::get('/presences', [\App\Http\Controllers\PresenceController::class, 'getPresencesBySiteAndDate'])->name('presences');
 
 
     //Emettre sur un canal de talkie walkie

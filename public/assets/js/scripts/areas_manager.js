@@ -1,4 +1,4 @@
-import { get, postJson } from "../modules/http.js";
+import {get, postJson } from "../modules/http.js";
 new Vue({
     el: "#App",
     data() {
@@ -11,9 +11,15 @@ new Vue({
             sites: [],
             selectedAreas: [],
             search: "",
+            presencesOriginal: [], // données brutes chargées depuis l'API
+            search2: "",
             load_id: "",
             delete_id: "",
             openAccordion: null,
+            presences: [],
+            presenceDate: new Date().toISOString().slice(0, 10),
+            selectedSiteId: null,
+            isPresenceLoading: false,
             form: {
                 id: "",
                 name: "",
@@ -21,11 +27,9 @@ new Vue({
                 adresse: "",
                 phone: "",
 
-                areas: [
-                    {
-                        libelle: "",
-                    },
-                ],
+                areas: [{
+                    libelle: "",
+                }, ],
             },
         };
     },
@@ -79,7 +83,6 @@ new Vue({
                     console.log(err);
                 });
         },
-
         toggleAccordion(index) {
             this.openAccordion = this.openAccordion === index ? null : index;
         },
@@ -94,11 +97,9 @@ new Vue({
                 code: "",
                 adresse: "",
                 phone: "",
-                areas: [
-                    {
-                        libelle: "",
-                    },
-                ],
+                areas: [{
+                    libelle: "",
+                }, ],
             };
             if ($("#btn-reset").length) {
                 document.getElementById("btn-reset").click();
@@ -123,9 +124,9 @@ new Vue({
             let self = this;
             this.load_id = id;
             postJson("/delete", {
-                table: "areas",
-                id: id,
-            })
+                    table: "areas",
+                    id: id,
+                })
                 .then((res) => {
                     const index = this.selectedAreas.findIndex(
                         (objet) => objet.id === id
@@ -140,14 +141,52 @@ new Vue({
                     self.load_id = "";
                 });
         },
+        viewPresenceBySite(site_id, togle_id) {
+            this.selectedSiteId = site_id;
+            this.isPresenceLoading = true;
+            this.presences = [];
+            // console.log("site" + site_id + "to" + togle_id);
+            get(`/presences?site_id=${site_id}&date=${this.presenceDate}`)
+                .then((res) => {
+                    if (res.data.status === "success") {
+                        this.presences = res.data.presences;
+                        // console.log(res.data.presences);
+                        this.toggleAccordion(togle_id);
+                    }
+                    this.isPresenceLoading = false;
+                })
+                .catch((err) => {
+                    console.error("Erreur lors du chargement des présences :", err);
+                    this.isPresenceLoading = false;
+                });
+        },
+        exportToExcel() {
+            const data = this.filteredPresences.map(p => ({
+                "Nom complet": p.agent.fullname || '',
+                "Horaire": p.horaire.libelle || '',
+                "Heure d'entrée": p.started_at || '',
+                "Heure de sortie": p.ended_at || '',
+                "Durée": p.duree || '',
+                "Retard": p.retard || '',
+                "Statut photo début": p.status_photo_debut || '',
+                "Statut photo fin": p.status_photo_fin || '',
+                "Date": p.created_at.substring(0, 10) || '',
+                "Commentaires": p.commentaires || ''
+            }));
 
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Présences");
+
+            XLSX.writeFile(workbook, "presences.xlsx");
+        },
         deleteSite(id) {
             let self = this;
             this.delete_id = id;
             postJson("/delete", {
-                table: "sites",
-                id: id,
-            })
+                    table: "sites",
+                    id: id,
+                })
                 .then((res) => {
                     self.delete_id = "";
                     self.viewAllSites();
@@ -159,20 +198,41 @@ new Vue({
     },
 
     computed: {
+        filteredPresences() {
+            if (!this.search2.trim()) return this.presences;
+
+            const searchTerm = this.search2.toLowerCase();
+
+            return this.presences.filter(p => {
+                return (
+                    (p.agent.fullname || '').toLowerCase().includes(searchTerm) ||
+                    (p.horaire.libelle || '').toLowerCase().includes(searchTerm) ||
+                    (p.started_at || '').toLowerCase().includes(searchTerm) ||
+                    (p.ended_at || '').toLowerCase().includes(searchTerm) ||
+                    (p.duree || '').toLowerCase().includes(searchTerm) ||
+                    (p.retard || '').toLowerCase().includes(searchTerm) ||
+                    (p.status_photo_debut || '').toLowerCase().includes(searchTerm) ||
+                    (p.status_photo_fin || '').toLowerCase().includes(searchTerm) ||
+                    (p.created_at || '').toLowerCase().includes(searchTerm) ||
+                    (p.commentaires || '').toLowerCase().includes(searchTerm)
+                );
+            });
+        },
         allSites() {
             if (this.search && this.search.trim()) {
                 return this.sites.filter(
                     (el) =>
-                        el.name
-                            .toLowerCase()
-                            .includes(this.search.toLowerCase()) ||
-                        el.code
-                            .toLowerCase()
-                            .includes(this.search.toLowerCase())
+                    el.name
+                    .toLowerCase()
+                    .includes(this.search.toLowerCase()) ||
+                    el.code
+                    .toLowerCase()
+                    .includes(this.search.toLowerCase())
                 );
             } else {
                 return this.sites;
             }
+
         },
     },
 });

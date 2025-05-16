@@ -48,11 +48,17 @@ Route::middleware(["cors"])->group(function(){
     //ALLOW TO GET ALL SCHEDULES
     Route::get("/schedules.all", [AppManagerController::class, "viewAllSchedulesByApp"])->name("schedules.all");
 
-
+    Route::post('/horaire.create', [\App\Http\Controllers\PresenceController::class, 'createHoraire'])->name('horaire.create');
+    //pour la creation de presence agent
+    Route::post('/presence.create', [\App\Http\Controllers\PresenceController::class, 'createPresenceAgent'])->name('presence.create');
+    //donnees presence
+    Route::get('/presences', [\App\Http\Controllers\PresenceController::class, 'getPresencesBySiteAndDate'])->name('presences');
     //Emettre sur un canal de talkie walkie
     Route::post('/send.talk', [\App\Http\Controllers\TalkieWalkieController::class, 'sendTalkAudio']);
 
     Route::get("/patrols.reports", [AppManagerController::class, "viewPatrolReports"])->name("patrols.reports");
+    //horaires
+    Route::get('/horaires', [\App\Http\Controllers\PresenceController::class, 'getAllHoraires'])->name('horaires');
 
     Route::get("/sites", function () {
         $agencyId = Auth::user()->agency_id ?? 1;
