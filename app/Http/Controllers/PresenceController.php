@@ -50,13 +50,27 @@ class PresenceController extends Controller
                 "horaire_id" => "required|int|exists:presence_horaires,id",
                 "started_at" => "nullable|string",
                 "ended_at" => "nullable|string",
-                "photos_debut" => "nullable|string",
-                "photos_fin" => "nullable|string",
                 "status_photo_debut" => "nullable|string",
                 "status_photo_fin" => "nullable|string",
                 "commentaires" => "nullable|string",
-                "status" => "nullable|string"
+                "status" => "nullable|string",
             ]);
+
+            // Gérer upload de la photo de débutd
+            if ($request->hasFile('photos_debut')) {
+                $photo = $request->file('photos_debut');
+                $filename = time() . '_debut_' . $photo->getClientOriginalName();
+                $photo->move(public_path('uploads/presence_photos'), $filename);
+                $data['photos_debut'] = url('uploads/presence_photos/' . $filename);
+            }
+
+            // Gérer upload de la photo de fin
+            if ($request->hasFile('photos_fin')) {
+                $photo = $request->file('photos_fin');
+                $filename = time() . '_fin_' . $photo->getClientOriginalName();
+                $photo->move(public_path('uploads/presence_photos'), $filename);
+                $data['photos_fin'] = url('uploads/presence_photos/' . $filename);
+            }
 
             // Cas de création (début)
             if (empty($data['id'])) {
@@ -64,7 +78,6 @@ class PresenceController extends Controller
 
                 $heure_attendue = strtotime($horaire->started_at);
                 $heure_arrivee = strtotime($data['started_at']);
-
                 $diff_minutes = ($heure_arrivee - $heure_attendue) / 60;
                 $retard = $diff_minutes > 15 ? "en retard de " . round($diff_minutes) . " minutes" : "arrive à temps";
 
@@ -72,7 +85,7 @@ class PresenceController extends Controller
                 $data['commentaires'] = $retard;
                 $data['status'] = "debut";
 
-                $presence = PresenceAgents::create($data);
+                $presence = \App\Models\PresenceAgents::create($data);
 
                 return response()->json([
                     "status" => "success",
@@ -81,56 +94,45 @@ class PresenceController extends Controller
                 ]);
             }
 
-                // Cas de mise à jour (fin)
-                $presence = PresenceAgents::find($data['id']);
-                $horaire = \App\Models\PresenceHoraire::find($data['horaire_id']);
+            // Cas de mise à jour (fin)
+            $presence = \App\Models\PresenceAgents::find($data['id']);
+            $horaire = \App\Models\PresenceHoraire::find($data['horaire_id']);
 
-                $start = new \DateTime($presence->started_at);
-                $end = new \DateTime($data['ended_at']);
+            $start = new \DateTime($presence->started_at);
+            $end = new \DateTime($data['ended_at']);
 
-                // Correction : si l'heure de fin est inférieure à celle de début, on ajoute 1 jour
-                if ($end < $start) {
-                    $end->modify('+1 day');
-                }
+            if ($end < $start) {
+                $end->modify('+1 day');
+            }
 
-                // Calcul de la durée
-                $interval = $start->diff($end);
-                $heures = $interval->h + ($interval->days * 24);
-                $minutes = $interval->i;
-                $duree_formattee = "{$heures}h{$minutes}min";
+            $interval = $start->diff($end);
+            $heures = $interval->h + ($interval->days * 24);
+            $minutes = $interval->i;
+            $duree_formattee = "{$heures}h{$minutes}min";
 
-                // Comparaison à l'heure attendue de sortie
-                $expected_end_time = new \DateTime($horaire->ended_at);
+            $expected_end_time = new \DateTime($horaire->ended_at);
+            $horaire_start = new \DateTime($horaire->started_at);
+            if ($expected_end_time < $horaire_start) {
+                $expected_end_time->modify('+1 day');
+            }
 
-                // Correction : si l'heure attendue de fin est < à celle de début, alors c'est le lendemain aussi
-                $horaire_start = new \DateTime($horaire->started_at);
-                if ($expected_end_time < $horaire_start) {
-                    $expected_end_time->modify('+1 day');
-                }
+            $comment_fin = ($end < $expected_end_time) ? " | Parti tôt." : " | Parti à l’heure.";
 
-                $comment_fin = "";
-                if ($end < $expected_end_time) {
-                    $comment_fin = " | Parti tôt.";
-                } else {
-                    $comment_fin = " | Parti à l’heure.";
-                }
+            $presence->update([
+                "ended_at" => $data['ended_at'],
+                "duree" => $duree_formattee,
+                "retard" => $presence->retard ?? "no",
+                "photos_fin" => $data['photos_fin'] ?? $presence->photos_fin,
+                "status_photo_fin" => $data['status_photo_fin'] ?? null,
+                "commentaires" => $presence->commentaires . $comment_fin,
+                "status" => "sortie"
+            ]);
 
-                // Mise à jour de la présence
-                $presence->update([
-                    "ended_at" => $data['ended_at'],
-                    "duree" => $duree_formattee,
-                    "retard" => $presence->retard ?? "no",
-                    "photos_fin" => $data['photos_fin'] ?? null,
-                    "status_photo_fin" => $data['status_photo_fin'] ?? null,
-                    "commentaires" => $presence->commentaires . $comment_fin,
-                    "status" => "sortie"
-                ]);
-
-                return response()->json([
-                    "status" => "success",
-                    "message" => "Présence clôturée.",
-                    "result" => $presence
-                ]);
+            return response()->json([
+                "status" => "success",
+                "message" => "Présence clôturée.",
+                "result" => $presence
+            ]);
         }
         catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->validator->errors()->all()]);
@@ -139,6 +141,8 @@ class PresenceController extends Controller
             return response()->json(['errors' => $e->getMessage()]);
         }
     }
+
+
 
     public function getPresencesBySiteAndDate(Request $request)
     {
