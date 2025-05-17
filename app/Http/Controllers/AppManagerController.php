@@ -411,7 +411,7 @@ class AppManagerController extends Controller
             $patrol->total_distance_meters = round($totalDistance, 2);
             $patrol->efficiency_score = $efficiency;
             $patrol->efficiency_label = $efficiency_label;
-            
+
             $patrol->scans_stats = $scansStats;
             return $patrol;
         });
@@ -497,7 +497,7 @@ class AppManagerController extends Controller
      * Calcul de la distance entre deux points GPS en mètres
      * Utilisation de la formule de Haversine
     */
-    private function calculateDistance($lat1, $lng1, $lat2, $lng2): float|int
+    public function calculateDistance($lat1, $lng1, $lat2, $lng2): float|int
     {
         $earthRadius = 6371000; // Rayon de la Terre en mètres
         // Conversion des degrés en radians
@@ -765,7 +765,7 @@ class AppManagerController extends Controller
         return $pdf->stream('rapport-patrouilles.pdf');
     }
 
-   
+
 
 
 

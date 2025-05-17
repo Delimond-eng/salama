@@ -121,6 +121,9 @@
                                 @endforeach
                             </select>
 
+
+                        </div>
+                        <div class="mt-3">
                             <label for="vertical-form-2" class="inline-block mb-2 group-[.form-inline]:mb-2 group-[.form-inline]:sm:mb-0 group-[.form-inline]:sm:mr-5 group-[.form-inline]:sm:text-right">
                                 Horaire affecté *
                             </label>
@@ -130,7 +133,7 @@
                                         @{{ horaire.libelle }} / De @{{ horaire.started_at }} à @{{ horaire.ended_at }}
                                     </option>
                               </select>
-                        </div>
+                         </div>
                         <div class="mt-3">
                             <label for="vertical-form-2" class="inline-block mb-2 group-[.form-inline]:mb-2 group-[.form-inline]:sm:mb-0 group-[.form-inline]:sm:mr-5 group-[.form-inline]:sm:text-right">
                                 Matricule *

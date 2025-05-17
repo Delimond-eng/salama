@@ -6,6 +6,8 @@ use App\Models\PresenceHoraire;
 use App\Models\PresenceAgents;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use App\Models\Site;
+use App\Models\Agent;
 
 class PresenceController extends Controller
 {
@@ -41,108 +43,150 @@ class PresenceController extends Controller
     *Creation de la presence des agents
     *16:10/15-05-2025
     */
-     public function createPresenceAgent(Request $request) {
+
+    public function createPresenceAgent(Request $request)
+    {
         try {
             $data = $request->validate([
-                "id" => "nullable|int|exists:presence_agents,id",
-                "agent_id" => "required|int|exists:agents,id",
-                "site_id" => "nullable|int|exists:sites,id",
-                "horaire_id" => "required|int|exists:presence_horaires,id",
-                "started_at" => "nullable|string",
-                "ended_at" => "nullable|string",
-                "status_photo_debut" => "nullable|string",
-                "status_photo_fin" => "nullable|string",
-                "commentaires" => "nullable|string",
-                "status" => "nullable|string",
+                "matricule" => "required|string|exists:agents,matricule",
+                "heure" => "required|string",
+                "status_photo" => "nullable|string",
+                "coordonnees" => "required|string",
             ]);
 
-            // Gérer upload de la photo de débutd
-            if ($request->hasFile('photos_debut')) {
-                $photo = $request->file('photos_debut');
-                $filename = time() . '_debut_' . $photo->getClientOriginalName();
-                $photo->move(public_path('uploads/presence_photos'), $filename);
-                $data['photos_debut'] = url('uploads/presence_photos/' . $filename);
+            $agent = Agent::where('matricule', $data['matricule'])->firstOrFail();
+
+            $lat1 = null;
+            $lng1 = null;
+            $commentaire_distance = "Pas de site défini.";
+            $distance = null;
+            $site = null;
+
+            // Extraire les coordonnées de l'agent
+            if (!empty($data['coordonnees'])) {
+                list($lat1, $lng1) = explode(',', $data['coordonnees']);
             }
 
-            // Gérer upload de la photo de fin
-            if ($request->hasFile('photos_fin')) {
-                $photo = $request->file('photos_fin');
-                $filename = time() . '_fin_' . $photo->getClientOriginalName();
-                $photo->move(public_path('uploads/presence_photos'), $filename);
-                $data['photos_fin'] = url('uploads/presence_photos/' . $filename);
+            // Si agent a un site assigné
+            if ($agent->site_id) {
+                $site = Site::find($agent->site_id);
+            }
+            // Sinon, on essaie de deviner à partir des coordonnées
+            else if ($lat1 && $lng1) {
+                $sites = Site::all();
+                $siteProche = null;
+                $minDistance = PHP_INT_MAX;
+
+                foreach ($sites as $s) {
+                    if (!$s->latlng) continue;
+                    list($lat2, $lng2) = explode(',', $s->latlng);
+                    $d = app(AppManagerController::class)->calculateDistance($lat1, $lng1, $lat2, $lng2);
+                    if ($d < $minDistance) {
+                        $minDistance = $d;
+                        $siteProche = $s;
+                    }
+                }
+
+                // Si on trouve un site proche à moins de 200m
+                if ($siteProche && $minDistance <= 200) {
+                    $site = $siteProche;
+                    $agent->site_id = $siteProche->id;
+                } else {
+                    $agent->site_id = 0; // ou null selon ta base
+                }
+                
             }
 
-            // Cas de création (début)
-            if (empty($data['id'])) {
-                $horaire = \App\Models\PresenceHoraire::find($data['horaire_id']);
+            // Gestion de la distance et du commentaire
+            if ($site) {
+                list($lat2, $lng2) = explode(',', $site->latlng);
+                $distance = app(AppManagerController::class)->calculateDistance($lat1, $lng1, $lat2, $lng2);
+                $proximite = $distance <= 100 ? "dans le site" : "hors du site";
+                $commentaire_proximite = request('is_sortie') ?
+                    ($distance <= 100 ? "sorti du site" : "pas dans le site à la sortie") :
+                    ($distance <= 100 ? "arrivé dans le site" : "pas arrivé dans le site");
+                $commentaire_distance = "$commentaire_proximite - " . round($distance) . " mètres du site";
+            }
 
-                $heure_attendue = strtotime($horaire->started_at);
-                $heure_arrivee = strtotime($data['started_at']);
-                $diff_minutes = ($heure_arrivee - $heure_attendue) / 60;
-                $retard = $diff_minutes > 15 ? "en retard de " . round($diff_minutes) . " minutes" : "arrive à temps";
+            $horaire = $agent->horaire_id ? PresenceHoraire::find($agent->horaire_id) : null;
 
-                $data['retard'] = $diff_minutes > 15 ? "oui" : "non";
-                $data['commentaires'] = $retard;
-                $data['status'] = "debut";
+            $photoField = request('is_sortie') ? 'photos_fin' : 'photos_debut';
+            $statusPhotoField = request('is_sortie') ? 'status_photo_fin' : 'status_photo_debut';
+            $timeField = request('is_sortie') ? 'ended_at' : 'started_at';
 
-                $presence = \App\Models\PresenceAgents::create($data);
+            $filename = null;
+            if ($request->hasFile('photo')) {
+                $photo = $request->file('photo');
+                $filename = time() . '_' . $photo->getClientOriginalName();
+                $photo->move(public_path('uploads/presence_photos'), $filename);
+                $photoUrl = url('uploads/presence_photos/' . $filename);
+            }
+
+            $presence = PresenceAgents::where('agent_id', $agent->id)->where('status', 'debut')->latest()->first();
+
+            if (!$presence) {
+                $retard = 'non';
+                if ($horaire) {
+                    $retard = (strtotime($data['heure']) - strtotime($horaire->started_at)) > 900 ? 'oui' : 'non';
+                } else {
+                    $commentaire_distance .= " | Sans horaire précis.";
+                }
+
+                $presence = PresenceAgents::create([
+                    'agent_id' => $agent->id,
+                    'site_id' => $agent->site_id ?? 0,
+                    'horaire_id' => $agent->horaire_id,
+                    'started_at' => $data['heure'],
+                    'photos_debut' => $photoUrl ?? null,
+                    'status_photo_debut' => $data['status_photo'] ?? null,
+                    'retard' => $retard,
+                    'commentaires' => $commentaire_distance,
+                    'status' => 'debut'
+                ]);
 
                 return response()->json([
                     "status" => "success",
-                    "message" => "Présence démarrée.",
+                    "message" => "Présence début enregistrée.",
+                    "result" => $presence
+                ]);
+            } else {
+                $start = new \DateTime($presence->started_at);
+                $end = new \DateTime($data['heure']);
+                if ($end < $start) $end->modify('+1 day');
+                $interval = $start->diff($end);
+                $duree_formattee = $interval->h + ($interval->days * 24) . 'h' . $interval->i . 'min';
+
+                $extra_comment = "";
+                if ($horaire) {
+                    $expected_end = new \DateTime($horaire->ended_at);
+                    $expected_start = new \DateTime($horaire->started_at);
+                    if ($expected_end < $expected_start) $expected_end->modify('+1 day');
+                    $extra_comment = ($end < $expected_end) ? " | Parti tôt." : " | Parti à l'heure.";
+                } else {
+                    $extra_comment = " | Sans horaire précis.";
+                }
+
+                $presence->update([
+                    'ended_at' => $data['heure'],
+                    'photos_fin' => $photoUrl ?? null,
+                    'status_photo_fin' => $data['status_photo'] ?? null,
+                    'duree' => $duree_formattee,
+                    'status' => 'sortie',
+                    'commentaires' => $presence->commentaires . ' - ' . $commentaire_distance . $extra_comment,
+                ]);
+
+                return response()->json([
+                    "status" => "success",
+                    "message" => "Présence sortie enregistrée.",
                     "result" => $presence
                 ]);
             }
-
-            // Cas de mise à jour (fin)
-            $presence = \App\Models\PresenceAgents::find($data['id']);
-            $horaire = \App\Models\PresenceHoraire::find($data['horaire_id']);
-
-            $start = new \DateTime($presence->started_at);
-            $end = new \DateTime($data['ended_at']);
-
-            if ($end < $start) {
-                $end->modify('+1 day');
-            }
-
-            $interval = $start->diff($end);
-            $heures = $interval->h + ($interval->days * 24);
-            $minutes = $interval->i;
-            $duree_formattee = "{$heures}h{$minutes}min";
-
-            $expected_end_time = new \DateTime($horaire->ended_at);
-            $horaire_start = new \DateTime($horaire->started_at);
-            if ($expected_end_time < $horaire_start) {
-                $expected_end_time->modify('+1 day');
-            }
-
-            $comment_fin = ($end < $expected_end_time) ? " | Parti tôt." : " | Parti à l’heure.";
-
-            $presence->update([
-                "ended_at" => $data['ended_at'],
-                "duree" => $duree_formattee,
-                "retard" => $presence->retard ?? "no",
-                "photos_fin" => $data['photos_fin'] ?? $presence->photos_fin,
-                "status_photo_fin" => $data['status_photo_fin'] ?? null,
-                "commentaires" => $presence->commentaires . $comment_fin,
-                "status" => "sortie"
-            ]);
-
-            return response()->json([
-                "status" => "success",
-                "message" => "Présence clôturée.",
-                "result" => $presence
-            ]);
-        }
-        catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->validator->errors()->all()]);
-        }
-        catch (\Illuminate\Database\QueryException $e){
+        } catch (\Exception $e) {
             return response()->json(['errors' => $e->getMessage()]);
         }
     }
-
-
 
     public function getPresencesBySiteAndDate(Request $request)
     {
