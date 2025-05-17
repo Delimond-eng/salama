@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Agent;
 use App\Models\PresenceHoraire;
 use App\Models\PresenceAgents;
 use Illuminate\Http\Request;
@@ -47,7 +48,6 @@ class PresenceController extends Controller
                 "id" => "nullable|int|exists:presence_agents,id",
                 "agent_id" => "required|int|exists:agents,id",
                 "site_id" => "nullable|int|exists:sites,id",
-                "horaire_id" => "required|int|exists:presence_horaires,id",
                 "started_at" => "nullable|string",
                 "ended_at" => "nullable|string",
                 "photos_debut" => "nullable|string",
@@ -57,42 +57,34 @@ class PresenceController extends Controller
                 "commentaires" => "nullable|string",
                 "status" => "nullable|string"
             ]);
-
             // Cas de création (début)
             if (empty($data['id'])) {
-                $horaire = \App\Models\PresenceHoraire::find($data['horaire_id']);
-
+                $agent = Agent::find($data["agent_id"]);
+                $horaire = PresenceHoraire::find($agent->horaire_id);
                 $heure_attendue = strtotime($horaire->started_at);
                 $heure_arrivee = strtotime($data['started_at']);
-
                 $diff_minutes = ($heure_arrivee - $heure_attendue) / 60;
                 $retard = $diff_minutes > 15 ? "en retard de " . round($diff_minutes) . " minutes" : "arrive à temps";
 
                 $data['retard'] = $diff_minutes > 15 ? "oui" : "non";
                 $data['commentaires'] = $retard;
                 $data['status'] = "debut";
-
                 $presence = PresenceAgents::create($data);
-
                 return response()->json([
                     "status" => "success",
                     "message" => "Présence démarrée.",
                     "result" => $presence
                 ]);
             }
-
                 // Cas de mise à jour (fin)
                 $presence = PresenceAgents::find($data['id']);
-                $horaire = \App\Models\PresenceHoraire::find($data['horaire_id']);
-
+                $horaire = PresenceHoraire::find($data['horaire_id']);
                 $start = new \DateTime($presence->started_at);
                 $end = new \DateTime($data['ended_at']);
-
                 // Correction : si l'heure de fin est inférieure à celle de début, on ajoute 1 jour
                 if ($end < $start) {
                     $end->modify('+1 day');
                 }
-
                 // Calcul de la durée
                 $interval = $start->diff($end);
                 $heures = $interval->h + ($interval->days * 24);
@@ -101,7 +93,6 @@ class PresenceController extends Controller
 
                 // Comparaison à l'heure attendue de sortie
                 $expected_end_time = new \DateTime($horaire->ended_at);
-
                 // Correction : si l'heure attendue de fin est < à celle de début, alors c'est le lendemain aussi
                 $horaire_start = new \DateTime($horaire->started_at);
                 if ($expected_end_time < $horaire_start) {
@@ -112,9 +103,8 @@ class PresenceController extends Controller
                 if ($end < $expected_end_time) {
                     $comment_fin = " | Parti tôt.";
                 } else {
-                    $comment_fin = " | Parti à l’heure.";
+                    $comment_fin = " | Parti à l'heure.";
                 }
-
                 // Mise à jour de la présence
                 $presence->update([
                     "ended_at" => $data['ended_at'],

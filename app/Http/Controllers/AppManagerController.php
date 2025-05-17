@@ -514,9 +514,7 @@ class AppManagerController extends Controller
         $a = sin($latDiff / 2) * sin($latDiff / 2) +
             cos($lat1) * cos($lat2) *
             sin($lngDiff / 2) * sin($lngDiff / 2);
-
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-
         // Calcul de la distance
         $distance = $earthRadius * $c;
         return round($distance); // Distance en mètres

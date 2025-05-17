@@ -149,12 +149,14 @@ class AdminController extends Controller
         try {
             $data = $request->validate([
                 "area_id"=>"required|int|exists:areas,id",
-                "latlng"=>"required|string"
+                "latlng"=>"required|string",
+                "libelle"=>"nullable|string"
             ]);
 
             $area = Area::where("status", "actif")->where("id", $data["area_id"])->first();
             if($area){
                 $area->latlng = $data["latlng"];
+                $area->libelle = $data["libelle"];
                 $area->save();
                 $site = Site::find($area->site_id);
                 $site->latlng = $data["latlng"];
