@@ -105,6 +105,9 @@
                 <thead data-tw-merge="" class="">
                     <tr data-tw-merge="" class="">
                         <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">
+                            AGENT & PHOTO
+                        </th>
+                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">
                             NOM & CODE DU SITE
                         </th>
                         <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">
@@ -112,9 +115,6 @@
                         </th>
                         <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">
                             DATE & HEURE FIN
-                        </th>
-                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">
-                            NOM & MATRICULE AGENT
                         </th>
                         <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">
                             STATUS
@@ -126,6 +126,21 @@
                 </thead>
                 <tbody>
                     <tr data-tw-merge="" class="intro-y" v-for="(data, index) in allPatrolReports" :key="index">
+                        <td class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
+                            <div class="flex items-center">
+                                <a class="image-fit zoom-in h-9 w-9" :href="data.photo" target="_blank">
+                                    <img data-placement="top" :src="data.photo" alt="photo" class="tooltip cursor-pointer rounded-lg border-white shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]">
+                                </a>
+                                <div class="ml-4">
+                                    <a class="whitespace-nowrap font-medium" href="#">
+                                        @{{ data.agent.fullname }}
+                                    </a>
+                                    <div class="mt-0.5 whitespace-nowrap text-xs text-slate-500">
+                                        @{{ data.agent.fullname }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
                         <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
                             <div class="flex">
                                 <div class="ml-4">
@@ -144,14 +159,7 @@
                         <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
                             @{{data.ended_at ?? '------'}}
                         </td>
-                        <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
-                            <a class="whitespace-nowrap font-medium" href="#">
-                                @{{ data.agent.fullname }}
-                            </a>
-                            <div class="mt-0.5 whitespace-nowrap text-xs text-slate-500">
-                                @{{ data.agent.matricule }}
-                            </div>
-                        </td>
+                        
                         <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box w-40 whitespace-nowrap rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
                             <div v-if="data.ended_at !== null" class="flex items-center justify-center text-success">
                                 <i data-tw-merge="" data-lucide="check-square" class="stroke-1.5 mr-2 h-4 w-4"></i>

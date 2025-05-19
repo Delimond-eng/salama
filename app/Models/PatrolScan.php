@@ -38,6 +38,8 @@ class PatrolScan extends Model
         "agent_id",
         "patrol_id",
         "area_id",
+        "photo",
+        "matricule",
         "status"
     ];
 

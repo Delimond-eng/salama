@@ -19,6 +19,7 @@ return new class extends Migration
             $table->timestamp("ended_at")->nullable()->comment("datetime of patrol MM-DD-AAAA HH:MM");
             $table->string("comment_text")->nullable();
             $table->string("comment_audio")->nullable();
+            $table->string("photo")->nullable();
             $table->unsignedBigInteger("site_id");
             $table->unsignedBigInteger("agent_id");
             $table->unsignedBigInteger("agency_id");

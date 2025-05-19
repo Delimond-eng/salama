@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string("adresse");
             $table->string("latlng")->nullable();
             $table->string("phone")->nullable();
+            $table->text("emails")->nullable();
             $table->unsignedBigInteger("agency_id");
             $table->string("status")->default("actif");
             $table->timestamps();
