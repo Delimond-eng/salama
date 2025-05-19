@@ -3,7 +3,7 @@
     class="mobile-menu group top-0 inset-x-0 fixed bg-theme-1/90 z-[60] border-b border-white/[0.08] dark:bg-darkmode-800/90 md:hidden before:content-[''] before:w-full before:h-screen before:z-10 before:fixed before:inset-x-0 before:bg-black/90 before:transition-opacity before:duration-200 before:ease-in-out before:invisible before:opacity-0 [&.mobile-menu--active]:before:visible [&.mobile-menu--active]:before:opacity-100">
     <div class="flex h-[70px] items-center px-3 sm:px-8">
         <a class="mr-auto flex" href="#">
-            <img class="w-6" src="dist/images/logo.svg" alt="Midone - Tailwind Admin Dashboard Template">
+            <img class="w-6" src="dist/images/logo.svg" alt="Salama">
         </a>
         <a class="mobile-menu-toggler" href="#">
             <i data-tw-merge="" data-lucide="bar-chart2"
@@ -18,994 +18,351 @@
                 class="stroke-1.5 mobile-menu-toggler h-8 w-8 -rotate-90 transform text-white"></i>
         </a>
         <ul class="py-2">
-            <!-- BEGIN: First Child -->
             <li>
-                <a class="menu menu--active" href="javascript:;">
+                <a href="javascript:;" class="menu {{ Route::is("dashboard") || Route::is("reports.patrols") ? 'menu--active' : '' }}">
+                    <div class="menu__icon">
+                        <i data-tw-merge="" data-lucide="monitor" class="stroke-1.5 w-5 h-5"></i>
+                    </div>
+                    <div class="menu__title">
+                        Tableau de bord
+                        <div class="menu__sub-icon">
+                            <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-3 h-3"></i>
+                        </div>
+                    </div>
+                </a>
+                <ul class="">
+                    <li>
+                        <a href="/"
+                            class="menu">
+                            <div class="menu__icon">
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                            </div>
+                            <div class="menu__title">
+                                Monitoring
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url('/reports.patrols') }}" class="menu">
+                            <div class="menu__icon">
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                            </div>
+                            <div class="menu__title">
+                                Rapport des patrouilles
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="javascript:;" class="menu {{ Route::is("site.create") || Route::is("sites.list")  ? 'menu--active' : '' }}">
                     <div class="menu__icon">
                         <i data-tw-merge="" data-lucide="home" class="stroke-1.5 w-5 h-5"></i>
                     </div>
                     <div class="menu__title">
-                        Dashboard
-                        <div class="menu__sub-icon transform rotate-180">
-                            <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-5 h-5"></i>
-                        </div>
-                    </div>
-                </a>
-                <ul class="menu__sub-open">
-                    <li>
-                        <a class="menu menu--active" href="rubick-side-menu-dashboard-overview-1-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Overview 1
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-dashboard-overview-2-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Overview 2
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-dashboard-overview-3-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Overview 3
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-dashboard-overview-4-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Overview 4
-                            </div>
-                        </a>
-                    </li>
-                </ul>
-            </li>
-            <li>
-                <a class="menu" href="javascript:;">
-                    <div class="menu__icon">
-                        <i data-tw-merge="" data-lucide="shopping-bag" class="stroke-1.5 w-5 h-5"></i>
-                    </div>
-                    <div class="menu__title">
-                        E-Commerce
+                        Sites
                         <div class="menu__sub-icon ">
-                            <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-5 h-5"></i>
+                            <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-3 h-3"></i>
                         </div>
                     </div>
                 </a>
                 <ul class="">
                     <li>
-                        <a class="menu" href="rubick-side-menu-categories-page.html">
+                        <a href="/site.create" class="menu">
                             <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                             </div>
                             <div class="menu__title">
-                                Categories
+                                Création site
                             </div>
                         </a>
                     </li>
                     <li>
-                        <a class="menu" href="rubick-side-menu-add-product-page.html">
+                        <a href="{{ url("/sites.list") }}" class="menu">
                             <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                             </div>
                             <div class="menu__title">
-                                Add Product
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="javascript:;">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Products
-                                <div class="menu__sub-icon ">
-                                    <i data-tw-merge="" data-lucide="chevron-down"
-                                        class="stroke-1.5 w-5 h-5"></i>
-                                </div>
-                            </div>
-                        </a>
-                        <ul class="">
-                            <li>
-                                <a class="menu" href="rubick-side-menu-product-list-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Product List</div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="menu" href="rubick-side-menu-product-grid-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Product Grid</div>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a class="menu" href="javascript:;">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Transactions
-                                <div class="menu__sub-icon ">
-                                    <i data-tw-merge="" data-lucide="chevron-down"
-                                        class="stroke-1.5 w-5 h-5"></i>
-                                </div>
-                            </div>
-                        </a>
-                        <ul class="">
-                            <li>
-                                <a class="menu" href="rubick-side-menu-transaction-list-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Transaction List</div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="menu" href="rubick-side-menu-transaction-detail-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Transaction Detail</div>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a class="menu" href="javascript:;">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Sellers
-                                <div class="menu__sub-icon ">
-                                    <i data-tw-merge="" data-lucide="chevron-down"
-                                        class="stroke-1.5 w-5 h-5"></i>
-                                </div>
-                            </div>
-                        </a>
-                        <ul class="">
-                            <li>
-                                <a class="menu" href="rubick-side-menu-seller-list-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Seller List</div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="menu" href="rubick-side-menu-seller-detail-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Seller Detail</div>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-reviews-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Reviews
+                                Liste des sites
                             </div>
                         </a>
                     </li>
                 </ul>
             </li>
             <li>
-                <a class="menu" href="rubick-side-menu-inbox-page.html">
-                    <div class="menu__icon">
-                        <i data-tw-merge="" data-lucide="inbox" class="stroke-1.5 w-5 h-5"></i>
-                    </div>
-                    <div class="menu__title">
-                        Inbox
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a class="menu" href="rubick-side-menu-file-manager-page.html">
-                    <div class="menu__icon">
-                        <i data-tw-merge="" data-lucide="hard-drive" class="stroke-1.5 w-5 h-5"></i>
-                    </div>
-                    <div class="menu__title">
-                        File Manager
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a class="menu" href="rubick-side-menu-point-of-sale-page.html">
-                    <div class="menu__icon">
-                        <i data-tw-merge="" data-lucide="credit-card" class="stroke-1.5 w-5 h-5"></i>
-                    </div>
-                    <div class="menu__title">
-                        Point of Sale
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a class="menu" href="rubick-side-menu-chat-page.html">
-                    <div class="menu__icon">
-                        <i data-tw-merge="" data-lucide="message-square" class="stroke-1.5 w-5 h-5"></i>
-                    </div>
-                    <div class="menu__title">
-                        Chat
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a class="menu" href="rubick-side-menu-post-page.html">
-                    <div class="menu__icon">
-                        <i data-tw-merge="" data-lucide="file-text" class="stroke-1.5 w-5 h-5"></i>
-                    </div>
-                    <div class="menu__title">
-                        Post
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a class="menu" href="rubick-side-menu-calendar-page.html">
-                    <div class="menu__icon">
-                        <i data-tw-merge="" data-lucide="calendar" class="stroke-1.5 w-5 h-5"></i>
-                    </div>
-                    <div class="menu__title">
-                        Calendar
-                    </div>
-                </a>
-            </li>
-            <li class="menu__divider my-6"></li>
-            <li>
-                <a class="menu" href="javascript:;">
-                    <div class="menu__icon">
-                        <i data-tw-merge="" data-lucide="edit" class="stroke-1.5 w-5 h-5"></i>
-                    </div>
-                    <div class="menu__title">
-                        Crud
-                        <div class="menu__sub-icon ">
-                            <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-5 h-5"></i>
-                        </div>
-                    </div>
-                </a>
-                <ul class="">
-                    <li>
-                        <a class="menu" href="rubick-side-menu-crud-data-list-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Data List
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-crud-form-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Form
-                            </div>
-                        </a>
-                    </li>
-                </ul>
-            </li>
-            <li>
-                <a class="menu" href="javascript:;">
+                <a href="javascript:;" class="menu {{ Route::is("agent.create") || Route::is("agents.list") ? 'menu--active' : '' }}">
                     <div class="menu__icon">
                         <i data-tw-merge="" data-lucide="users" class="stroke-1.5 w-5 h-5"></i>
                     </div>
                     <div class="menu__title">
-                        Users
+                        Agents
                         <div class="menu__sub-icon ">
-                            <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-5 h-5"></i>
+                            <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-3 h-3"></i>
                         </div>
                     </div>
                 </a>
                 <ul class="">
                     <li>
-                        <a class="menu" href="rubick-side-menu-users-layout-1-page.html">
+                        <a href="/agent.create" class="menu">
                             <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                             </div>
                             <div class="menu__title">
-                                Layout 1
+                                Création agent
                             </div>
                         </a>
                     </li>
                     <li>
-                        <a class="menu" href="rubick-side-menu-users-layout-2-page.html">
+                        <a href="/agents.list" class="menu">
                             <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                             </div>
                             <div class="menu__title">
-                                Layout 2
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-users-layout-3-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Layout 3
+                                Liste des agents
                             </div>
                         </a>
                     </li>
                 </ul>
             </li>
             <li>
-                <a class="menu" href="javascript:;">
+                <a href="javascript:;" class="menu {{ Route::is("tasks") || Route::is("reports.tasks") ? 'menu--active' : '' }}">
                     <div class="menu__icon">
-                        <i data-tw-merge="" data-lucide="trello" class="stroke-1.5 w-5 h-5"></i>
+                        <i data-tw-merge="" data-lucide="check-square" class="stroke-1.5 w-5 h-5"></i>
                     </div>
                     <div class="menu__title">
-                        Profile
+                        Tâches
                         <div class="menu__sub-icon ">
-                            <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-5 h-5"></i>
+                            <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-3 h-3"></i>
                         </div>
                     </div>
                 </a>
                 <ul class="">
                     <li>
-                        <a class="menu" href="rubick-side-menu-profile-overview-1-page.html">
+                        <a href="{{ url("/tasks") }}" class="menu">
                             <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                             </div>
                             <div class="menu__title">
-                                Overview 1
+                                Gestion tâches
                             </div>
                         </a>
                     </li>
                     <li>
-                        <a class="menu" href="rubick-side-menu-profile-overview-2-page.html">
+                        <a href="{{ url("/reports.tasks") }}" class="menu">
                             <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                             </div>
                             <div class="menu__title">
-                                Overview 2
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-profile-overview-3-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Overview 3
+                                Rapport des tâches
                             </div>
                         </a>
                     </li>
                 </ul>
             </li>
             <li>
-                <a class="menu" href="javascript:;">
+                <a href="javascript:;" class="menu {{  Route::is("visit.creating") ? 'menu--active' : ''  }}">
                     <div class="menu__icon">
-                        <i data-tw-merge="" data-lucide="layout" class="stroke-1.5 w-5 h-5"></i>
+                        <i data-tw-merge="" data-lucide="badge-check" class="stroke-1.5 w-5 h-5"></i>
                     </div>
                     <div class="menu__title">
-                        Pages
+                        Gestion visiteurs
                         <div class="menu__sub-icon ">
-                            <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-5 h-5"></i>
+                            <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-3 h-3"></i>
                         </div>
                     </div>
                 </a>
                 <ul class="">
                     <li>
-                        <a class="menu" href="javascript:;">
+                        <a href="ezuyezueze" class="menu">
                             <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                             </div>
                             <div class="menu__title">
-                                Wizards
-                                <div class="menu__sub-icon ">
-                                    <i data-tw-merge="" data-lucide="chevron-down"
-                                        class="stroke-1.5 w-5 h-5"></i>
-                                </div>
-                            </div>
-                        </a>
-                        <ul class="">
-                            <li>
-                                <a class="menu" href="rubick-side-menu-wizard-layout-1-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Layout 1</div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="menu" href="rubick-side-menu-wizard-layout-2-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Layout 2</div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="menu" href="rubick-side-menu-wizard-layout-3-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Layout 3</div>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a class="menu" href="javascript:;">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Blog
-                                <div class="menu__sub-icon ">
-                                    <i data-tw-merge="" data-lucide="chevron-down"
-                                        class="stroke-1.5 w-5 h-5"></i>
-                                </div>
-                            </div>
-                        </a>
-                        <ul class="">
-                            <li>
-                                <a class="menu" href="rubick-side-menu-blog-layout-1-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Layout 1</div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="menu" href="rubick-side-menu-blog-layout-2-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Layout 2</div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="menu" href="rubick-side-menu-blog-layout-3-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Layout 3</div>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a class="menu" href="javascript:;">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Pricing
-                                <div class="menu__sub-icon ">
-                                    <i data-tw-merge="" data-lucide="chevron-down"
-                                        class="stroke-1.5 w-5 h-5"></i>
-                                </div>
-                            </div>
-                        </a>
-                        <ul class="">
-                            <li>
-                                <a class="menu" href="rubick-side-menu-pricing-layout-1-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Layout 1</div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="menu" href="rubick-side-menu-pricing-layout-2-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Layout 2</div>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a class="menu" href="javascript:;">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Invoice
-                                <div class="menu__sub-icon ">
-                                    <i data-tw-merge="" data-lucide="chevron-down"
-                                        class="stroke-1.5 w-5 h-5"></i>
-                                </div>
-                            </div>
-                        </a>
-                        <ul class="">
-                            <li>
-                                <a class="menu" href="rubick-side-menu-invoice-layout-1-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Layout 1</div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="menu" href="rubick-side-menu-invoice-layout-2-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Layout 2</div>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a class="menu" href="javascript:;">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                FAQ
-                                <div class="menu__sub-icon ">
-                                    <i data-tw-merge="" data-lucide="chevron-down"
-                                        class="stroke-1.5 w-5 h-5"></i>
-                                </div>
-                            </div>
-                        </a>
-                        <ul class="">
-                            <li>
-                                <a class="menu" href="rubick-side-menu-faq-layout-1-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Layout 1</div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="menu" href="rubick-side-menu-faq-layout-2-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Layout 2</div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="menu" href="rubick-side-menu-faq-layout-3-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Layout 3</div>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-login-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Login
+                                Nouvelle visite
                             </div>
                         </a>
                     </li>
                     <li>
-                        <a class="menu" href="rubick-side-menu-register-page.html">
+                        <a href="euzeiuzie" class="menu">
                             <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                             </div>
                             <div class="menu__title">
-                                Register
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-error-page-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Error Page
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-update-profile-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Update profile
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-change-password-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Change Password
-                            </div>
-                        </a>
-                    </li>
-                </ul>
-            </li>
-            <li class="menu__divider my-6"></li>
-            <li>
-                <a class="menu" href="javascript:;">
-                    <div class="menu__icon">
-                        <i data-tw-merge="" data-lucide="inbox" class="stroke-1.5 w-5 h-5"></i>
-                    </div>
-                    <div class="menu__title">
-                        Components
-                        <div class="menu__sub-icon ">
-                            <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-5 h-5"></i>
-                        </div>
-                    </div>
-                </a>
-                <ul class="">
-                    <li>
-                        <a class="menu" href="javascript:;">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Grid
-                                <div class="menu__sub-icon ">
-                                    <i data-tw-merge="" data-lucide="chevron-down"
-                                        class="stroke-1.5 w-5 h-5"></i>
-                                </div>
-                            </div>
-                        </a>
-                        <ul class="">
-                            <li>
-                                <a class="menu" href="rubick-side-menu-regular-table-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Regular Table</div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="menu" href="rubick-side-menu-tabulator-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Tabulator</div>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a class="menu" href="javascript:;">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Overlay
-                                <div class="menu__sub-icon ">
-                                    <i data-tw-merge="" data-lucide="chevron-down"
-                                        class="stroke-1.5 w-5 h-5"></i>
-                                </div>
-                            </div>
-                        </a>
-                        <ul class="">
-                            <li>
-                                <a class="menu" href="rubick-side-menu-modal-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Modal</div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="menu" href="rubick-side-menu-slide-over-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Slide Over</div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="menu" href="rubick-side-menu-notification-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Notification</div>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-tab-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Tab
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-accordion-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Accordion
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-button-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Button
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-alert-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Alert
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-progress-bar-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Progress Bar
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-tooltip-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Tooltip
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-dropdown-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Dropdown
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-typography-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Typography
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-icon-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Icon
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-loading-icon-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Loading Icon
+                                Rapport des visites
                             </div>
                         </a>
                     </li>
                 </ul>
             </li>
             <li>
-                <a class="menu" href="javascript:;">
+                <a href="javascript:;" class="menu {{ Route::is("presence.horaires") || Route::is("reports.presences") ? 'menu--active' : ''}} ">
                     <div class="menu__icon">
-                        <i data-tw-merge="" data-lucide="sidebar" class="stroke-1.5 w-5 h-5"></i>
+                        <i data-tw-merge="" data-lucide="check-circle" class="stroke-1.5 w-5 h-5"></i>
                     </div>
                     <div class="menu__title">
-                        Forms
+                        Présences
                         <div class="menu__sub-icon ">
-                            <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-5 h-5"></i>
+                            <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-3 h-3"></i>
                         </div>
                     </div>
                 </a>
                 <ul class="">
                     <li>
-                        <a class="menu" href="rubick-side-menu-regular-form-page.html">
+                        <a href="{{ url("/presence.horaires") }}" class="menu">
                             <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                             </div>
                             <div class="menu__title">
-                                Regular Form
+                                Horaire
                             </div>
                         </a>
                     </li>
                     <li>
-                        <a class="menu" href="rubick-side-menu-datepicker-page.html">
+                        <a href="" class="menu">
                             <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                             </div>
                             <div class="menu__title">
-                                Datepicker
+                                Shift
                             </div>
                         </a>
                     </li>
                     <li>
-                        <a class="menu" href="rubick-side-menu-tom-select-page.html">
+                        <a href="{{ url("/reports.presences") }}" class="menu">
                             <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                             </div>
                             <div class="menu__title">
-                                Tom Select
+                                Rapport des présences
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li>
+                <a href="{{ url("/requests") }}" class="menu {{ Route::is("requests") ? 'menu--active' : '' }}">
+                    <div class="menu__icon">
+                        <i data-tw-merge="" data-lucide="message-circle" class="stroke-1.5 w-5 h-5"></i>
+                    </div>
+                    <div class="menu__title">
+                        Requêtes
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url("/schedules") }}" class="menu {{ Route::is("schedules") ? 'menu--active' : '' }}">
+                    <div class="menu__icon">
+                        <i data-tw-merge="" data-lucide="clock" class="stroke-1.5 w-5 h-5"></i>
+                    </div>
+                    <div class="menu__title">
+                        Planning
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url("/announces") }}" class="menu {{ Route::is("announces") ? 'menu--active' : '' }}">
+                    <div class="menu__icon">
+                        <i data-tw-merge="" data-lucide="clipboard" class="stroke-1.5 w-5 h-5"></i>
+                    </div>
+                    <div class="menu__title">
+                        Communiqués
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a href="javascript:;" class="menu  {{ Route::is("log.phones") || Route::is("log.activities") || Route::is("log.panics") ? 'menu--active': '' }}">
+                    <div class="menu__icon">
+                        <i data-tw-merge="" data-lucide="history" class="stroke-1.5 w-5 h-5"></i>
+                    </div>
+                    <div class="menu__title">
+                        Rapport de logs
+                        <div class="menu__sub-icon ">
+                            <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-3 h-3"></i>
+                        </div>
+                    </div>
+                </a>
+                <ul class="">
+                    <li>
+                        <a href="{{ url("/log.phones") }}" class="menu">
+                            <div class="menu__icon">
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                            </div>
+                            <div class="menu__title">
+                                Téléphone agent
                             </div>
                         </a>
                     </li>
                     <li>
-                        <a class="menu" href="rubick-side-menu-file-upload-page.html">
+                        <a href="{{ url("/log.activities") }}" class="menu">
                             <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                             </div>
                             <div class="menu__title">
-                                File Upload
+                                Travailleur isolé
                             </div>
                         </a>
                     </li>
                     <li>
-                        <a class="menu" href="javascript:;">
+                        <a href="{{ url("/log.panics") }}" class="menu">
                             <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                             </div>
                             <div class="menu__title">
-                                Wysiwyg Editor
-                                <div class="menu__sub-icon ">
-                                    <i data-tw-merge="" data-lucide="chevron-down"
-                                        class="stroke-1.5 w-5 h-5"></i>
-                                </div>
-                            </div>
-                        </a>
-                        <ul class="">
-                            <li>
-                                <a class="menu" href="rubick-side-menu-wysiwyg-editor-classic-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Classic</div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="menu" href="rubick-side-menu-wysiwyg-editor-inline-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Inline</div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="menu" href="rubick-side-menu-wysiwyg-editor-balloon-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Balloon</div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="menu" href="rubick-side-menu-wysiwyg-editor-balloon-block-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Balloon Block</div>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="menu" href="rubick-side-menu-wysiwyg-editor-document-page.html">
-                                    <div class="menu__icon">
-                                        <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-5 h-5"></i>
-                                    </div>
-                                    <div class="menu__title">Document</div>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a class="menu" href="rubick-side-menu-validation-page.html">
-                            <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
-                            </div>
-                            <div class="menu__title">
-                                Validation
+                                Alertes paniques
                             </div>
                         </a>
                     </li>
                 </ul>
             </li>
             <li>
-                <a class="menu" href="javascript:;">
+                <a href="javascript:;" class="menu">
                     <div class="menu__icon">
-                        <i data-tw-merge="" data-lucide="hard-drive" class="stroke-1.5 w-5 h-5"></i>
+                        <i data-tw-merge="" data-lucide="user" class="stroke-1.5 w-5 h-5"></i>
                     </div>
                     <div class="menu__title">
-                        Widgets
+                        Utilisateurs
                         <div class="menu__sub-icon ">
-                            <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-5 h-5"></i>
+                            <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-3 h-3"></i>
                         </div>
                     </div>
                 </a>
                 <ul class="">
                     <li>
-                        <a class="menu" href="rubick-side-menu-chart-page.html">
+                        <a href="zaaazazaz" class="menu">
                             <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                             </div>
                             <div class="menu__title">
-                                Chart
+                                Rôle & habilitation
                             </div>
                         </a>
                     </li>
                     <li>
-                        <a class="menu" href="rubick-side-menu-slider-page.html">
+                        <a href="azzezeezee" class="menu">
                             <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                             </div>
                             <div class="menu__title">
-                                Slider
+                                Attribution accès
                             </div>
                         </a>
                     </li>
                     <li>
-                        <a class="menu" href="rubick-side-menu-image-zoom-page.html">
+                        <a href="rubick-menu-add-product-page.html" class="menu">
                             <div class="menu__icon">
-                                <i data-tw-merge="" data-lucide="activity" class="stroke-1.5 w-5 h-5"></i>
+                                <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                             </div>
                             <div class="menu__title">
-                                Image Zoom
+                                Liste des utilisateurs
                             </div>
                         </a>
                     </li>
                 </ul>
             </li>
-            <!-- END: First Child -->
+
         </ul>
+
     </div>
 </div>
 <!-- END: Mobile Menu -->

@@ -77,7 +77,7 @@
     </div>
     <!-- END: Top Bar -->
     <div class="mt-5 grid grid-cols-12 gap-6" id="App" v-cloak>
-        <div class="intro-y col-span-12 mt-2 flex flex-wrap items-center xl:flex-nowrap">
+        <div class="intro-y col-span-12 mt-2 flex flex-wrap items-center xl:flex-nowrap flex-wrap">
             <div class="flex gap-2">
                 <button @click="downloadPatrolPDF" data-tw-merge="" class="transition duration-200 inline-flex items-center justify-center py-2 px-3 rounded-lg font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-primary text-white dark:border-darkmode-100 mr-2 shadow-md"><i data-tw-merge="" data-lucide="file-text" class="stroke-1.5 mr-2 h-4 w-4"></i>
                     Exporer en PDF</button>
@@ -87,7 +87,7 @@
             <div class="mx-auto hidden text-slate-500 xl:block">
 
             </div>
-            <div class="mt-3 flex w-full items-center xl:mt-0 xl:w-auto">
+            <div class="mt-3 flex w-full items-center xl:mt-0 xl:w-auto flex-wrap">
                 <div class="relative w-56 text-slate-500">
                     <input data-tw-merge="" type="date" v-model="filter_date" @input="filter_site=''" placeholder="Recherche..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
                     <i data-tw-merge="" data-lucide="search" class="stroke-1.5 absolute inset-y-0 right-0 my-auto mr-3 h-4 w-4"></i>
@@ -100,7 +100,7 @@
             </div>
         </div>
         <!-- BEGIN: Data List -->
-        <div class="intro-y col-span-12">
+        <div class="intro-y col-span-12 overflow-auto 2xl:overflow-visible">
             <table data-tw-merge="" class="w-full text-left -mt-2 border-separate border-spacing-y-[10px]" v-if="allPatrolReports.length > 0">
                 <thead data-tw-merge="" class="">
                     <tr data-tw-merge="" class="">
