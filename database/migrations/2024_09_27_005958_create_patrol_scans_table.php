@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string("latlng");
             $table->string("distance");
             $table->string("comment")->nullable();
+            $table->string("photo")->nullable();
             $table->string("status")->default("actif");
             $table->unsignedBigInteger("agent_id");
             $table->unsignedBigInteger("area_id");

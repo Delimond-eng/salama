@@ -76,7 +76,6 @@ class PresenceController extends Controller
                 $sites = Site::all();
                 $siteProche = null;
                 $minDistance = PHP_INT_MAX;
-
                 foreach ($sites as $s) {
                     if (!$s->latlng) continue;
                     list($lat2, $lng2) = explode(',', $s->latlng);
@@ -86,7 +85,6 @@ class PresenceController extends Controller
                         $siteProche = $s;
                     }
                 }
-
                 // Si on trouve un site proche à moins de 200m
                 if ($siteProche && $minDistance <= 200) {
                     $site = $siteProche;

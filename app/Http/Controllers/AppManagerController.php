@@ -25,42 +25,51 @@ class AppManagerController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function startPatrol(Request $request) : JsonResponse
+    public function startPatrol(Request $request): JsonResponse
     {
         try {
             $data = $request->validate([
                 "patrol_id" => "nullable|int|exists:patrols,id",
-                "site_id"   => "required_if:patrol_id,null|int|exists:sites,id",
-                "agency_id" => "required_if:patrol_id,null|int|exists:agencies,id",
-                "scan.agent_id" => "required|int|exists:agents,id",   // Correction pour la validation des champs imbriqués
-                "scan.area_id"  => "required|int|exists:areas,id",    // Correction pour la validation des champs imbriqués
+                "site_id"   => "nullable|int|int|exists:sites,id",
+                "agency_id" => "nullable|int|exists:agencies,id",
+                "scan.agent_id" => "required|int|exists:agents,id",
+                "scan.area_id"  => "required|int|exists:areas,id",
                 "scan.comment"  => "nullable|string",
-                "scan.latlng"   => "required|string"                  // Correction pour la validation des champs imbriqués
+                "scan.latlng"   => "required|string",
+                "scan.photo"   => "nullable|file",
+                "scan.matricule"   => "nullable|string",
             ]);
 
             $scan = $data["scan"];
             $area = Area::find($scan['area_id']);
 
-            // Extraction des coordonnées GPS de la zone et du scan
-            list($areaLat, $areaLng) = explode(',', $area->latlng ?? "8844757:30934949");
+            // Traitement de la photo
+            if ($request->hasFile('scan.photo')) {
+                $file = $request->file('scan.photo');
+                $filename = uniqid('patrol_') . '.' . $file->getClientOriginalExtension();
+                $destination = public_path('patrols');
+                $file->move($destination, $filename);
+
+                // Générer un lien complet sans utiliser storage
+                $scan['photo'] = url('patrols/' . $filename);
+            }
+
+            list($areaLat, $areaLng) = explode(',', $area->latlng ?? "0,0");
             list($scanLat, $scanLng) = explode(',', $scan['latlng']);
 
-            // Calcul de la distance en mètres entre les deux points GPS
             $distance = $this->calculateDistance($areaLat, $areaLng, $scanLat, $scanLng);
-            $tolerance = 1; // Tolérance de distance en mètres
+            $tolerance = 100;
 
-            // Mise à jour du statut du scan en fonction de la distance
             $scan['status'] = ($distance <= $tolerance) ? "success" : "fail";
             $scan['distance'] = "{$distance} m";
             $patrolId = $data['patrol_id'];
 
-            // Si la patrouille existe, on ajoute le scan
             if ($patrolId) {
-                $scan["patrol_id"] = $data["patrol_id"];
+                $scan["patrol_id"] = $patrolId;
                 $response = PatrolScan::updateOrCreate([
-                    "patrol_id"=>$scan["patrol_id"] ?? '',
-                    "area_id"=>$scan["area_id"]
-                ],$scan);
+                    "patrol_id" => $scan["patrol_id"],
+                    "area_id"   => $scan["area_id"]
+                ], $scan);
 
                 return response()->json([
                     "status" => "success",
@@ -68,7 +77,6 @@ class AppManagerController extends Controller
                 ]);
             }
 
-            // Sinon, on démarre une nouvelle patrouille
             $now = Carbon::now();
             $data["started_at"] = $now->toDateTimeString();
             $data["status"] = "pending";
@@ -88,11 +96,9 @@ class AppManagerController extends Controller
                     "result" => $patrol
                 ]);
             }
-        }
-        catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->validator->errors()->all()], 400);
-        }
-        catch (\Illuminate\Database\QueryException $e) {
+        } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['errors' => $e->getMessage()], 500);
         }
 
@@ -100,6 +106,7 @@ class AppManagerController extends Controller
             "errors" => "Echec de traitement de la requête !"
         ], 500);
     }
+
 
 
 
@@ -150,8 +157,8 @@ class AppManagerController extends Controller
             $data = $request->validate([
                 "object" => "required|string",
                 "description" => "required|string",
-                "agent_id"=>"required|int|exists:agents,id",
-                "agency_id"=>"required|int|exists:agencies,id",
+                "agent_id"=>"required|int",
+                "agency_id"=>"required|int",
             ]);
             $response = AgentRequest::create($data);
             if($response){
@@ -201,10 +208,10 @@ class AppManagerController extends Controller
                 $data = $request->validate([
                     "title" => "required|string",
                     "description" => "required|string",
-                    "media" => "nullable|file|mimes:jpeg,png,jpg,gif,mp4,mov,avi|max:2048",
+                    "media" => "nullable|file",
                     "site_id" => "required|int|exists:sites,id",
                     "agent_id" => "required|int|exists:agents,id",
-                    "agency_id" => "required|int|exists:agencies,id"
+                    "agency_id" => "required|int"
                 ]);
 
                 // Vérifier si un fichier est fourni dans le champ 'media'
@@ -328,6 +335,7 @@ class AppManagerController extends Controller
     public function viewPatrolReports(): JsonResponse
     {
         $agencyId = Auth::user()->agency_id ?? 1;
+
         $patrols = Patrol::with(["agent", "site", "scans.agent", "scans.area"])
             ->where("agency_id", $agencyId)
             ->orderByDesc("id")
@@ -335,8 +343,11 @@ class AppManagerController extends Controller
 
         $patrols->getCollection()->transform(function ($patrol) {
             // 1. Durée réelle de la patrouille
-            $start = $patrol->started_at ? Carbon::parse($patrol->started_at) : null;
-            $end = $patrol->ended_at ? Carbon::parse($patrol->ended_at) : now();
+            $start = $patrol->started_at
+                ? Carbon::parse($patrol->started_at)
+                : ($patrol->scans->first()?->time ? Carbon::parse($patrol->scans->first()->time) : null);
+
+            $end = $patrol->ended_at ? Carbon::parse($patrol->ended_at) : Carbon::now();
             $durationMinutes = $start ? $start->diffInMinutes($end) : null;
 
             // 2. Zones scannées vs attendues
@@ -351,53 +362,70 @@ class AppManagerController extends Controller
 
             for ($i = 0; $i < count($areas); $i++) {
                 $j = ($i + 1) % count($areas); // fermeture du périmètre
-               if($areas[$i]->latlng){
-                    [$lat1, $lng1] = explode(',', $areas[$i]->latlng);
-                    [$lat2, $lng2] = explode(',', $areas[$j]->latlng);
-                    $totalDistance += $this->calculateDistance($lat1, $lng1, $lat2, $lng2);
-               }
+
+                if (!empty($areas[$i]->latlng) && !empty($areas[$j]->latlng)) {
+                    $latlng1 = explode(',', $areas[$i]->latlng);
+                    $latlng2 = explode(',', $areas[$j]->latlng);
+
+                    if (count($latlng1) === 2 && count($latlng2) === 2) {
+                        [$lat1, $lng1] = $latlng1;
+                        [$lat2, $lng2] = $latlng2;
+                        $totalDistance += $this->calculateDistance($lat1, $lng1, $lat2, $lng2);
+                    }
+                }
             }
 
             // 4. Durée estimée théorique (en minutes) pour parcourir le périmètre à 1.11 m/s
-            $estimatedDurationMinutes = $totalDistance / 1.11 / 60;
+            $estimatedDurationMinutes = $totalDistance > 0 ? ($totalDistance / 1.11 / 60) : 0;
 
             // 5. Comparaison et efficacité
             $efficiency = null;
-
             $efficiency_label = null;
+
             if ($durationMinutes && $estimatedDurationMinutes > 0) {
                 $efficiency = round(max(min(($estimatedDurationMinutes / $durationMinutes) * 100, 100), 0), 2);
-                if ($efficiency !== null) {
-                    if ($efficiency >= 90) {
-                        $efficiency_label = "Rapide";
-                    } elseif ($efficiency >= 70) {
-                        $efficiency_label = "Correct";
-                    } elseif ($efficiency >= 40) {
-                        $efficiency_label = "Lent";
-                    } else {
-                        $efficiency_label = "Très lent";
-                    }
+
+                if ($efficiency >= 90) {
+                    $efficiency_label = "Rapide";
+                } elseif ($efficiency >= 70) {
+                    $efficiency_label = "Correct";
+                } elseif ($efficiency >= 40) {
+                    $efficiency_label = "Lent";
+                } else {
+                    $efficiency_label = "Très lent";
                 }
             }
 
             // 6. Statistiques par scan avec durée entre scans
             $scans = $patrol->scans->sortBy('time')->values();
             $scansStats = $scans->map(function ($scan, $index) use ($scans) {
-                [$lat1, $lng1] = explode(",", $scan->latlng);
-                [$lat2, $lng2] = explode(",", $scan->area->latlng);
-                $distance = $this->calculateDistance($lat1, $lng1, $lat2, $lng2);
+                $distance = 0;
 
-                $time = Carbon::parse($scan->time);
+
+
+                if (!empty($scan->latlng) && !empty($scan->area?->latlng)) {
+                    $latlng1 = explode(',', $scan->latlng);
+                    $latlng2 = explode(',', $scan->area->latlng);
+
+                    if (count($latlng1) === 2 && count($latlng2) === 2) {
+                        [$lat1, $lng1] = $latlng1;
+                        [$lat2, $lng2] = $latlng2;
+                        $distance = $this->calculateDistance($lat1, $lng1, $lat2, $lng2);
+                    }
+                }
+
+                $time = Carbon::parse($scan->time, tz:"Africa/Kinshasa");
                 $durationSincePrevious = 0;
+
                 if ($index > 0) {
                     $previousTime = Carbon::parse($scans[$index - 1]->time);
                     $durationSincePrevious = $previousTime->diffInSeconds($time);
                 }
 
                 return [
-                    "area" => $scan->area->libelle,
+                    "area" => $scan->area?->libelle ?? 'Inconnu',
                     "time" => $time->format('H:i'),
-                    "distance_meters" => $distance,
+                    "distance_meters" => round($distance, 2),
                     "duration_since_previous_seconds" => $durationSincePrevious,
                 ];
             });
@@ -409,10 +437,10 @@ class AppManagerController extends Controller
             $patrol->coverage_rate = $coverageRate;
             $patrol->estimated_duration_minutes = round($estimatedDurationMinutes, 2);
             $patrol->total_distance_meters = round($totalDistance, 2);
-            $patrol->efficiency_score = $efficiency;
-            $patrol->efficiency_label = $efficiency_label;
-
+            $patrol->efficiency_score = $efficiency ?? 0;
+            $patrol->efficiency_label = $efficiency_label ?? "";
             $patrol->scans_stats = $scansStats;
+
             return $patrol;
         });
 
@@ -421,6 +449,7 @@ class AppManagerController extends Controller
             "patrols" => $patrols
         ]);
     }
+
 
 
     /* public function viewPatrolReports():JsonResponse{
@@ -455,26 +484,24 @@ class AppManagerController extends Controller
                 "comment_text" => "nullable|string",
                 "comment_audio" => "nullable|file|mimes:audio/mpeg,mpga,mp3,wav",
             ]);
-
-            // Gestion du fichier audio s'il est présent
-            if ($request->hasFile('comment_audio')) {
-                $audioFile = $request->file('comment_audio');
-                $agencyId = $data['agency_id'];
-                $audioPath = "uploads/agencie_{$agencyId}/audio";
-                $filename = "audio_" . time() . '.' . $audioFile->getClientOriginalExtension();
-                $filePath = $audioFile->storeAs($audioPath, $filename, 'public');
-                $data['comment_audio'] = url("storage/{$filePath}");
+            if ($request->hasFile('photo')) {
+                $photo = $request->file('photo');
+                $filename = time() . '_' . $photo->getClientOriginalName();
+                $photo->move(public_path('uploads/patrol_photos'), $filename);
+                $photoUrl = url('uploads/patrol_photos/' . $filename);
+                $data["photo"] = $photoUrl;
             }
+            
             // Ajout des informations de fin de patrouille
             $now = Carbon::now();
             $data["ended_at"] = $now->toDateTimeString();
             $data["status"] = "closed";
-
             $patrol = Patrol::find($data["patrol_id"]);
             $patrol->ended_at = $data["ended_at"];
             $patrol->comment_text = $data["comment_text"] ?? null;
             $patrol->comment_audio = $data["comment_audio"] ?? null;
             $patrol->status = $data["status"];
+            $patrol->photo = $data["photo"];
             $patrol->save();
             $site = Site::find($patrol->site_id);
             $site->status = 'actif';
@@ -514,9 +541,7 @@ class AppManagerController extends Controller
         $a = sin($latDiff / 2) * sin($latDiff / 2) +
             cos($lat1) * cos($lat2) *
             sin($lngDiff / 2) * sin($lngDiff / 2);
-
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-
         // Calcul de la distance
         $distance = $earthRadius * $c;
         return round($distance); // Distance en mètres
@@ -557,7 +582,7 @@ class AppManagerController extends Controller
     /**
      * Test generate PDF
      * @param int $siteId
-     * @return Response
+     * @return mixed
      */
     public function generatePdfWithQRCodes(int $siteId)
     {
