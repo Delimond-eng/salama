@@ -145,13 +145,19 @@ new Vue({
             this.selectedSiteId = site_id;
             this.isPresenceLoading = true;
             this.presences = [];
-            // console.log("site" + site_id + "to" + togle_id);
-            get(`/presences?site_id=${site_id}&date=${this.presenceDate}`)
+
+            const selectedDate = this.filter_datep || this.presenceDate;
+
+            get(`/presences?site_id=${site_id}&date=${selectedDate}`)
                 .then((res) => {
                     if (res.data.status === "success") {
                         this.presences = res.data.presences;
-                        // console.log(res.data.presences);
-                        this.toggleAccordion(togle_id);
+
+                        // Si le panneau n'est pas déjà ouvert, on l'ouvre
+                        if (this.openedAccordionId !== togle_id) {
+                            this.toggleAccordion(togle_id);
+                            this.openedAccordionId = togle_id;
+                        }
                     }
                     this.isPresenceLoading = false;
                 })

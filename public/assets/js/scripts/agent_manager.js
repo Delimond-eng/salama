@@ -10,6 +10,7 @@ new Vue({
             pristine: null,
             agents: [],
             search: "",
+            showComment: null,
             form: {
                 id: "",
                 matricule: "",

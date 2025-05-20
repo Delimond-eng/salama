@@ -94,7 +94,7 @@ class PresenceController extends Controller
                 } else {
                     $agent->site_id = 0; // ou null selon ta base
                 }
-                
+
             }
 
             // Gestion de la distance et du commentaire
@@ -191,17 +191,20 @@ class PresenceController extends Controller
     public function getPresencesBySiteAndDate(Request $request)
     {
         try {
-            $request->validate([
-                'site_id' => 'required|int|exists:sites,id',
-                'date' => 'sometimes|date_format:Y-m-d',
-            ]);
 
-            $siteId = $request->site_id;
-            $date = $request->date ?? Carbon::today()->toDateString();
+            $date = $request->query("date");
+            $siteId = $request->query("site_id");
 
             $presences = PresenceAgents::with(['agent', 'horaire'])
-                ->where('site_id', $siteId)
-                ->whereDate('created_at', $date)
+                ->when($siteId, function ($query, $siteId) {
+                    return $query->where('site_id', $siteId);
+                })
+                ->when($date, function ($query, $date) {
+                    return $query->whereDate('created_at', $date);
+                }, function ($query) {
+                    // Si aucune date n'est passée, on prend la date du jour
+                    return $query->whereDate('created_at', Carbon::now());
+                })
                 ->orderByRaw("
                     CASE
                         WHEN retard = 'no' THEN 0
