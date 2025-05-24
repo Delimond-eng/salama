@@ -129,7 +129,7 @@
                         <td class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
                             <div class="flex items-center">
                                 <a class="image-fit zoom-in h-9 w-9" :href="data.photo" target="_blank">
-                                    <img data-placement="top" :src="data.photo" alt="photo" class="tooltip cursor-pointer rounded-lg border-white shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]">
+                                    <img data-placement="top" :src="data.photo ?? 'assets/images/loading.gif'" alt="photo" class="tooltip cursor-pointer rounded-lg border-white shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]">
                                 </a>
                                 <div class="ml-4">
                                     <a class="whitespace-nowrap font-medium" href="#">

@@ -484,14 +484,6 @@ class AppManagerController extends Controller
                 "comment_text" => "nullable|string",
                 "comment_audio" => "nullable|file|mimes:audio/mpeg,mpga,mp3,wav",
             ]);
-            if ($request->hasFile('photo')) {
-                $photo = $request->file('photo');
-                $filename = time() . '_' . $photo->getClientOriginalName();
-                $photo->move(public_path('uploads/patrol_photos'), $filename);
-                $photoUrl = url('uploads/patrol_photos/' . $filename);
-                $data["photo"] = $photoUrl;
-            }
-            
             // Ajout des informations de fin de patrouille
             $now = Carbon::now();
             $data["ended_at"] = $now->toDateTimeString();
@@ -501,7 +493,6 @@ class AppManagerController extends Controller
             $patrol->comment_text = $data["comment_text"] ?? null;
             $patrol->comment_audio = $data["comment_audio"] ?? null;
             $patrol->status = $data["status"];
-            $patrol->photo = $data["photo"];
             $patrol->save();
             $site = Site::find($patrol->site_id);
             $site->status = 'actif';

@@ -4,7 +4,7 @@
 <!-- BEGIN: Content -->
 <div class="md:max-w-auto min-h-screen min-w-0 max-w-full flex-1 rounded-[30px] bg-slate-100 px-4 pb-10 before:block before:h-px before:w-full before:content-[''] dark:bg-darkmode-700 md:px-[22px]">
     <!-- BEGIN: Top Bar -->
-    <div class="relative z-[51] flex h-[67px] items-center border-b border-slate-200">
+    <div class="relative z-[51] flex h-[67px] items-center border-b border-slate-200 overflow-auto 2xl:overflow-visible">
         <!-- BEGIN: Breadcrumb -->
         <nav aria-label="breadcrumb" class="flex -intro-x mr-auto hidden sm:flex">
             <ol class="flex items-center text-theme-1 dark:text-slate-300">
