@@ -1,6 +1,10 @@
 import { get, postJson } from "../modules/http.js";
+import Pagination from "../components/pagination.js";
 new Vue({
     el: "#App",
+    components: {
+        Pagination,
+    },
     data() {
         return {
             error: null,
@@ -12,6 +16,12 @@ new Vue({
                 title: "",
                 content: "",
                 site_id: "",
+            },
+            pagination: {
+                current_page: 1,
+                last_page: 1,
+                total: 0,
+                per_page: 10,
             },
             filter_date: "",
             announces: [],
@@ -103,15 +113,32 @@ new Vue({
         },
         viewAllAnnounces() {
             this.isDataLoading = true;
-            get("/announces.all")
+            get(
+                `/announces.all?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}`
+            )
                 .then((res) => {
                     this.isDataLoading = false;
-                    this.announces = res.data.announces;
+                    this.announces = res.data.announces.data;
+                    this.pagination = {
+                        current_page: res.data.announces.current_page,
+                        last_page: res.data.announces.last_page,
+                        total: res.data.announces.total,
+                        per_page: res.data.announces.per_page,
+                    };
                 })
                 .catch((err) => {
                     this.isDataLoading = false;
                     console.log("error");
                 });
+        },
+        changePage(page) {
+            this.pagination.current_page = page;
+            this.viewAllAnnounces();
+        },
+        onPerPageChange(perPage) {
+            this.pagination.per_page = perPage;
+            this.pagination.current_page = 1;
+            this.viewAllAnnounces();
         },
 
         viewAllSites() {

@@ -339,7 +339,7 @@ class AppManagerController extends Controller
         $patrols = Patrol::with(["agent", "site", "scans.agent", "scans.area"])
             ->where("agency_id", $agencyId)
             ->orderByDesc("id")
-            ->paginate(10);
+            ->paginate(perPage: 10);
 
         $patrols->getCollection()->transform(function ($patrol) {
             // 1. Durée réelle de la patrouille
@@ -400,9 +400,6 @@ class AppManagerController extends Controller
             $scans = $patrol->scans->sortBy('time')->values();
             $scansStats = $scans->map(function ($scan, $index) use ($scans) {
                 $distance = 0;
-
-
-
                 if (!empty($scan->latlng) && !empty($scan->area?->latlng)) {
                     $latlng1 = explode(',', $scan->latlng);
                     $latlng2 = explode(',', $scan->area->latlng);

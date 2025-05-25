@@ -1,6 +1,10 @@
-import {get, postJson } from "../modules/http.js";
+import { get, postJson } from "../modules/http.js";
+import Pagination from "../components/pagination.js";
 new Vue({
     el: "#App",
+    components: {
+        Pagination,
+    },
     data() {
         return {
             error: null,
@@ -9,7 +13,14 @@ new Vue({
             isDataLoading: false,
             pristine: null,
             agents: [],
+            pagination: {
+                current_page: 1,
+                last_page: 1,
+                total: 0,
+                per_page: 10,
+            },
             search: "",
+            showComment: null,
             form: {
                 id: "",
                 matricule: "",
@@ -29,7 +40,8 @@ new Vue({
         //init pristine script
         if (document.querySelector(".form-agent") !== null) {
             this.pristine = new Pristine(
-                document.querySelector(".form-agent"), {
+                document.querySelector(".form-agent"),
+                {
                     classTo: "input-form",
                     errorClass: "has-error",
                     errorTextParent: "input-form",
@@ -38,7 +50,7 @@ new Vue({
             );
         }
         this.viewAllAgents();
-        this.viewAllHoraires()
+        this.viewAllHoraires();
     },
 
     methods: {
@@ -100,13 +112,13 @@ new Vue({
             }
         },
         exportToExcel() {
-            const data = this.allAgents.map(p => ({
-                "Nom complet": p.fullname || '',
-                "Matricule": p.matricule || '',
-                "Role": p.role || '',
-                "Site": p.site.name || '',
-                "Password": p.password || '',
-                "Date": p.created_at.substring(0, 10) || ''
+            const data = this.allAgents.map((p) => ({
+                "Nom complet": p.fullname || "",
+                Matricule: p.matricule || "",
+                Role: p.role || "",
+                Site: p.site.name || "",
+                Password: p.password || "",
+                Date: p.created_at.substring(0, 10) || "",
             }));
 
             const worksheet = XLSX.utils.json_to_sheet(data);
@@ -129,15 +141,33 @@ new Vue({
 
         viewAllAgents() {
             this.isDataLoading = true;
-            get("/agents")
+            get(
+                `/agents?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}`
+            )
                 .then((res) => {
                     this.isDataLoading = false;
-                    this.agents = res.data.agents;
+                    this.agents = res.data.agents.data;
+                    this.pagination = {
+                        current_page: res.data.agents.current_page,
+                        last_page: res.data.agents.last_page,
+                        total: res.data.agents.total,
+                        per_page: res.data.agents.per_page,
+                    };
                 })
                 .catch((err) => {
                     this.isDataLoading = false;
                     console.log("error");
                 });
+        },
+
+        changePage(page) {
+            this.pagination.current_page = page;
+            this.viewAllAgents();
+        },
+        onPerPageChange(perPage) {
+            this.pagination.per_page = perPage;
+            this.pagination.current_page = 1;
+            this.viewAllAgents();
         },
         viewAllHoraires() {
             this.isDataLoading = true;
@@ -158,12 +188,12 @@ new Vue({
             if (this.search && this.search.trim()) {
                 return this.agents.filter(
                     (el) =>
-                    el.fullname
-                    .toLowerCase()
-                    .includes(this.search.toLowerCase()) ||
-                    el.matricule
-                    .toLowerCase()
-                    .includes(this.search.toLowerCase())
+                        el.fullname
+                            .toLowerCase()
+                            .includes(this.search.toLowerCase()) ||
+                        el.matricule
+                            .toLowerCase()
+                            .includes(this.search.toLowerCase())
                 );
             } else {
                 return this.agents;
@@ -172,7 +202,7 @@ new Vue({
         getRole() {
             return (role) => {
                 if (role === "guard") {
-                    return "Agent gardien";
+                    return "Gardien";
                 } else {
                     return "Superviseur";
                 }

@@ -69,7 +69,8 @@ Route::middleware(['auth'])->group(function () {
         $announces = Announce::with('site')
             ->where('status', 'actif')
             ->where('agency_id', $agencyId)
-            ->get();
+            ->orderByDesc("id")
+            ->paginate(2);
         return response()->json(['status' => 'success', 'announces' => $announces]);
     });
     Route::post('announce.create', [AppManagerController::class, 'createAnnounce'])->name('announce.create');

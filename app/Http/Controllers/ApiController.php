@@ -22,7 +22,8 @@ class ApiController extends Controller
                 "site" => function ($query) {
                     return $query->where("status", "actif");
             }])->with("horaire")
-            ->get();
+            ->orderByDesc("id")
+            ->paginate(perPage: 10);
         return response()->json([
             "agents" => $agents
         ]);

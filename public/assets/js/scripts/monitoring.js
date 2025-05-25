@@ -27,16 +27,22 @@ new Vue({
     watch: {
         sites: {
             handler(newSites, oldSites) {
-                this.refreshMap();
+                if (!this.areSitesEqual(newSites, oldSites)) {
+                    this.refreshMap();
+                }
             },
             deep: true,
         },
-        selectedPatrol(newVal, oldVal) {
-            if (newVal) {
-                this.$nextTick(() => {
-                    this.getPatrolDetailMap(); // recharge proprement la carte
-                });
-            }
+        selectedPatrol: {
+            handler(newVal, oldVal) {
+                if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+                    this.$nextTick(() => {
+                        this.getPatrolDetailMap();
+                    });
+                }
+            },
+            immediate: true,
+            deep: false,
         },
     },
 
@@ -76,7 +82,7 @@ new Vue({
         },
 
         getMap() {
-            let sitesData = this.allSites; // Utilise la propriété calculée, qui dépend de this.sites
+            let sitesData = this.allSites;
 
             // Filtrer les sites pour s'assurer qu'ils ont des coordonnées valides
             sitesData = sitesData.filter((site) => {
@@ -329,48 +335,53 @@ new Vue({
                 mapContainer._leaflet_map.remove();
             }
 
-            const [lat, lng] = patrol.site.latlng.split(",").map(parseFloat);
-            this.map = L.map(mapContainer).setView([lat, lng], 18);
-            mapContainer._leaflet_map = this.map;
-
-            L.tileLayer(
-                "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
-                {
-                    attribution: "Salama plateforme, cartographie des sites",
-                }
-            ).addTo(this.map);
-
-            // 🟦 Polygone du site
-            const areaCoords = patrol.site.areas.map((area) =>
-                area.latlng.split(",").map(parseFloat)
-            );
-            const sitePolygon = L.polygon(areaCoords, {
-                color: "blue",
-                fillColor: "#cce5ff",
-                fillOpacity: 0.2,
-                weight: 4,
-            }).addTo(this.map);
-
-            // 🟧 Tracé du parcours
-            const pathCoords = patrol.map_datas.map((item) =>
-                item.latlng.split(",").map(parseFloat)
-            );
-            L.polyline(pathCoords, {
-                color: "orange",
-                weight: 4,
-                opacity: 0.9,
-            }).addTo(this.map);
-
-            // 📍 Marqueurs
-            patrol.map_datas.forEach((item) => {
-                const [itemLat, itemLng] = item.latlng
+            if (patrol) {
+                const [lat, lng] = patrol.site.latlng
                     .split(",")
                     .map(parseFloat);
-                const color = item.scan_status === "scanned" ? "green" : "red";
+                this.map = L.map(mapContainer).setView([lat, lng], 18);
+                mapContainer._leaflet_map = this.map;
 
-                const customIcon = L.divIcon({
-                    className: "",
-                    html: `
+                L.tileLayer(
+                    "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+                    {
+                        attribution:
+                            "Salama plateforme, cartographie des sites",
+                    }
+                ).addTo(this.map);
+
+                // 🟦 Polygone du site
+                const areaCoords = patrol.site.areas.map((area) =>
+                    area.latlng.split(",").map(parseFloat)
+                );
+                const sitePolygon = L.polygon(areaCoords, {
+                    color: "blue",
+                    fillColor: "#cce5ff",
+                    fillOpacity: 0.2,
+                    weight: 4,
+                }).addTo(this.map);
+
+                // 🟧 Tracé du parcours
+                const pathCoords = patrol.map_datas.map((item) =>
+                    item.latlng.split(",").map(parseFloat)
+                );
+                L.polyline(pathCoords, {
+                    color: "orange",
+                    weight: 4,
+                    opacity: 0.9,
+                }).addTo(this.map);
+
+                // 📍 Marqueurs
+                patrol.map_datas.forEach((item) => {
+                    const [itemLat, itemLng] = item.latlng
+                        .split(",")
+                        .map(parseFloat);
+                    const color =
+                        item.scan_status === "scanned" ? "green" : "red";
+
+                    const customIcon = L.divIcon({
+                        className: "",
+                        html: `
                         <svg width="40px" height="40px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M18.5 3H16C15.7239 3 15.5 3.22386 15.5 3.5V3.55891L19 6.35891V3.5C19 3.22386 18.7762 3 18.5 3Z" fill="${color}"/>
                             <path fill-rule="evenodd" clip-rule="evenodd" d="M10.75 9.5C10.75 8.80964 11.3097 8.25 12 8.25C12.6904 8.25 13.25 8.80964 13.25 9.5C13.25 10.1904 12.6904 10.75 12 10.75C11.3097 10.75 10.75 10.1904 10.75 9.5Z" fill="${color}"/>
@@ -378,30 +389,22 @@ new Vue({
                             <path fill-rule="evenodd" clip-rule="evenodd" d="M10.75 9.5C10.75 8.80964 11.3097 8.25 12 8.25C12.6904 8.25 13.25 8.80964 13.25 9.5C13.25 10.1904 12.6904 10.75 12 10.75C11.3097 10.75 10.75 10.1904 10.75 9.5Z" fill="${color}"/>
                         </svg>
                     `,
-                    iconSize: [40, 40],
-                    iconAnchor: [20, 40],
-                    popupAnchor: [0, -40],
+                        iconSize: [40, 40],
+                        iconAnchor: [20, 40],
+                        popupAnchor: [0, -40],
+                    });
+
+                    const marker = L.marker([itemLat, itemLng], {
+                        icon: customIcon,
+                    }).addTo(this.map);
+                    marker.bindPopup(
+                        `<strong>${item.libelle}</strong><br>Status : ${item.scan_status}`
+                    );
                 });
-
-                const marker = L.marker([itemLat, itemLng], {
-                    icon: customIcon,
-                }).addTo(this.map);
-                marker.bindPopup(
-                    `<strong>${item.libelle}</strong><br>Status : ${item.scan_status}`
-                );
-            });
-
-            // 🏃 Marqueur animé (point bleu)
-            /* const firstScanned =
-                patrol.map_datas.find((p) => p.scan_status === "scanned") ||
-                patrol.map_datas[0];
-            const [startLat, startLng] = firstScanned.latlng
-                .split(",")
-                .map(parseFloat); */
-
-            // Si le marqueur animé existe déjà, on le déplace, sinon on le crée
-            // Centrer la carte sur le polygone
-            this.map.fitBounds(sitePolygon.getBounds(), { padding: [20, 20] });
+                this.map.fitBounds(sitePolygon.getBounds(), {
+                    padding: [20, 20],
+                });
+            }
         },
 
         viewAllPendingScans() {
@@ -444,6 +447,27 @@ new Vue({
                             "Erreur lors de la récupération des patrouilles en attente.";
                     });
             }, 5000); // Original comment said 5 seconds, but code is 3000ms
+        },
+
+        areSitesEqual(newSites, oldSites) {
+            if (newSites.length !== oldSites.length) return false;
+
+            for (let i = 0; i < newSites.length; i++) {
+                const newSite = newSites[i];
+                const oldSite = oldSites[i];
+
+                if (
+                    newSite.id !== oldSite.id ||
+                    newSite.latlng !== oldSite.latlng ||
+                    newSite.status !== oldSite.status ||
+                    JSON.stringify(newSite.areas) !==
+                        JSON.stringify(oldSite.areas)
+                ) {
+                    return false;
+                }
+            }
+
+            return true;
         },
 
         viewAllSites() {

@@ -1,6 +1,10 @@
 import { get, postJson } from "../modules/http.js";
+import Pagination from "../components/pagination.js";
 new Vue({
     el: "#App",
+    components: {
+        Pagination,
+    },
     data() {
         return {
             error: null,
@@ -14,6 +18,12 @@ new Vue({
             filter_site: "",
             filter_date: "",
             selectedPatrol: null,
+            pagination: {
+                current_page: 1,
+                last_page: 1,
+                total: 0,
+                per_page: 10,
+            },
         };
     },
 
@@ -37,15 +47,36 @@ new Vue({
 
         viewAllReports() {
             this.isDataLoading = true;
-            get("/patrols.reports")
+            get(
+                `/patrols.reports?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}`
+            )
                 .then((res) => {
                     this.isDataLoading = false;
                     this.reports = res.data.patrols.data;
+
+                    this.pagination = {
+                        current_page: res.data.patrols.current_page,
+                        last_page: res.data.patrols.last_page,
+                        total: res.data.patrols.total,
+                        per_page: res.data.patrols.per_page,
+                    };
                 })
                 .catch((err) => {
                     this.isDataLoading = false;
                     console.log("error");
+                })
+                .finally(() => {
+                    this.isDataLoading = false;
                 });
+        },
+        changePage(page) {
+            this.pagination.current_page = page;
+            this.viewAllReports();
+        },
+        onPerPageChange(perPage) {
+            this.pagination.per_page = perPage;
+            this.pagination.current_page = 1;
+            this.viewAllReports();
         },
 
         loadChart(item) {
