@@ -1,6 +1,10 @@
-import {get, postJson } from "../modules/http.js";
+import { get, postJson } from "../modules/http.js";
+import Pagination from "../components/pagination.js";
 new Vue({
     el: "#App",
+    components: {
+        Pagination,
+    },
     data() {
         return {
             error: null,
@@ -9,7 +13,9 @@ new Vue({
             isDataLoading: false,
             pristine: null,
             sites: [],
+            filter_datep: "",
             selectedAreas: [],
+            selectedPresence: null,
             search: "",
             presencesOriginal: [], // données brutes chargées depuis l'API
             search2: "",
@@ -19,6 +25,7 @@ new Vue({
             presences: [],
             presenceDate: new Date().toISOString().slice(0, 10),
             selectedSiteId: null,
+            selectedToggleId: null,
             isPresenceLoading: false,
             form: {
                 id: "",
@@ -27,9 +34,17 @@ new Vue({
                 adresse: "",
                 phone: "",
 
-                areas: [{
-                    libelle: "",
-                }, ],
+                areas: [
+                    {
+                        libelle: "",
+                    },
+                ],
+            },
+            pagination: {
+                current_page: 1,
+                last_page: 1,
+                total: 0,
+                per_page: 10,
             },
         };
     },
@@ -97,9 +112,11 @@ new Vue({
                 code: "",
                 adresse: "",
                 phone: "",
-                areas: [{
-                    libelle: "",
-                }, ],
+                areas: [
+                    {
+                        libelle: "",
+                    },
+                ],
             };
             if ($("#btn-reset").length) {
                 document.getElementById("btn-reset").click();
@@ -120,13 +137,14 @@ new Vue({
                     console.log("error");
                 });
         },
+
         deleteArea(id) {
             let self = this;
             this.load_id = id;
             postJson("/delete", {
-                    table: "areas",
-                    id: id,
-                })
+                table: "areas",
+                id: id,
+            })
                 .then((res) => {
                     const index = this.selectedAreas.findIndex(
                         (objet) => objet.id === id
@@ -141,43 +159,49 @@ new Vue({
                     self.load_id = "";
                 });
         },
-        viewPresenceBySite(site_id, togle_id) {
-            this.selectedSiteId = site_id;
+
+        viewPresenceBySite() {
             this.isPresenceLoading = true;
             this.presences = [];
 
             const selectedDate = this.filter_datep || this.presenceDate;
 
-            get(`/presences?site_id=${site_id}&date=${selectedDate}`)
-                .then((res) => {
-                    if (res.data.status === "success") {
-                        this.presences = res.data.presences;
-
-                        // Si le panneau n'est pas déjà ouvert, on l'ouvre
-                        if (this.openedAccordionId !== togle_id) {
-                            this.toggleAccordion(togle_id);
-                            this.openedAccordionId = togle_id;
-                        }
-                    }
+            get(
+                `/presences?site_id=${this.selectedSiteId}&date=${selectedDate}&page=${this.pagination.current_page}&per_page=${this.pagination.per_page}`
+            )
+                .then(({ data, status }) => {
                     this.isPresenceLoading = false;
+                    this.pagination = {
+                        current_page: data.presences.current_page,
+                        last_page: data.presences.last_page,
+                        total: data.presences.total,
+                        per_page: data.presences.per_page,
+                    };
+                    if (data.status === "success") {
+                        this.presences = data.presences.data;
+                    }
                 })
                 .catch((err) => {
-                    console.error("Erreur lors du chargement des présences :", err);
+                    console.error(
+                        "Erreur lors du chargement des présences :",
+                        err
+                    );
                     this.isPresenceLoading = false;
                 });
         },
+
         exportToExcel() {
-            const data = this.filteredPresences.map(p => ({
-                "Nom complet": p.agent.fullname || '',
-                "Horaire": p.horaire.libelle || '',
-                "Heure d'entrée": p.started_at || '',
-                "Heure de sortie": p.ended_at || '',
-                "Durée": p.duree || '',
-                "Retard": p.retard || '',
-                "Statut photo début": p.status_photo_debut || '',
-                "Statut photo fin": p.status_photo_fin || '',
-                "Date": p.created_at.substring(0, 10) || '',
-                "Commentaires": p.commentaires || ''
+            const data = this.filteredPresences.map((p) => ({
+                "Nom complet": p.agent.fullname || "",
+                Horaire: p.horaire.libelle || "",
+                "Heure d'entrée": p.started_at || "",
+                "Heure de sortie": p.ended_at || "",
+                Durée: p.duree || "",
+                Retard: p.retard || "",
+                "Statut photo début": p.status_photo_debut || "",
+                "Statut photo fin": p.status_photo_fin || "",
+                Date: p.created_at.substring(0, 10) || "",
+                Commentaires: p.commentaires || "",
             }));
 
             const worksheet = XLSX.utils.json_to_sheet(data);
@@ -186,13 +210,14 @@ new Vue({
 
             XLSX.writeFile(workbook, "presences.xlsx");
         },
+
         deleteSite(id) {
             let self = this;
             this.delete_id = id;
             postJson("/delete", {
-                    table: "sites",
-                    id: id,
-                })
+                table: "sites",
+                id: id,
+            })
                 .then((res) => {
                     self.delete_id = "";
                     self.viewAllSites();
@@ -200,6 +225,15 @@ new Vue({
                 .catch((err) => {
                     self.delete_id = "";
                 });
+        },
+
+        changePage(page) {
+            this.pagination.current_page = page;
+            this.viewPresenceBySite();
+        },
+
+        onPerPageChange(perPage) {
+            this.viewPresenceBySite();
         },
     },
 
@@ -209,18 +243,26 @@ new Vue({
 
             const searchTerm = this.search2.toLowerCase();
 
-            return this.presences.filter(p => {
+            return this.presences.filter((p) => {
                 return (
-                    (p.agent.fullname || '').toLowerCase().includes(searchTerm) ||
-                    (p.horaire.libelle || '').toLowerCase().includes(searchTerm) ||
-                    (p.started_at || '').toLowerCase().includes(searchTerm) ||
-                    (p.ended_at || '').toLowerCase().includes(searchTerm) ||
-                    (p.duree || '').toLowerCase().includes(searchTerm) ||
-                    (p.retard || '').toLowerCase().includes(searchTerm) ||
-                    (p.status_photo_debut || '').toLowerCase().includes(searchTerm) ||
-                    (p.status_photo_fin || '').toLowerCase().includes(searchTerm) ||
-                    (p.created_at || '').toLowerCase().includes(searchTerm) ||
-                    (p.commentaires || '').toLowerCase().includes(searchTerm)
+                    (p.agent.fullname || "")
+                        .toLowerCase()
+                        .includes(searchTerm) ||
+                    (p.horaire.libelle || "")
+                        .toLowerCase()
+                        .includes(searchTerm) ||
+                    (p.started_at || "").toLowerCase().includes(searchTerm) ||
+                    (p.ended_at || "").toLowerCase().includes(searchTerm) ||
+                    (p.duree || "").toLowerCase().includes(searchTerm) ||
+                    (p.retard || "").toLowerCase().includes(searchTerm) ||
+                    (p.status_photo_debut || "")
+                        .toLowerCase()
+                        .includes(searchTerm) ||
+                    (p.status_photo_fin || "")
+                        .toLowerCase()
+                        .includes(searchTerm) ||
+                    (p.created_at || "").toLowerCase().includes(searchTerm) ||
+                    (p.commentaires || "").toLowerCase().includes(searchTerm)
                 );
             });
         },
@@ -228,17 +270,16 @@ new Vue({
             if (this.search && this.search.trim()) {
                 return this.sites.filter(
                     (el) =>
-                    el.name
-                    .toLowerCase()
-                    .includes(this.search.toLowerCase()) ||
-                    el.code
-                    .toLowerCase()
-                    .includes(this.search.toLowerCase())
+                        el.name
+                            .toLowerCase()
+                            .includes(this.search.toLowerCase()) ||
+                        el.code
+                            .toLowerCase()
+                            .includes(this.search.toLowerCase())
                 );
             } else {
                 return this.sites;
             }
-
         },
     },
 });

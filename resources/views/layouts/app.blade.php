@@ -13,6 +13,7 @@
     <meta name="user-id" content="{{ Auth::user()->id }}">
     <title>Salama Plateforme</title>
     <!-- BEGIN: CSS Assets-->
+    <link rel="stylesheet" href="{{ asset("dist/css/vendors/zoom-vanilla.css") }}">
     <link rel="stylesheet" href="{{ asset('dist/css/vendors/tippy.css') }}">
     <link rel="stylesheet" href="{{ asset('dist/css/vendors/litepicker.css') }}">
     <link rel="stylesheet" href="{{ asset('dist/css/vendors/tiny-slider.css') }}">
@@ -46,6 +47,7 @@
 <!-- BEGIN: Js assets -->
 <script src="{{ asset('dist/js/vendors/dom.js') }}"></script>
 <script src="{{ asset('dist/js/vendors/tailwind-merge.js') }}"></script>
+<script src="{{ asset("dist/js/vendors/image-zoom.js") }}"></script>
 <script src="{{ asset("dist/js/vendors/alert.js") }}"></script>
 <script src="{{ asset('dist/js/vendors/lucide.js') }}"></script>
 <script src="{{ asset('dist/js/vendors/tippy.js') }}"></script>

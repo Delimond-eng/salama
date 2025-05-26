@@ -76,7 +76,7 @@
         <!-- END: Account Menu -->
     </div>
     <!-- END: Top Bar -->
- <div class="mt-5 grid grid-cols-16 gap-6" id="App" v-cloak>
+    <div class="mt-5 grid grid-cols-16 gap-6" id="App" v-cloak>
         <div class="intro-y box col-span-12 lg:col-span-8">
             <div class="flex flex-wrap items-center border-b border-slate-200/60 px-5 py-5 dark:border-darkmode-400 sm:py-3">
                 <h2 class="mr-auto text-base font-medium">Rapport des présences par site</h2>
@@ -108,7 +108,7 @@
 
                         <!-- Actions -->
                         <div class="flex items-center space-x-2">
-                            <button @click.stop=" viewPresenceBySite(data.id,i)" class="bg-red-100 text-danger border border-red-300 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
+                            <button @click.stop="selectedSiteId = data.id; openAccordion = i; viewPresenceBySite();" class="bg-red-100 text-danger border border-red-300 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
                                 <span v-if="delete_id === data.id" class="h-4 w-4">
                                     <svg class="h-full w-full" width="15" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
                                         <defs>
@@ -132,251 +132,190 @@
                                 </span>
                                 <i v-if="openAccordion === i" data-lucide="eye-off" class="w-4 h-4"> </i>
                                 <i v-else data-lucide="eye" class="w-4 h-4"></i>
-
                             </button>
                         </div>
                     </div>
 
                     <!-- Content -->
                     <transition name="fade">
-                        <div v-if="openAccordion === i" class="bg-slate-50 border-t border-slate-200 px-6 py-5">
-                            <!-- Areas List -->
-
-                            <!-- Hint -->
-
-                         <div class="intro-y col-span-12 mt-2 flex flex-wrap items-center xl:flex-nowrap overflow-auto 2xl:overflow-visible">
-                                <button @click.stop="exportToExcel" data-tw-merge="" class="transition duration-200 inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-white text-slate-800 dark:border-darkmode-100 mr-2 shadow-md"><i data-tw-merge="" data-lucide="file-text" class="stroke-1.5 mr-2 h-4 w-4"></i>
-                                        Exporter en Excel</button>
+                        <div v-if="openAccordion === i" class="grid grid-cols-12 gap-6 bg-slate-50 border-t border-slate-200 px-6 py-5">
+                            <div class="intro-y col-span-12 mt-2 flex flex-wrap items-center xl:flex-nowrap overflow-auto 2xl:overflow-visible">
+                                <button v-show="presences.length !== 0"  @click.stop="exportToExcel" data-tw-merge="" class="transition duration-200 inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-primary text-white dark:border-darkmode-100 mr-2 shadow-md"><i data-tw-merge="" data-lucide="file-text" class="stroke-1.5 mr-2 h-4 w-4"></i>
+                                    Exporter en Excel</button>
                                 <div class="mx-auto hidden text-slate-500 xl:block">
 
                                 </div>
-                                  <div class="relative w-56 text-slate-500">
+                                <div class="relative w-56 text-slate-500 mr-1">
                                     <input data-tw-merge="" type="date" v-model="filter_datep"
-                                @change="viewPresenceBySite(data.id,i)"  placeholder="Recherche..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
+                                        @change="viewPresenceBySite();" placeholder="Recherche..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
                                     <i data-tw-merge="" data-lucide="search" class="stroke-1.5 absolute inset-y-0 right-0 my-auto mr-3 h-4 w-4"></i>
                                 </div>
-                                <div class="mt-3 flex w-full items-center xl:mt-0 xl:w-auto gap-2">
-
+                                <div v-show="presences.length !== 0" class="mt-3 flex w-full items-center xl:mt-0 xl:w-auto gap-2">
                                     <div class="relative w-56 text-slate-500">
-                                         <input data-tw-merge="" v-model="search2" type="text" placeholder="Recherche..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
+                                        <input data-tw-merge="" v-model="search2" type="text" placeholder="Recherche..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
                                     </div>
                                     <!--<div class="relative w-56 text-slate-500 ">
                                         <input data-tw-merge="" type="date"  v-model="filter_date" @input="filter_site=''" placeholder="Recherche..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
                                         <i data-tw-merge="" data-lucide="search" class="stroke-1.5 absolute inset-y-0 right-0 my-auto mr-3 h-4 w-4"></i>
                                     </div>-->
                                 </div>
-                         </div>
+                            </div>
 
-                        <div v-if="isPresenceLoading">
-                            Chargement des présences...
-                        </div>
-                        <div v-else >
-                            <div v-if="presences.length === 0">Aucune présence trouvée.</div>
-                            <table v-else data-tw-merge="" style="overflow-x: auto; width: 50%;" class="w-full text-left -mt-2 border-separate border-spacing-y-[10px]">
-                                <thead ata-tw-merge="" class="">
-                                    <tr data-tw-merge="" class="">
-                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 text-center">Agent</th>
-                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 text-center">HORAIRE</th>
+                            <div v-if="isPresenceLoading" class="col-span-12 flex justify-center align-items-center">
+                                <span class="h-16 w-16">
+                                    <svg class="h-full w-full" width="50" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="#2d3748">
+                                        <g fill="none" fill-rule="evenodd">
+                                            <g transform="translate(1 1)" stroke-width="4">
+                                                <circle stroke-opacity=".5" cx="18" cy="18" r="18"></circle>
+                                                <path d="M36 18c0-9.94-8.06-18-18-18">
+                                                    <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"></animateTransform>
+                                                </path>
+                                            </g>
+                                        </g>
+                                    </svg>
+                                </span>
+                            </div>
 
-                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 text-center">ARRIVEE</th>
-                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 text-center">DEPART</th>
-                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 text-center">TEMPS</th>
-                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 text-center">Retard</th>
-                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 text-center">IMG.ARRIVE</th>
-                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 text-center">IMG.DEPART</th>
-                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 text-center">DATE</th>
-                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 text-center">COMMENT</th>
-
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr data-tw-merge="" class="intro-y" v-for="presence in filteredPresences" :key="presence.id" >
-                                        <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.agent.fullname || 'N/A' }}</td>
-                                        <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.horaire.libelle }}</td>
-                                        <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.started_at }}</td>
-                                        <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.ended_at || '-' }}</td>
-                                        <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.duree || '-' }}</td>
-                                        <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.retard }}</td>
-                                        <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600"><a :href="presence.photos_debut" target="_blank"><img data-placement="top" title="Uploaded at 29 September 2020" :src="presence.photos_debut"  class="tooltip cursor-pointer rounded-lg border-white w-9 h-9 shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]"></a></td>
-                                            <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600"><a :href="presence.photos_fin" target="_blank"><img data-placement="top" title="Uploaded at 29 September 2020" :src="presence.photos_fin"  class="tooltip cursor-pointer rounded-lg border-white w-9 h-9 shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]"></td>
-                                            <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.created_at.substring(0, 10) }}</td>
-                                            <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600"><button class="text-blue-600 underline hover:text-blue-800 tooltip" :title="presence.commentaires">
-                                            Lire details
-                                        </button></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-
-                        <div class="intro-y col-span-12 flex flex-wrap items-center sm:flex-row sm:flex-nowrap">
-                            <nav class="w-full sm:mr-auto sm:w-auto">
-                                <ul class="flex w-full mr-0 sm:mr-auto sm:w-auto">
-                                    <li class="flex-1 sm:flex-initial">
-                                        <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3"><i data-tw-merge="" data-lucide="chevrons-left" class="stroke-1.5 h-4 w-4"></i></a>
-                                    </li>
-                                    <li class="flex-1 sm:flex-initial">
-                                        <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3"><i data-tw-merge="" data-lucide="chevron-left" class="stroke-1.5 h-4 w-4"></i></a>
-                                    </li>
-                                    <li class="flex-1 sm:flex-initial">
-                                        <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3">...</a>
-                                    </li>
-                                    <li class="flex-1 sm:flex-initial">
-                                        <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3">1</a>
-                                    </li>
-                                    <li class="flex-1 sm:flex-initial">
-                                        <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3 !box dark:bg-darkmode-400">2</a>
-                                    </li>
-                                    <li class="flex-1 sm:flex-initial">
-                                        <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3">3</a>
-                                    </li>
-                                    <li class="flex-1 sm:flex-initial">
-                                        <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3">...</a>
-                                    </li>
-                                    <li class="flex-1 sm:flex-initial">
-                                        <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3"><i data-tw-merge="" data-lucide="chevron-right" class="stroke-1.5 h-4 w-4"></i></a>
-                                    </li>
-                                    <li class="flex-1 sm:flex-initial">
-                                        <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3"><i data-tw-merge="" data-lucide="chevrons-right" class="stroke-1.5 h-4 w-4"></i></a>
-                                    </li>
-                                </ul>
-                            </nav>
-                            <select data-tw-merge="" class="disabled:bg-slate-100 disabled:cursor-not-allowed disabled:dark:bg-darkmode-800/50 [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md py-2 px-3 pr-8 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 group-[.form-inline]:flex-1 !box mt-3 w-20 sm:mt-0">
-                                <option>10</option>
-                                <option>25</option>
-                                <option>35</option>
-                                <option>50</option>
-                            </select>
-                        </div>
-
-                            <!-- Download Button -->
-
+                            <div class="col-span-12 grid grid-cols-12" v-else>
+                                <div class="col-span-12" v-if="presences.length === 0">
+                                    <x-empty-state message="Aucun rapport de présence disponible"></x-empty-state>
+                                </div>
+                                <div v-else class="intro-y col-span-12 overflow-auto 2xl:overflow-visible">
+                                    <table data-tw-merge="" class="w-full text-left -mt-2 border-separate border-spacing-y-[10px]">
+                                        <thead ata-tw-merge="" class="text-blue-500 font-extrabold">
+                                            <tr data-tw-merge="" class="">
+                                                <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">AGENT</th>
+                                                <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">HORAIRE</th>
+                                                <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 uppercase">ARRIVée</th>
+                                                <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">DEPART</th>
+                                                <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 uppercase">DURée</th>
+                                                <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">RETARD</th>
+                                                <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 uppercase">IMG.ARRIVée</th>
+                                                <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">IMG.DEPART</th>
+                                                <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">DATE</th>
+                                                <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">ACTIONS</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr data-tw-merge="" class="intro-y" v-for="presence in filteredPresences" :key="presence.id">
+                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.agent.matricule }} @{{ presence.agent.fullname || 'N/A' }}</td>
+                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.horaire.libelle }}</td>
+                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.started_at }}</td>
+                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.ended_at || '-' }}</td>
+                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.duree || '-' }}</td>
+                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.retard }}</td>
+                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600"><a :href="presence.photos_debut" target="_blank"><img data-placement="top" title="Uploaded at 29 September 2020" :src="presence.photos_debut" class="tooltip cursor-pointer rounded-lg border-white w-9 h-9 shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]"></a></td>
+                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600"><a :href="presence.photos_fin" target="_blank"><img data-placement="top" title="Uploaded at 29 September 2020" :src="presence.photos_fin ?? 'assets/images/loading.gif'" class="tooltip cursor-pointer rounded-lg border-white w-9 h-9 shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]"></td>
+                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.created_at }}</td>
+                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
+                                                    <button data-tw-toggle="modal" data-tw-target="#presence-details-modal" @click="selectedPresence = presence" class="text-blue-500 underline hover:text-blue-800 tooltip" :title="presence.commentaires">
+                                                        Lire details
+                                                    </button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <!-- BEGIN: Pagination -->
+                             <Pagination
+                                :current-page="pagination.current_page"
+                                :last-page="pagination.last_page"
+                                :total-items="pagination.total"
+                                :per-page="pagination.per_page"
+                                @page-changed="changePage"
+                                @per-page-changed="onPerPageChange"
+                            />
+                            <!-- END: Pagination -->
                         </div>
                     </transition>
                 </div>
             </div>
-            <div class="space-y-4" v-else>
-                <div v-if="isDataLoading">
-                    <x-dom-loader></x-dom-loader>
-                </div>
-                <div v-else>
-                    <x-empty-state message="Aucune requête disponible pour l'instant." v-else></x-empty-state>
-                </div>
-            </div>
         </div>
+         <div data-tw-backdrop="" aria-hidden="true" tabindex="-1" id="presence-details-modal" class="modal group bg-black/60 transition-[visibility,opacity] w-screen h-screen fixed left-0 top-0 [&:not(.show)]:duration-[0s,0.2s] [&:not(.show)]:delay-[0.2s,0s] [&:not(.show)]:invisible [&:not(.show)]:opacity-0 [&.show]:visible [&.show]:opacity-100 [&.show]:duration-[0s,0.4s]">
+            <div data-tw-merge="" class="w-[90%] ml-auto h-screen flex flex-col bg-white relative shadow-md transition-[margin-right] duration-[0.6s] -mr-[100%] group-[.show]:mr-0 dark:bg-darkmode-600 sm:w-[460px]"><a class="absolute inset-y-0 left-0 right-auto my-auto -ml-[60px] flex h-8 w-8 items-center justify-center rounded-full border border-white/90 bg-white/5 text-white/90 transition-all hover:rotate-180 hover:scale-105 hover:bg-white/10 focus:outline-none sm:-ml-[105px] sm:h-14 sm:w-14" data-tw-dismiss="modal" href="javascript:;">
+                    <i data-tw-merge="" data-lucide="x" class="h-3 w-3 stroke-[1] sm:h-8 sm:w-8"></i>
+                </a>
+                <div data-tw-merge="" class="overflow-y-auto flex-1 p-0" v-if="selectedPresence">
+                    <div class="flex flex-col border-b">
+                        <div class="px-8 pt-6 pb-8">
+                            <div class="text-base font-bold uppercase">Détails de la présence de l'agent</div>
+                            <!-- <div class="mt-0.5 text-slate-500 flex items-center border-b border-slate-200/60 pb-4" v-if="selectedPatrol">
+                                <i data-lucide="map-pin" class="w-3 h-3 mr-1 text-primary"></i>
+                                <span v-if="selectedPatrol.site">@{{ selectedPatrol.site.name }}</span>
+                            </div> -->
+                        </div>
 
-        <!-- BEGIN: Modal Content -->
-        <div
-            data-tw-backdrop=""
-            aria-hidden="true"
-            tabindex="-1"
-            id="header-footer-modal-preview" class="modal group bg-black/60 transition-[visibility,opacity] w-screen h-screen fixed left-0 top-0 [&:not(.show)]:duration-[0s,0.2s] [&:not(.show)]:delay-[0.2s,0s] [&:not(.show)]:invisible [&:not(.show)]:opacity-0 [&.show]:visible [&.show]:opacity-100 [&.show]:duration-[0s,0.4s]">
-            <form @submit.prevent="createSite" method="POST"
-                data-tw-merge id="form-site"
-                class="form-site w-[90%] mx-auto bg-white relative rounded-md shadow-md transition-[margin-top,transform] duration-[0.4s,0.3s] -mt-16 group-[.show]:mt-16 group-[.modal-static]:scale-[1.05] dark:bg-darkmode-600 sm:w-[600px]">
-                <div
-                    class="flex items-center px-5 py-3 border-b border-slate-200/60 dark:border-darkmode-400">
-                    <h2 class="mr-auto text-base font-medium" v-if="form.name">
-                        Ajout zones de patrouille | site : @{{ form.name }}
-                    </h2>
-                    <button id="btn-reset"
-                        data-tw-merge
-                        data-tw-dismiss="modal"
-                        class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed border-secondary text-slate-500 dark:border-darkmode-100/40 dark:text-slate-300 [&:hover:not(:disabled)]:bg-secondary/20 [&:hover:not(:disabled)]:dark:bg-darkmode-100/10 hidden sm:flex hidden sm:flex"><i
-                            data-tw-merge
-                            data-lucide="x"
-                            class="stroke-1.5 h-4 w-4"></i>
-                    </button>
-                </div>
-                <div
-                    data-tw-merge v-if="form.areas"
-                    class="p-5 grid grid-cols-12 gap-4 gap-y-3">
-                    <div class="col-span-12">
-                        <div v-if="error" role="alert" class="alert relative border rounded-md px-5 py-4 border-pending text-pending dark:border-pending mb-2 flex items-center"><i data-tw-merge data-lucide="alert-circle" class="stroke-1.5 w-5 h-5 mr-2 h-6 w-6 mr-2 h-6 w-6"></i>
-                            Erreur survenue lors du traitement de la requête.@{{ error }}
-                            <button data-tw-merge data-tw-dismiss="alert" type="button" aria-label="Close" type="button" aria-label="Close" class="text-slate-800 py-2 px-3 absolute right-0 my-auto mr-2 btn-close"><i data-tw-merge data-lucide="x" class="stroke-1.5 w-5 h-5 h-4 w-4 h-4 w-4"></i></button>
+                    </div>
+                    <div class="flex items-start px-5 pt-5">
+                        <div class="flex w-full flex-col items-center lg:flex-row">
+                            <div class="relative h-16 w-16 mr-4">
+                                <!-- Avatar -->
+                                <div class="image-fit h-16 w-16">
+                                    <img data-action="zoom" class="rounded-full" :src="selectedPresence.photos_debut" alt="avatar">
+                                </div>
+
+                                <!-- Badge -->
+                                <div style="background-color: #059669;" class="absolute bottom-0 right-0 text-white text-[8px] px-1.5 py-0.5 rounded-full shadow-lg">
+                                    in
+                                </div>
+                            </div>
+                            <div class="relative h-16 w-16 mr-4" v-if="selectedPresence.photos_fin">
+                                <!-- Avatar -->
+                                <div class="image-fit h-16 w-16">
+                                    <img data-action="zoom" class="rounded-full" :src="selectedPresence.photos_fin" alt="avatar">
+                                </div>
+
+                                <!-- Badge -->
+                                <div style="background-color:rgb(195, 75, 6);" class="absolute bottom-0 right-0 text-white text-[8px] px-1.5 py-0.5 rounded-full shadow-lg">
+                                    out
+                                </div>
+                            </div>
+
+                            <div class="mt-3 text-center lg:ml-4 lg:mt-0 lg:text-left">
+                                <a v-if="selectedPresence.agent" class="font-extrabold text-[25px]" href="#">
+                                    @{{ selectedPresence.agent.fullname }}
+                                </a>
+                                <div v-if="selectedPresence.agent" class="mt-0.5 text-xs text-slate-500">
+                                    @{{ selectedPresence.agent.matricule }}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-span-12 sm:col-span-12" v-for="(input, j) in form.areas">
-                        <label class="block mb-2 text-sm font-medium">
-                            Libellé zone @{{ j + 1 }}
-                        </label>
-
-                        <div class="flex gap-2">
-                            <input
-                                type="text"
-                                v-model="input.libelle"
-                                placeholder="Nom de la zone" required
-                                class="input-form border-danger-subtle flex-1 disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80" />
-
-                            <button
-                                v-if="j === 0"
-                                @click.prevent="form.areas.push({ libelle: '' })"
-                                type="button"
-                                class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-slate-500 bg-white border border-slate-300 rounded-md shadow-sm hover:bg-slate-100 dark:bg-darkmode-700 dark:text-slate-300 dark:border-darkmode-400 dark:hover:bg-darkmode-600">
-                                <i data-lucide="plus" class="w-3 h-3"></i>
-                            </button>
-
-                            <button
-                                v-else
-                                @click.prevent="form.areas.splice(j, 1)"
-                                type="button"
-                                class="inline-flex items-center text-danger justify-center px-3 py-2 text-sm font-medium text-red-600 bg-white border border-red-300 rounded-md shadow-sm hover:bg-red-50 dark:bg-darkmode-700 dark:border-darkmode-400 dark:hover:bg-darkmode-600">
-                                <i data-lucide="x" class="w-3 h-3"></i>
-                            </button>
+                    <div class="mt-5 p-5">
+                        <div class="flex">
+                            <div class="mr-auto">Date</div>
+                            <div class="font-medium">@{{ selectedPresence.created_at }}</div>
+                        </div>
+                        <div class="mt-4 flex">
+                            <div class="mr-auto">Horaire</div>
+                            <div class="font-medium text-blue-500" v-if="selectedPresence.horaire">@{{ selectedPresence.horaire.libelle }}</div>
+                        </div>
+                        <div class="mt-4 flex">
+                            <div class="mr-auto">Heure d'arrivée</div>
+                            <div class="font-medium">@{{ selectedPresence.started_at || '-' }}</div>
+                        </div>
+                        <div class="mt-4 flex">
+                            <div class="mr-auto">Heure de départ</div>
+                            <div class="font-medium">@{{ selectedPresence.ended_at || '-' }}</div>
+                        </div>
+                        <div class="mt-4 flex">
+                            <div class="mr-auto">Temps de travail</div>
+                            <div class="font-medium">@{{ selectedPresence.duree || '-' }}</div>
+                        </div>
+                        <div class="mt-4 flex">
+                            <div class="mr-auto">Statut de rétard</div>
+                            <div class="font-medium" :class="selectedPresence.retard =='non' ? 'text-blue-500' : 'text-danger'">@{{ selectedPresence.retard }}</div>
+                        </div>
+                        <div class="mt-4 text-left border-t border-slate-200/60 pt-4 dark:border-darkmode-400">
+                            <div class="mr-auto text-base font-medium">
+                                Commentaire
+                            </div>
+                            <div class="text-blue-500 text-xs">@{{ selectedPresence.commentaires || '--' }}</div>
                         </div>
                     </div>
-
                 </div>
-                <div
-                    class="px-5 py-3 text-right border-t border-slate-200/60 dark:border-darkmode-400"><button
-                        data-tw-merge
-                        data-tw-dismiss="modal" type="button" class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed border-secondary text-slate-500 dark:border-darkmode-100/40 dark:text-slate-300 [&:hover:not(:disabled)]:bg-secondary/20 [&:hover:not(:disabled)]:dark:bg-darkmode-100/10 mr-1 w-20 mr-1 w-20">Fermer</button>
-                    <button
-                        data-tw-merge
-                        type="submit" class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-primary border-primary text-white dark:border-primary w-auto" :disabled="isLoading">Soumettre les ajouts <span class="ml-2 h-4 w-4" v-if="isLoading">
-                            <svg class="h-full w-full" width="25" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="white">
-                                <g fill="none" fill-rule="evenodd">
-                                    <g transform="translate(1 1)" stroke-width="4">
-                                        <circle stroke-opacity=".5" cx="18" cy="18" r="18"></circle>
-                                        <path d="M36 18c0-9.94-8.06-18-18-18">
-                                            <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"></animateTransform>
-                                        </path>
-                                    </g>
-                                </g>
-                            </svg>
-                        </span>
-                    </button>
-                </div>
-            </form>
-        </div>
-        <!-- END: Modal Content -->
-
-
-        <!-- toast error & success -->
-        <div id="failed-notification-content" class="py-5 pl-5 pr-14 bg-white border border-slate-200/60 rounded-lg shadow-xl dark:bg-darkmode-600 dark:text-slate-300 dark:border-darkmode-600 hidden flex">
-            <i data-tw-merge="" data-lucide="x-circle" class="stroke-1.5 w-5 h-5 text-danger"></i>
-            <div class="ml-4 mr-4">
-                <div class="font-medium">Echec de traitement !</div>
-                <div class="text-slate-500 mt-1">Erreur survenue lors du traitement de la requête.</div>
             </div>
         </div>
-        <div id="success-notification-content" class="py-5 pl-5 pr-14 bg-white border border-slate-200/60 rounded-lg shadow-xl dark:bg-darkmode-600 dark:text-slate-300 dark:border-darkmode-600 hidden flex">
-            <i data-tw-merge="" data-lucide="check-circle" class="stroke-1.5 w-5 h-5 text-success"></i>
-            <div class="ml-4 mr-4">
-                <div class="font-medium">Opération reussi !</div>
-                <div class="text-slate-500 mt-1">L'ajout des zones au site effectué ! </div>
-            </div>
-        </div>
-        <!-- end toast -->
-    </div>
-
-
-<!-- code a revoir -->
-    <div class="mt-5 grid grid-cols-12 gap-6" id="" v-cloak>
-
-
-        <!-- END: Pagination -->
     </div>
     <x-dom-loader></x-dom-loader>
 </div>

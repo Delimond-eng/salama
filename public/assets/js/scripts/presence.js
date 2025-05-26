@@ -1,4 +1,4 @@
-import {get, postJson } from "../modules/http.js";
+import { get, postJson } from "../modules/http.js";
 new Vue({
     el: "#App",
     data() {
@@ -31,7 +31,8 @@ new Vue({
 
         if ($(".form-horaire").length) {
             this.pristine = new Pristine(
-                document.querySelector(".form-horaire"), {
+                document.querySelector(".form-horaire"),
+                {
                     classTo: "input-form",
                     errorClass: "has-error",
                     errorTextParent: "input-form",
@@ -114,7 +115,9 @@ new Vue({
         allHoraires() {
             if (this.search) {
                 return this.horaires.filter((el) => {
-                    return el.libelle.toLowerCase().includes(this.search.toLowerCase());
+                    return el.libelle
+                        .toLowerCase()
+                        .includes(this.search.toLowerCase());
                 });
             } else {
                 return this.horaires;

@@ -211,8 +211,8 @@ class PresenceController extends Controller
                         ELSE 3
                     END
                 ")
-                ->orderBy('started_at', 'asc')
-                ->get();
+                ->orderByDesc("created_at")
+                ->paginate(5);
 
             return response()->json([
                 'status' => 'success',

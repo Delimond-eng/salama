@@ -156,7 +156,7 @@ class AdminController extends Controller
             $area = Area::where("status", "actif")->where("id", $data["area_id"])->first();
             if($area){
                 $area->latlng = $data["latlng"];
-                $area->libelle = $data["libelle"];
+                $area->libelle = $data["libelle"] ?? $area->libelle;
                 $area->save();
                 $site = Site::find($area->site_id);
                 $site->latlng = $data["latlng"];

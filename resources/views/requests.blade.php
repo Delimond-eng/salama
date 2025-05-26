@@ -134,30 +134,33 @@
                     </div>
                 </div>
                 <div class="overflow-x-auto sm:overflow-x-visible">
-                    <div class="intro-y" v-for="(data, i) in allRequests" :key="i">
-                        <div class="transition duration-200 ease-in-out transform cursor-pointer inline-block sm:block border-b border-slate-200/60 dark:border-darkmode-400 hover:scale-[1.02] hover:relative hover:z-20 hover:shadow-md hover:border-0 hover:rounded bg-white text-slate-800 dark:text-slate-300 dark:bg-darkmode-600">
-                            <div class="flex px-5 py-3">
-                                <div class="mr-5 flex w-72 flex-none items-center">
-                                    <div class="image-fit relative ml-5 h-6 w-6 flex-none">
-                                        <img class="rounded-full" src="{{ asset("assets/images/profil-2.png") }}" alt="avatar">
+                    <template v-for="(data, i) in allRequests">
+                        <div class="intro-y"  data-tw-toggle="modal" data-tw-target="#request-modal" @click="selectedRequest = data">
+                            <div class="transition duration-200 ease-in-out transform cursor-pointer inline-block sm:block border-b border-slate-200/60 dark:border-darkmode-400 hover:scale-[1.02] hover:relative hover:z-20 hover:shadow-md hover:border-0 hover:rounded bg-white text-slate-800 dark:text-slate-300 dark:bg-darkmode-600">
+                                <div class="flex px-5 py-3">
+                                    <div class="mr-5 flex w-72 flex-none items-center">
+                                        <div class="image-fit relative ml-5 h-6 w-6 flex-none">
+                                            <img class="rounded-full" src="{{ asset("assets/images/profil-2.png") }}" alt="avatar">
+                                        </div>
+                                        <div class="ml-3 truncate">
+                                            <span class="font-medium" v-if="data.agent">@{{ data.agent.fullname }}</span> <br>
+                                            <span class="text-xs" v-if="data.agent">@{{data.agent.matricule}}</span>
+                                        </div>
                                     </div>
-                                    <div class="ml-3 truncate">
-                                        <span class="font-medium" v-if="data.agent">@{{ data.agent.fullname }}</span> <br>
-                                        <span class="text-xs" v-if="data.agent">@{{data.agent.matricule}}</span>
+                                    <div class="w-64 truncate sm:w-auto">
+                                        <span class="mr-3 truncate font-medium text-blue-500">
+                                            @{{ data.object }}.
+                                        </span>
+                                        @{{ data.description }}
                                     </div>
-                                </div>
-                                <div class="w-64 truncate sm:w-auto">
-                                    <span class="ml-3 truncate font-medium">
-                                        @{{ data.object }}
-                                    </span>
-                                    @{{ data.description }}
-                                </div>
-                                <div class="pl-10 ml-auto whitespace-nowrap font-medium">
-                                    @{{ data.created_at }}
+                                    <div class="pl-10 ml-auto whitespace-nowrap font-medium">
+                                        @{{ data.created_at }}
+                                    </div>
+
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </template>
                 </div>
             </div>
             <!-- END: Inbox Content -->
@@ -167,6 +170,56 @@
                 </div>
                 <div v-else>
                     <x-empty-state message="Aucune requête disponible pour l'instant." v-else></x-empty-state>
+                </div>
+            </div>
+        </div>
+
+        <div
+            data-tw-backdrop=""
+            aria-hidden="true"
+            tabindex="-1"
+            id="request-modal" class="modal group bg-black/60 transition-[visibility,opacity] w-screen h-screen fixed left-0 top-0 [&:not(.show)]:duration-[0s,0.2s] [&:not(.show)]:delay-[0.2s,0s] [&:not(.show)]:invisible [&:not(.show)]:opacity-0 [&.show]:visible [&.show]:opacity-100 [&.show]:duration-[0s,0.4s]">
+            <div 
+                data-tw-merge id="form-site"
+                class="w-[90%] mx-auto bg-white relative rounded-md shadow-md transition-[margin-top,transform] duration-[0.4s,0.3s] -mt-16 group-[.show]:mt-16 group-[.modal-static]:scale-[1.05] dark:bg-darkmode-600 sm:w-[600px]">
+                <div
+                    class="flex items-center px-5 py-3 border-b border-slate-200/60 dark:border-darkmode-400">
+                    <h2 class="mr-auto text-base font-extrabold uppercase">
+                        Requête détail
+                    </h2>
+                    <button id="btn-reset"
+                        data-tw-merge
+                        data-tw-dismiss="modal"
+                        class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed border-secondary text-slate-500 dark:border-darkmode-100/40 dark:text-slate-300 [&:hover:not(:disabled)]:bg-secondary/20 [&:hover:not(:disabled)]:dark:bg-darkmode-100/10 hidden sm:flex hidden sm:flex"><i
+                            data-tw-merge
+                            data-lucide="x"
+                            class="stroke-1.5 h-4 w-4"></i>
+                    </button>
+                </div>
+                <div class="bg-slate-50 rounded-md" v-if="selectedRequest">
+                    <div class="flex items-start px-5 pt-5">
+                        <div class="flex w-full flex-col items-center lg:flex-row">
+                            <div class="image-fit h-10 w-10">
+                                <img class="rounded-full" src="{{ asset("assets/images/profil-2.png") }}" alt="avatar">
+                            </div>
+                            <div class="mt-3 text-center lg:ml-4 lg:mt-0 lg:text-left">
+                                <a class="font-medium" href="#" v-if="selectedRequest.agent">
+                                    @{{ selectedRequest.agent.fullname }}
+                                </a>
+                                <div v-if="selectedRequest.agent" class="mt-0.5 text-xs text-slate-500">
+                                    @{{ selectedRequest.agent.matricule }}
+                                </div>
+                            </div>
+                           
+                        </div>
+                    </div>
+                    <div class="p-5 text-center lg:text-left">
+                        <div class="mb-2 font-bold">@{{  selectedRequest.object }}.</div>
+                        <div>@{{ selectedRequest.description }}</div>
+                    </div>
+                    <div class="p-5 text-right font-medium text-blue-500">
+                        @{{ selectedRequest.created_at }}
+                    </div>
                 </div>
             </div>
         </div>

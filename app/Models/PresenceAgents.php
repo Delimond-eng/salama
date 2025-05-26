@@ -21,6 +21,10 @@ class PresenceAgents extends Model
         'status_photo_debut', 'status_photo_fin',
         'commentaires', 'status'
     ];
+
+    protected $casts =[
+        "created_at"=>"date:d/m/y"
+    ];
     public function agent()
     {
         return $this->belongsTo(Agent::class);

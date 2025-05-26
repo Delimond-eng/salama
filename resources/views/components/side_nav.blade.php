@@ -43,7 +43,7 @@
              </ul>
          </li>
          <li>
-             <a href="javascript:;" class="side-menu {{ Route::is("site.create") || Route::is("sites.list")  ? 'side-menu--active' : '' }}">
+             <a href="javascript:;" class="side-menu {{ Route::is("site.create.view") || Route::is("sites.list")  ? 'side-menu--active' : '' }}">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="home" class="stroke-1.5 w-5 h-5"></i>
                  </div>
