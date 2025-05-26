@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AppManagerController;
+use App\Http\Controllers\EmailController;
 use App\Models\Site;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -74,6 +75,8 @@ Route::middleware(["cors"])->group(function(){
     });
 
      Route::get("/patrols.pending", [AppManagerController::class, "viewPendingPatrols"])->name("patrols.pending");
+
+     Route::post("/send.mail", [EmailController::class, "sendMail"])->name("send.mail");
 });
 
 

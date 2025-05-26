@@ -142,7 +142,6 @@
                             </button>
                         </div>
                     </div>
-
                     <!-- Content -->
                     <transition name="fade">
                         <div v-if="openAccordion === i" class="bg-slate-50 border-t border-slate-200 px-6 py-5">

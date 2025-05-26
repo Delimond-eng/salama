@@ -25,6 +25,7 @@ class PresenceController extends Controller
                 ],
                 $data
             );
+            
             return response()->json([
                 "status"=>"success",
                 "result"=>$response
@@ -55,6 +56,7 @@ class PresenceController extends Controller
             ]);
 
             $agent = Agent::where('matricule', $data['matricule'])->firstOrFail();
+            $now = Carbon::now();
 
             $lat1 = null;
             $lng1 = null;
@@ -142,6 +144,17 @@ class PresenceController extends Controller
                     'status' => 'debut'
                 ]);
 
+                if($site->emails){
+                    (new EmailController())->sendMail([
+                        "emails" => $site->emails,
+                        "title" => "Présence signalée",
+                        "photo" => $photoUrl,
+                        "agent" => $agent->matricule . ' - ' . $agent->fullname,
+                        "site" => $site->code . ' - ' . $site->name,
+                        "date" => $now->format("d/m/y H:i")
+                    ]);
+                }
+
                 return response()->json([
                     "status" => "success",
                     "message" => "Présence début enregistrée.",
@@ -172,6 +185,17 @@ class PresenceController extends Controller
                     'status' => 'sortie',
                     'commentaires' => $presence->commentaires . ' - ' . $commentaire_distance . $extra_comment,
                 ]);
+
+                if($site->emails){
+                    (new EmailController())->sendMail([
+                        "emails" => $site->emails,
+                        "title" => "Départ signalée",
+                        "photo" => $photoUrl,
+                        "agent" => $agent->matricule . ' - ' . $agent->fullname,
+                        "site" => $site->code . ' - ' . $site->name,
+                        "date" => $now->format("d/m/y H:i")
+                    ]);
+                }
 
                 return response()->json([
                     "status" => "success",

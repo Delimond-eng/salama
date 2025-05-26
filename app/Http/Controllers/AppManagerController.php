@@ -23,54 +23,62 @@ class AppManagerController extends Controller
     /**
      * Start patrol tag
      * @param Request $request
-     * @return JsonResponse
      */
-    public function startPatrol(Request $request): JsonResponse
+    public function startPatrol(Request $request)
     {
         try {
             $data = $request->validate([
                 "patrol_id" => "nullable|int|exists:patrols,id",
                 "site_id"   => "nullable|int|int|exists:sites,id",
                 "agency_id" => "nullable|int|exists:agencies,id",
-                "scan.agent_id" => "required|int|exists:agents,id",
-                "scan.area_id"  => "required|int|exists:areas,id",
-                "scan.comment"  => "nullable|string",
-                "scan.latlng"   => "required|string",
-                "scan.photo"   => "nullable|file",
-                "scan.matricule"   => "nullable|string",
+                "agent_id" => "required|int|exists:agents,id",
+                "area_id"  => "required|int|exists:areas,id",
+                "comment"  => "nullable|string",
+                "latlng"   => "required|string",
+                "matricule"   => "nullable|string",
             ]);
-
-            $scan = $data["scan"];
-            $area = Area::find($scan['area_id']);
+            $area = Area::find($data['area_id']);
 
             // Traitement de la photo
-            if ($request->hasFile('scan.photo')) {
-                $file = $request->file('scan.photo');
+            if ($request->hasFile('photo') && !isset($data["patrol_id"])) {
+                $file = $request->file('photo');
                 $filename = uniqid('patrol_') . '.' . $file->getClientOriginalExtension();
-                $destination = public_path('patrols');
+                $destination = public_path('uploads/patrols');
                 $file->move($destination, $filename);
-
                 // Générer un lien complet sans utiliser storage
-                $scan['photo'] = url('patrols/' . $filename);
+                $data['photo'] = url('uploads/patrols/' . $filename);
+            }
+            else{
+                $data["photo"]="";
             }
 
             list($areaLat, $areaLng) = explode(',', $area->latlng ?? "0,0");
-            list($scanLat, $scanLng) = explode(',', $scan['latlng']);
+            list($scanLat, $scanLng) = explode(',', $data['latlng']);
 
             $distance = $this->calculateDistance($areaLat, $areaLng, $scanLat, $scanLng);
             $tolerance = 100;
 
-            $scan['status'] = ($distance <= $tolerance) ? "success" : "fail";
-            $scan['distance'] = "{$distance} m";
+            $data['status'] = ($distance <= $tolerance) ? "success" : "fail";
+            $data['distance'] = "{$distance} m";
             $patrolId = $data['patrol_id'];
 
             if ($patrolId) {
-                $scan["patrol_id"] = $patrolId;
+                $data["patrol_id"] = $patrolId;
                 $response = PatrolScan::updateOrCreate([
-                    "patrol_id" => $scan["patrol_id"],
-                    "area_id"   => $scan["area_id"]
-                ], $scan);
-
+                    "patrol_id" => $data["patrol_id"],
+                    "area_id"   => $data["area_id"]
+                ], [
+                    "time"=>Carbon::now(),
+                    "latlng"=>$data["latlng"],
+                    "comment"=>$data["comment"],
+                    "distance"=>$distance,
+                    "agent_id"=>$data["agent_id"],
+                    "patrol_id"=>$patrolId,
+                    "area_id"=>$data["area_id"],
+                    "photo"=>$data["photo"],
+                    "matricule"=>$data["matricule"],
+                    "status"=>$data["status"]
+                ]);
                 return response()->json([
                     "status" => "success",
                     "result" => $response
@@ -80,17 +88,37 @@ class AppManagerController extends Controller
             $now = Carbon::now();
             $data["started_at"] = $now->toDateTimeString();
             $data["status"] = "pending";
-            $data["agent_id"] = $scan["agent_id"];
 
             $patrol = Patrol::create($data);
 
             if ($patrol) {
-                $scan["patrol_id"] = $patrol->id;
-                PatrolScan::create($scan);
+                PatrolScan::create([
+                    "time"=>Carbon::now()->format("h:i"),
+                    "latlng"=>$data["latlng"],
+                    "comment"=>$data["comment"],
+                    "distance"=>$distance,
+                    "agent_id"=>$data["agent_id"],
+                    "patrol_id"=>$patrol->id,
+                    "area_id"=>$data["area_id"],
+                    "photo"=>$data["photo"],
+                    "matricule"=>$data["matricule"],
+                    "status"=>$data["status"]
+                ]);
                 $site = Site::find($data["site_id"]);
                 $site->status = 'pending';
                 $site->save();
+                $agent = Agent::find($patrol->agent_id);
 
+                if($site->emails){
+                    (new EmailController())->sendMail([
+                        "emails" => $site->emails,
+                        "title" => "Patrouille en cours",
+                        "photo" => $data["photo"],
+                        "agent" => $agent->matricule . ' - ' . $agent->fullname,
+                        "site" => $site->code . ' - ' . $site->name,
+                        "date" => $now->format("d/m/y H:i")
+                    ]);
+                }
                 return response()->json([
                     "status" => "success",
                     "result" => $patrol
@@ -101,10 +129,6 @@ class AppManagerController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['errors' => $e->getMessage()], 500);
         }
-
-        return response()->json([
-            "errors" => "Echec de traitement de la requête !"
-        ], 500);
     }
 
 
@@ -466,7 +490,6 @@ class AppManagerController extends Controller
 
 
 
-
     /**
      * Close Patrol Tag
      * @param Request $request
@@ -479,8 +502,19 @@ class AppManagerController extends Controller
             $data = $request->validate([
                 "patrol_id" => "required|int|exists:patrols,id",
                 "comment_text" => "nullable|string",
-                "comment_audio" => "nullable|file|mimes:audio/mpeg,mpga,mp3,wav",
+                "comment_audio" => "nullable|file|mimes:audio/mpeg,mpga,mp3,wav"
             ]);
+            if ($request->hasFile('photo')) {
+                $photo = $request->file('photo');
+                $filename = time() . '_' . $photo->getClientOriginalName();
+                $photo->move(public_path('uploads/patrols'), $filename);
+                $photoUrl = url('uploads/patrols/' . $filename);
+                $data["photo"] = $photoUrl;
+            }
+            else{
+                $data["photo"] = "";
+            }
+            
             // Ajout des informations de fin de patrouille
             $now = Carbon::now();
             $data["ended_at"] = $now->toDateTimeString();
@@ -490,10 +524,23 @@ class AppManagerController extends Controller
             $patrol->comment_text = $data["comment_text"] ?? null;
             $patrol->comment_audio = $data["comment_audio"] ?? null;
             $patrol->status = $data["status"];
+            $patrol->photo = $data["photo"];
             $patrol->save();
             $site = Site::find($patrol->site_id);
             $site->status = 'actif';
             $site->save();
+            $agent = Agent::find($patrol->agent_id);
+
+            if($site->emails){
+                (new EmailController())->sendMail([
+                    "emails" => $site->emails,
+                    "title" => "Patrouille en cours",
+                    "photo" => $data["photo"],
+                    "agent" => $agent->matricule . ' - ' . $agent->fullname,
+                    "site" => $site->code . ' - ' . $site->name,
+                    "date" => $now->format("d/m/y H:i")
+                ]);
+            }
             return response()->json([
                 "status" => "success",
                 "result" => $patrol
@@ -505,6 +552,7 @@ class AppManagerController extends Controller
             return response()->json(['errors' => $e->getMessage()], );
         }
     }
+
 
 
 

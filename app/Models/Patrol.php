@@ -37,6 +37,7 @@ class Patrol extends Model
         "comment_audio",
         "site_id",
         "agent_id",
+        "photo",
         "agency_id",
         "status",
     ];

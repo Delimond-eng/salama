@@ -98,6 +98,7 @@ class AdminController extends Controller
                     "adresse"=>"required|string",
                     "phone"=>"nullable|string",
                     "areas.*.libelle"=>"required|string",
+                    "emails"=>"nullable|string",
                 ]);
                 $data["agency_id"] = Auth::user()->agency_id;
                 $response = Site::updateOrCreate(

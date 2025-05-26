@@ -37,7 +37,7 @@ class Site extends Model
         "latlng",
         "adresse",
         "phone",
-        "email",
+        "emails",
         "agency_id",
     ];
 
