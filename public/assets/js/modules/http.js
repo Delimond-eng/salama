@@ -15,17 +15,17 @@ export async function post(url, form) {
             method: "POST",
             headers: {
                 "X-CSRF-TOKEN": csrfToken,
+                accept: "application/json",
             },
             body: form,
         });
         const data = await response.json();
         return { data, status: response.status };
     } catch (error) {
-        console.error('Error:', error);
-        throw new Error('La requête a échoué');
+        console.error("Error:", error);
+        throw new Error("La requête a échoué");
     }
 }
-
 
 /***
  * Fait passer les requêtes HTTP en GET ou en POST,
@@ -45,15 +45,15 @@ export async function postJson(url, form) {
             headers: {
                 "X-CSRF-TOKEN": csrfToken,
                 "Content-Type": "application/json",
-                "accept": "application/json",
+                accept: "application/json",
             },
             body: JSON.stringify(form),
         });
         const data = await response.json();
         return { data, status: response.status };
     } catch (error) {
-        console.error('Error:', error);
-        throw new Error('La requête a échoué');
+        console.error("Error:", error);
+        throw new Error("La requête a échoué");
     }
 }
 
@@ -67,6 +67,7 @@ export async function get(url) {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
+            accept: "application/json",
         },
     });
     const data = await response.json();

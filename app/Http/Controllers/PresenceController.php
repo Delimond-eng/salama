@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\Models\Site;
 use App\Models\Agent;
+use App\Models\AgentGroup;
 
 class PresenceController extends Controller
 {
@@ -252,9 +253,15 @@ class PresenceController extends Controller
     }
 
 
-    public function getAllHoraires(){
-        $horaires = PresenceHoraire::with('agents')->get();
-        return response()->json(['horaires' => $horaires ]);
+    public function getAllHoraires(Request $request){
+        $all = $request->query("all") ?? null;
+        $horaires = PresenceHoraire::orderByDesc("id");
+        return response()->json(['horaires' => isset($all) ? $horaires->get() : $horaires->paginate(10) ]);
+    }
+    public function getAllGroups(Request $request){
+        $all = $request->query("all") ?? null;
+        $groups =AgentGroup::with("horaire")->orderByDesc("id");
+        return response()->json(['groups' => isset($all) ? $groups->get() : $groups->paginate(perPage: 10) ]);
     }
 
 }

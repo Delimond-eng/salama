@@ -650,23 +650,24 @@ class AppManagerController extends Controller
         try {
             // Validation des données
             $data = $request->validate([
-                "schedules.*.libelle" => "required|string",
-                "schedules.*.start_time" => "required|string",
-                "schedules.*.end_time" => "nullable|string",
-                "schedules.*.site_id" => "required|int|exists:sites,id",
+                "schedule.libelle" => "required|string",
+                "schedule.start_time" => "required|string",
+                "schedule.end_time" => "nullable|string",
+                "schedule.date" => "nullable|date",
+                "schedule.site_id" => "required|int|exists:sites,id",
             ]);
 
-            $schedules = $data["schedules"];
-            foreach ($schedules as $schedule){
-                $schedule["agency_id"] = Auth::user()->agency_id;
-                Schedules::updateOrCreate([
-                    "site_id"=>$schedule["site_id"],
-                    "libelle"=>$schedule["libelle"]
-                ], $schedule);
-            }
+            $schedule = $data["schedule"];
+            $schedule["agency_id"] = Auth::user()->agency_id;
+
+            Schedules::updateOrCreate([
+                "site_id"=>$schedule["site_id"],
+                "libelle"=>$schedule["libelle"]
+            ], $schedule);
+
             return response()->json([
                 "status" => "success",
-                "result" => "Planning créé avec succès"
+                "result" => $schedule,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             $errors = $e->validator->errors()->all();
@@ -676,18 +677,21 @@ class AppManagerController extends Controller
         }
     }
 
-
     /**
      * View all schedules from admin
      * @return JsonResponse
     */
-    public function viewAllSchedulesByAdmin():JsonResponse
+    public function viewAllSchedulesByAdmin(Request $request):JsonResponse
     {
         $agencyId = Auth::user()->agency_id;
-        $schedules = Schedules::with("site")
-            ->where("status", "actif")
+        $date = $request->query("date") ?? null;
+        $req = Schedules::with("site")->with("patrol");
+        if(isset($date)){
+            $req->whereDate("date", $date);
+        } 
+        $schedules = $req
             ->where("agency_id", $agencyId)
-            ->get();
+            ->orderByDesc("id")->paginate(5);
         return response()->json([
             "status"=>"success",
             "schedules"=>$schedules

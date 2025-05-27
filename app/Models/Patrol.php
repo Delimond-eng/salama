@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Patrol extends Model
 {
@@ -37,6 +38,7 @@ class Patrol extends Model
         "comment_audio",
         "site_id",
         "agent_id",
+        "schedule_id",
         "photo",
         "agency_id",
         "status",
@@ -98,5 +100,9 @@ class Patrol extends Model
     */
     public function agent() : BelongsTo{
         return $this->belongsTo(Agent::class, foreignKey:"agent_id",);
+    }
+
+    public function planning(): BelongsTo{
+        return $this->belongsTo(Schedules::class, foreignKey:"schedule_id");
     }
 }

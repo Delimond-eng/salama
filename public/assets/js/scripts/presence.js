@@ -1,25 +1,41 @@
 import { get, postJson } from "../modules/http.js";
+import Pagination from "../components/pagination.js";
 new Vue({
     el: "#App",
+    components: {
+        Pagination,
+    },
     data() {
         return {
             error: null,
             result: null,
             isLoading: false,
+            isDataLoading: false,
             pristine: null,
             horaires: [],
-            delete_id: "",
             sites: [],
+            groups: [],
+            delete_id: "",
             form: {
                 libelle: "",
                 started_at: "",
                 ended_at: "",
                 tolerence: "",
             },
+            formGroup: {
+                libelle: "",
+                horaire_id: "",
+            },
             search: "",
             site_id: "",
             filter_date: "",
             filter_site: "",
+            pagination: {
+                current_page: 1,
+                last_page: 1,
+                total: 0,
+                per_page: 10,
+            },
         };
     },
 
@@ -42,15 +58,70 @@ new Vue({
         }
 
         this.viewAllHoraires();
+        this.viewAllGroups();
     },
-
     methods: {
         viewAllHoraires() {
-            get("/horaires")
+            this.isDataLoading = true;
+            let isAll = location.pathname === "/agent.groupe";
+            let url = isAll
+                ? "/horaires?all"
+                : `/horaires?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}`;
+            get(url)
                 .then((res) => {
-                    this.horaires = res.data.horaires;
+                    this.isDataLoading = false;
+                    if (isAll) {
+                        this.horaires = res.data.horaires;
+                    } else {
+                        this.horaires = res.data.horaires.data;
+                        if (location.pathname === "/presence.horaires") {
+                            this.pagination = {
+                                current_page: res.data.horaires.current_page,
+                                last_page: res.data.horaires.last_page,
+                                total: res.data.horaires.total,
+                                per_page: res.data.horaires.per_page,
+                            };
+                        }
+                    }
                 })
                 .catch((err) => console.log("error"));
+        },
+        viewAllGroups() {
+            this.isDataLoading = true;
+            get(
+                `/groups?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}`
+            )
+                .then((res) => {
+                    this.isDataLoading = false;
+                    this.groups = res.data.groups.data;
+                    if (location.pathname === "/agent.groupe") {
+                        this.pagination = {
+                            current_page: res.data.groups.current_page,
+                            last_page: res.data.groups.last_page,
+                            total: res.data.groups.total,
+                            per_page: res.data.groups.per_page,
+                        };
+                    }
+                })
+                .catch((err) => console.log("error"));
+        },
+
+        changePage(page) {
+            this.pagination.current_page = page;
+            if (location.pathname === "/agent.groupe") {
+                this.viewAllGroups();
+            } else {
+                this.viewAllHoraires();
+            }
+        },
+        onPerPageChange(perPage) {
+            this.pagination.per_page = perPage;
+            this.pagination.current_page = 1;
+            if (location.pathname === "/agent.groupe") {
+                this.viewAllGroups();
+            } else {
+                this.viewAllHoraires();
+            }
         },
 
         reset() {
@@ -66,7 +137,6 @@ new Vue({
             const isValid = this.pristine.validate();
             if (isValid) {
                 const url = "/horaire.create";
-
                 this.isLoading = true;
                 postJson(url, this.form)
                     .then(({ data, status }) => {
@@ -122,6 +192,10 @@ new Vue({
             } else {
                 return this.horaires;
             }
+        },
+
+        allGroups() {
+            return this.groups;
         },
 
         allPresenceReports() {

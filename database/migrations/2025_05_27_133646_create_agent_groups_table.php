@@ -13,15 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('agents', function (Blueprint $table) {
+        Schema::create('agent_groups', function (Blueprint $table) {
             $table->id();
-            $table->string("matricule")->unique();
-            $table->string("fullname");
-            $table->string("password");
-            $table->string("role")->default("guard");
-            $table->unsignedBigInteger("agency_id");
-            $table->unsignedBigInteger("site_id")->nullable();
-            $table->unsignedBigInteger("groupe_id")->nullable();
+            $table->string("libelle");
+            $table->unsignedBigInteger("horaire_id");
             $table->string("status")->default("actif");
             $table->timestamps();
         });
@@ -34,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('agents');
+        Schema::dropIfExists('agent_groups');
     }
 };

@@ -85,65 +85,43 @@
                 <h2 class="mr-auto text-base font-medium">Horaires de travail</h2>
             </div>
             <div class="p-5">
-                <div class="flex items-center mb-3 bg-slate-100 rounded-md p-3 justify-between" v-for="(data, i) in allHoraires" :key="i">
-                    <div class="border-l-2 border-primary pl-4 dark:border-primary">
-                        <a class="font-bold" href="#">
-                          @{{ data.libelle }}
-                        </a>
-                        <div class="text-slate-500">@{{ data.started_at }} -- @{{ data.ended_at }}</div>
+                <div v-if="allHoraires.length === 0">
+                    <div v-if="isDataLoading">
+                        <x-dom-loader></x-dom-loader>
                     </div>
-                    <div class="flex items-center font-medium">
-                        <button class="text-blue-500 border border-slate-400 ml-3 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
-                            <i data-lucide="eye" class="w-4 h-4"></i>
-                        </button>
-
-                        <button class="text-danger border   border-slate-400 ml-1 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
+                    <div v-else>
+                        <x-empty-state message="Aucun groupe disponible."></x-empty-state>
                     </div>
+                </div>
+                <div v-else>
+                    <div class="flex items-center mb-2 bg-slate-100 border rounded-md border-slate-200 p-2 justify-between" v-for="(data, i) in allHoraires" :key="i">
+                        <div class="pl-4 dark:border-primary">
+                            <a class="font-bold" href="#">
+                            @{{ data.libelle }}
+                            </a>
+                            <div class="text-slate-500">@{{ data.started_at }} -- @{{ data.ended_at }}</div>
+                        </div>
+                        <div class="flex items-center font-medium">
+                            <button class="text-blue-500 border border-slate-400 ml-3 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
+                                <i data-lucide="eye" class="w-3 h-3"></i>
+                            </button>
 
+                            <button class="text-danger border   border-slate-400 ml-1 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
+                                <i data-lucide="trash-2" class="w-3 h-3"></i>
+                            </button>
+                        </div>
+
+                    </div>
                 </div>
 
                 <!-- BEGIN: Pagination -->
-                <div class="intro-y col-span-12 flex flex-wrap items-center sm:flex-row sm:flex-nowrap">
-                    <nav class="w-full sm:mr-auto sm:w-auto">
-                        <ul class="flex w-full mr-0 sm:mr-auto sm:w-auto">
-                            <li class="flex-1 sm:flex-initial">
-                                <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3"><i data-tw-merge="" data-lucide="chevrons-left" class="stroke-1.5 h-4 w-4"></i></a>
-                            </li>
-                            <li class="flex-1 sm:flex-initial">
-                                <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3"><i data-tw-merge="" data-lucide="chevron-left" class="stroke-1.5 h-4 w-4"></i></a>
-                            </li>
-                            <li class="flex-1 sm:flex-initial">
-                                <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3">...</a>
-                            </li>
-                            <li class="flex-1 sm:flex-initial">
-                                <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3">1</a>
-                            </li>
-                            <li class="flex-1 sm:flex-initial">
-                                <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3 !box dark:bg-darkmode-400">2</a>
-                            </li>
-                            <li class="flex-1 sm:flex-initial">
-                                <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3">3</a>
-                            </li>
-                            <li class="flex-1 sm:flex-initial">
-                                <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3">...</a>
-                            </li>
-                            <li class="flex-1 sm:flex-initial">
-                                <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3"><i data-tw-merge="" data-lucide="chevron-right" class="stroke-1.5 h-4 w-4"></i></a>
-                            </li>
-                            <li class="flex-1 sm:flex-initial">
-                                <a data-tw-merge="" class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3"><i data-tw-merge="" data-lucide="chevrons-right" class="stroke-1.5 h-4 w-4"></i></a>
-                            </li>
-                        </ul>
-                    </nav>
-                    <select data-tw-merge="" class="disabled:bg-slate-100 disabled:cursor-not-allowed disabled:dark:bg-darkmode-800/50 [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md py-2 px-3 pr-8 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 group-[.form-inline]:flex-1 !box mt-3 w-20 sm:mt-0">
-                        <option>10</option>
-                        <option>25</option>
-                        <option>35</option>
-                        <option>50</option>
-                    </select>
-                </div>
+                <Pagination
+                    :current-page="pagination.current_page"
+                    :last-page="pagination.last_page"
+                    :total-items="pagination.total"
+                    :per-page="pagination.per_page"
+                    @page-changed="changePage"
+                    @per-page-changed="onPerPageChange" />
                 <!-- END: Pagination -->
             </div>
         </div>
@@ -155,7 +133,7 @@
                         <div class="intro-x box">
                             <div class="flex flex-col items-center border-b border-slate-200/60 p-5 dark:border-darkmode-400 sm:flex-row">
                                 <h2 class="mr-auto text-base font-medium">
-                                    Ajout horaire
+                                    Création nouveau horaire
                                 </h2>
                             </div>
                             <div class="p-5">
@@ -218,7 +196,6 @@
                     </div>
               </div>
         </div>
-
 
 
         <div id="success-notification-content" class="py-5 pl-5 pr-14 bg-white border border-slate-200/60 rounded-lg shadow-xl dark:bg-darkmode-600 dark:text-slate-300 dark:border-darkmode-600 hidden flex">

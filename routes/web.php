@@ -105,6 +105,7 @@ Route::middleware(['auth'])->group(function () {
     */
     Route::view('/visit.creating', 'visit_create')->name('visit.creating');
     Route::view('/presence.horaires', 'presence_horaire')->name('presence.horaires');
+    Route::view('/agent.groupe', 'agent_groupe')->name('agent.groupe');
 
     /*
     |--------------------------------------------------------------------------
@@ -144,6 +145,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/horaire.create', [\App\Http\Controllers\PresenceController::class, 'createHoraire'])->name('horaire.create');
 
     Route::get('/horaires', [\App\Http\Controllers\PresenceController::class, 'getAllHoraires'])->name('horaires');
+    
+    Route::get('/groups', [\App\Http\Controllers\PresenceController::class, 'getAllGroups'])->name('groups');
 
      /*
     |--------------------------------------------------------------------------

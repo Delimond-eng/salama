@@ -183,9 +183,9 @@
              </ul>
          </li>
          <li>
-             <a href="javascript:;" class="side-menu {{ Route::is("presence.horaires") || Route::is("reports.presences") ? 'side-menu--active' : ''}} ">
+             <a href="javascript:;" class="side-menu {{ Route::is("presence.horaires") || Route::is("reports.presences") || Route::is("agent.groupe") ? 'side-menu--active' : ''}} ">
                  <div class="side-menu__icon">
-                     <i data-tw-merge="" data-lucide="check-circle" class="stroke-1.5 w-5 h-5"></i>
+                     <i data-tw-merge="" data-lucide="calendar" class="stroke-1.5 w-5 h-5"></i>
                  </div>
                  <div class="side-menu__title">
                      Présences
@@ -201,17 +201,17 @@
                              <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
-                            Horaire
+                            Horaires
                          </div>
                      </a>
                  </li>
                  <li>
-                     <a href="" class="side-menu">
+                     <a href="{{ url("agent.groupe") }}" class="side-menu">
                          <div class="side-menu__icon">
                              <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
-                            Shift
+                            Groupes
                          </div>
                      </a>
                  </li>

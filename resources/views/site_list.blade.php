@@ -337,11 +337,6 @@
         opacity: 0;
         transform: translateY(-5px);
     }
-
-    .icon-btn {
-        @apply p-2 rounded-lg border border-transparent bg-white transition-colors;
-    }
-
     .fade-enter-active,
     .fade-leave-active {
         transition: all 0.3s ease;

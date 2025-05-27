@@ -2,7 +2,7 @@ export default {
     name: "Pagination",
     template: `
     <div v-if="totalItems > 0"
-      class="intro-y col-span-12 flex flex-wrap items-center sm:flex-row sm:flex-nowrap justify-between">
+      class="intro-y col-span-12 flex flex-wrap items-center sm:flex-row sm:flex-nowrap justify-between mt-4">
       
       <!-- Navigation -->
       <nav class="w-full sm:w-auto mb-2 sm:mb-0">

@@ -27,6 +27,7 @@ new Vue({
                 fullname: "",
                 password: "",
                 site_id: "",
+                groupe_id: "",
                 role: "",
             },
         };

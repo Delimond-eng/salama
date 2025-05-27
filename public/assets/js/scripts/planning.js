@@ -1,6 +1,10 @@
 import { get, postJson } from "../modules/http.js";
+import Pagination from "../components/pagination.js";
 new Vue({
     el: "#App",
+    components: {
+        Pagination,
+    },
     data() {
         return {
             error: null,
@@ -13,17 +17,21 @@ new Vue({
 
             form: {
                 site_id: "",
-                schedules: [
-                    {
-                        libelle: "",
-                        start_time: "",
-                        end_time: "",
-                        site_id: "",
-                    },
-                ],
+                libelle: "",
+                date: "",
+                start_time: "",
+                end_time: "",
+                site_id: "",
+            },
+            pagination: {
+                current_page: 1,
+                last_page: 1,
+                total: 0,
+                per_page: 10,
             },
             sites: [],
             search: "",
+            filter_date: "",
         };
     },
 
@@ -52,42 +60,31 @@ new Vue({
         },
         viewAllSchedules() {
             this.isDataLoading = true;
-            get("/schedules.all")
+            get(
+                `/schedules.all?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&date=${this.filter_date}`
+            )
                 .then((res) => {
                     this.isDataLoading = false;
-                    this.schedules = res.data.schedules;
+                    this.schedules = res.data.schedules.data;
+                    this.pagination = {
+                        current_page: res.data.schedules.current_page,
+                        last_page: res.data.schedules.last_page,
+                        total: res.data.schedules.total,
+                        per_page: res.data.schedules.per_page,
+                    };
                 })
                 .catch((err) => {
                     this.isDataLoading = false;
                     console.log("error");
                 });
         },
-
-        addField() {
-            this.form.schedules.push({
+        reset() {
+            this.form = {
+                site_id: "",
                 libelle: "",
                 start_time: "",
                 end_time: "",
                 site_id: "",
-            });
-        },
-
-        removeField(item) {
-            let index = this.form.schedules.indexOf(item);
-            this.form.schedules.splice(index, 1);
-        },
-
-        reset() {
-            this.form = {
-                site_id: "",
-                schedules: [
-                    {
-                        libelle: "",
-                        start_time: "",
-                        end_time: "",
-                        site_id: "",
-                    },
-                ],
             };
         },
 
@@ -96,12 +93,8 @@ new Vue({
             if (isValid) {
                 const forms = [];
                 const url = "schedules.create";
-                for (let field of this.form.schedules) {
-                    field.site_id = this.form.site_id;
-                    forms.push(field);
-                }
                 this.isLoading = true;
-                postJson(url, { schedules: forms })
+                postJson(url, { schedule: this.form })
                     .then(({ data, status }) => {
                         this.isLoading = false;
                         // Gestion des erreurs
@@ -149,6 +142,16 @@ new Vue({
                         console.log(err);
                     });
             }
+        },
+
+        changePage(page) {
+            this.pagination.current_page = page;
+            this.viewAllSchedules();
+        },
+        onPerPageChange(perPage) {
+            this.pagination.per_page = perPage;
+            this.pagination.current_page = 1;
+            this.viewAllSchedules();
         },
     },
 

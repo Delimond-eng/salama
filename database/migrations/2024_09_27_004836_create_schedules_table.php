@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string("libelle");
             $table->time("start_time");
             $table->time("end_time")->nullable();
+            $table->date("date")->nullable();
             $table->unsignedBigInteger("site_id");
             $table->unsignedBigInteger("agency_id");
             $table->string("status")->default("actif");

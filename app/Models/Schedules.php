@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Schedules extends Model
 {
@@ -33,6 +34,7 @@ class Schedules extends Model
         "libelle",
         "start_time",
         "end_time",
+        "date",
         "site_id",
         "agency_id"
     ];
@@ -55,6 +57,7 @@ class Schedules extends Model
     protected $casts = [
         'created_at'=>'datetime:d/m/Y H:i',
         'updated_at'=>'datetime:d/m/Y H:i',
+        'date'=>'date:d/m/Y',
     ];
 
     /**
@@ -74,5 +77,10 @@ class Schedules extends Model
     */
     public function site() : BelongsTo{
         return $this->belongsTo(Site::class, foreignKey:"site_id",);
+    }
+
+
+    public function patrol() : HasOne{
+        return $this->hasOne(Patrol::class, foreignKey:'schedule_id', localKey:'id');
     }
 }

@@ -188,7 +188,7 @@
         />
         <!-- END: Pagination -->
 
-         <div class="col-span-12" v-else>
+         <div class="col-span-12" v-if="allAgents.length === 0">
             <div v-if="isDataLoading">
                 <x-dom-loader></x-dom-loader>
             </div>

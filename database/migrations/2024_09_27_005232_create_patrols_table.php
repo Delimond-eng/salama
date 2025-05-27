@@ -22,7 +22,8 @@ return new class extends Migration
             $table->string("photo")->nullable();
             $table->unsignedBigInteger("site_id");
             $table->unsignedBigInteger("agent_id");
-            $table->unsignedBigInteger("agency_id");
+            $table->unsignedBigInteger("schedule_id")->nullable();
+            $table->unsignedBigInteger("agency_id")->nullable();
             $table->string("status")->default("actif");
             $table->timestamps();
         });
