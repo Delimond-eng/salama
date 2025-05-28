@@ -23,7 +23,7 @@ class AgentGroup extends Model
      */
     protected $primaryKey = 'id';
 
-    protected $fillable = ["horaire_id", "libelle"];
+    protected $fillable = ["libelle", "horaire_id"];
 
     public function horaire():BelongsTo{
         return $this->belongsTo(PresenceHoraire::class, foreignKey:"horaire_id");

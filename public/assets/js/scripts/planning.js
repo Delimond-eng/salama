@@ -16,12 +16,12 @@ new Vue({
             delete_id: "",
 
             form: {
+                id: "",
                 site_id: "",
                 libelle: "",
                 date: "",
                 start_time: "",
                 end_time: "",
-                site_id: "",
             },
             pagination: {
                 current_page: 1,
@@ -80,11 +80,11 @@ new Vue({
         },
         reset() {
             this.form = {
+                id: "",
                 site_id: "",
                 libelle: "",
                 start_time: "",
                 end_time: "",
-                site_id: "",
             };
         },
 
@@ -94,7 +94,7 @@ new Vue({
                 const forms = [];
                 const url = "schedules.create";
                 this.isLoading = true;
-                postJson(url, { schedule: this.form })
+                postJson(url, { schedule: this.form, id: this.form.id })
                     .then(({ data, status }) => {
                         this.isLoading = false;
                         // Gestion des erreurs
@@ -144,10 +144,34 @@ new Vue({
             }
         },
 
+        deletePlanning(data) {
+            const self = this;
+            new Swal({
+                text: `Etes-vous sûr de vouloir supprimer définitivement ce planning ??`,
+                icon: "warning",
+                showConfirmButton: 1,
+                showCancelButton: 1,
+                confirmButtonText: "Confirmer",
+                denyButtonText: `Annuler`,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    self.delete_id = data.id;
+                    postJson("/table.delete", {
+                        table: "schedules",
+                        id: data.id,
+                    }).then(() => {
+                        self.delete_id = "";
+                        self.viewAllSchedules();
+                    });
+                }
+            });
+        },
+
         changePage(page) {
             this.pagination.current_page = page;
             this.viewAllSchedules();
         },
+
         onPerPageChange(perPage) {
             this.pagination.per_page = perPage;
             this.pagination.current_page = 1;

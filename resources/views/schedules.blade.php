@@ -104,7 +104,20 @@
                 </div>
 
                 <div v-else>
-                    <div class="flex items-center mb-3 bg-slate-100 rounded-md p-3 justify-between" v-for="(data, i) in allSchedules" :key="i">
+                    <div class="relative flex items-center mb-3 bg-slate-100 rounded-md p-3 justify-between" v-for="(data, i) in allSchedules" :key="i">
+
+                        <!-- Badge status -->
+                        <div style="top: -2px; left: -15px;"
+                            class="absolute px-2 py-1 text-xs font-normal rounded text-white"
+                            :class="{
+                                'bg-success': data.status === 'success',
+                                'bg-danger': data.status === 'fail',
+                                'bg-warning': data.status === 'partial',
+                                'bg-primary': data.status === 'actif'
+                            }">
+                            @{{ data.status }}
+                        </div>
+
                         <div :class="{'border-primary': data.status==='actif', 'border-pending':data.status==='fail', 'border-success':data.status==='success', 'border-warning':data.status==='partial'}" class="border-l-2 border-3 pl-4 dark:border-primary">
                             <a class="font-bold" href="#">
                                 @{{ data.libelle }}
@@ -115,36 +128,32 @@
                             <i data-lucide="map-pin" class="w-5 h-5 mr-1 text-blue-500"></i>
                             @{{ data.site.code }} @{{ data.site.name }}
 
-                            <button class="bg-red-100 text-danger border border-slate-600 ml-3 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
-                                <span v-if="delete_id === data.id" class="h-4 w-4">
-                                    <svg class="h-full w-full" width="15" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
-                                        <defs>
-                                            <linearGradient id="a" x1="8.042%" y1="0%" x2="65.682%" y2="23.865%">
-                                                <stop stop-color="#2d3748" stop-opacity="0" offset="0%" />
-                                                <stop stop-color="#2d3748" offset="100%" />
-                                                <stop stop-color="#2d3748" stop-opacity=".631" offset="63.146%" />
-                                            </linearGradient>
-                                        </defs>
+                            <button class="text-primary border border-primary ml-3 rounded-lg px-2 py-2 text-sm hover:bg-red-200 hover:border-red-400">
+                                <i data-lucide="eye" class="w-3 h-3"></i>
+                            </button>
+
+                            <button @click="deletePlanning(data)" class="text-danger border border-slate-400 ml-1 rounded-lg px-2 py-2 text-sm hover:bg-red-200 hover:border-red-400">
+                                <span class="h-3 w-3" v-if="data.id === delete_id">
+                                    <svg class="h-full w-full" width="25" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="red">
                                         <g fill="none" fill-rule="evenodd">
-                                            <g transform="translate(1 1)">
-                                                <path id="Oval-2" d="M36 18c0-9.94-8.06-18-18-18" stroke="url(#a)" stroke-width="3">
-                                                    <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="0.9s" repeatCount="indefinite" />
+                                            <g transform="translate(1 1)" stroke-width="4">
+                                                <circle stroke-opacity=".5" cx="18" cy="18" r="18"></circle>
+                                                <path d="M36 18c0-9.94-8.06-18-18-18">
+                                                    <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"></animateTransform>
                                                 </path>
-                                                <circle fill="#2d3748" cx="36" cy="18" r="1">
-                                                    <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="0.9s" repeatCount="indefinite" />
-                                                </circle>
                                             </g>
                                         </g>
                                     </svg>
                                 </span>
-                                <i data-lucide="trash-2" class="w-3 h-3"></i>
+                                <i v-else data-lucide="trash-2" class="w-3 h-3"></i>
                             </button>
-                            <button class="text-blue-500 border border-primary ml-1 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
-                                <i data-lucide="eye" class="w-3 h-3"></i>
+
+                            <button @click="form.id = data.id; form.libelle=data.libelle; form.start_time = data.start_time; form.end_time=data.end_time; form.site_id= data.site_id" style="border-color: #5190f6;" class="text-blue-500 border ml-1 rounded-lg px-2 py-2 text-sm hover:bg-red-200 hover:border-red-400">
+                                <i data-lucide="edit" class="w-3 h-3"></i>
                             </button>
                         </div>
-
                     </div>
+
 
                     <!-- BEGIN: Pagination -->
                     <!-- BEGIN: Pagination -->

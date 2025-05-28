@@ -17,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AppManagerController extends Controller
 {
@@ -504,21 +505,21 @@ class AppManagerController extends Controller
                 "comment_text" => "nullable|string",
                 "comment_audio" => "nullable|file|mimes:audio/mpeg,mpga,mp3,wav"
             ]);
+
             if ($request->hasFile('photo')) {
                 $photo = $request->file('photo');
                 $filename = time() . '_' . $photo->getClientOriginalName();
                 $photo->move(public_path('uploads/patrols'), $filename);
-                $photoUrl = url('uploads/patrols/' . $filename);
-                $data["photo"] = $photoUrl;
-            }
-            else{
+                $data["photo"] = url('uploads/patrols/' . $filename);
+            } else {
                 $data["photo"] = "";
             }
-            
+
             // Ajout des informations de fin de patrouille
             $now = Carbon::now();
             $data["ended_at"] = $now->toDateTimeString();
             $data["status"] = "closed";
+
             $patrol = Patrol::find($data["patrol_id"]);
             $patrol->ended_at = $data["ended_at"];
             $patrol->comment_text = $data["comment_text"] ?? null;
@@ -526,12 +527,16 @@ class AppManagerController extends Controller
             $patrol->status = $data["status"];
             $patrol->photo = $data["photo"];
             $patrol->save();
+
             $site = Site::find($patrol->site_id);
             $site->status = 'actif';
             $site->save();
+
             $agent = Agent::find($patrol->agent_id);
 
-            if($site->emails){
+            $this->updateScheduleStatusFromPatrol($patrol);
+
+            if ($site->emails) {
                 (new EmailController())->sendMail([
                     "emails" => $site->emails,
                     "title" => "Patrouille en cours",
@@ -541,17 +546,138 @@ class AppManagerController extends Controller
                     "date" => $now->format("d/m/y H:i")
                 ]);
             }
+
             return response()->json([
                 "status" => "success",
                 "result" => $patrol
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            $errors = $e->validator->errors()->all();
-            return response()->json(['errors' => $errors], );
+            return response()->json(['errors' => $e->validator->errors()->all()]);
         } catch (\Illuminate\Database\QueryException $e) {
-            return response()->json(['errors' => $e->getMessage()], );
+            return response()->json(['errors' => $e->getMessage()]);
         }
     }
+
+    private function updateScheduleStatusFromPatrol(Patrol $patrol)
+    {
+        $schedule = Schedules::where('site_id', $patrol->site_id)
+            ->whereDate('date', Carbon::parse($patrol->started_at)->toDateString())
+            ->first();
+
+        if (!$schedule) return;
+
+        $start = Carbon::parse($schedule->date . ' ' . $schedule->start_time);
+        $end = $schedule->end_time ? Carbon::parse($schedule->date . ' ' . $schedule->end_time) : null;
+        $patrolStart = Carbon::parse($patrol->started_at);
+        $patrolEnd = $patrol->ended_at ? Carbon::parse($patrol->ended_at) : null;
+        if ($end && $patrolStart->gt($end)) {
+            $schedule->status = 'fail';
+        } elseif ($patrolStart->lt($start)) {
+            $schedule->status = 'pending';
+        } else {
+            $allAreas = Area::where('site_id', $patrol->site_id)->pluck('id')->toArray();
+            $scannedAreas = PatrolScan::where('patrol_id', $patrol->id)->pluck('area_id')->toArray();
+            if (empty($scannedAreas)) {
+                $schedule->status = 'fail';
+            } elseif (count($scannedAreas) < count($allAreas)) {
+                $schedule->status = 'partial';
+            } else {
+                $schedule->status = 'success';
+            }
+        }
+        $schedule->save();
+    }
+    /**
+     * Verification de planning de patrouille
+    */
+    
+    public function verifySchedules()
+    {
+        $today = Carbon::today()->toDateString();
+        $schedules = Schedules::whereDate('date', $today)->get();
+
+        foreach ($schedules as $schedule) {
+            try {
+                // Extraire uniquement la date (sans l'heure) pour éviter les erreurs de parsing
+                $dateOnly = Carbon::parse($schedule->date)->toDateString();
+
+                $start = Carbon::parse("{$dateOnly} {$schedule->start_time}");
+                $end = $schedule->end_time ? Carbon::parse("{$dateOnly} {$schedule->end_time}") : null;
+            } catch (\Exception $e) {
+                Log::error("Erreur de parsing horaire pour Schedule ID {$schedule->id} : " . $e->getMessage());
+                continue;
+            }
+
+            $patrol = Patrol::where('site_id', $schedule->site_id)
+                ->where('schedule_id', $schedule->id)
+                ->whereBetween('started_at', [$start, $end ?? Carbon::now()])
+                ->first();
+
+            Log::info("Schedule ID: {$schedule->id}, Patrol found: " . ($patrol ? 'yes' : 'no'));
+
+            if (!$patrol) {
+                if ($schedule->status !== 'fail') {
+                    Log::info("Mise à jour du status à 'fail' pour Schedule ID {$schedule->id}");
+                    $schedule->status = 'fail';
+                    $schedule->save();
+
+                    $site = Site::find($schedule->site_id);
+                    if ($site && $site->emails) {
+                        (new EmailController())->sendMail([
+                            "emails" => $site->emails,
+                            "title" => "Patrouille manquante",
+                            "photo" => null,
+                            "agent" => "N/A",
+                            "site" => $site->code . ' - ' . $site->name,
+                            "date" => Carbon::now()->format("d/m/y H:i")
+                        ]);
+                    }
+                }
+            } else {
+                $allAreas = Area::where('site_id', $schedule->site_id)->pluck('id')->toArray();
+                $scannedAreas = PatrolScan::where('patrol_id', $patrol->id)->pluck('area_id')->unique()->toArray();
+
+                if (empty($scannedAreas)) {
+                    $newStatus = 'fail';
+                } elseif (count($scannedAreas) < count($allAreas)) {
+                    $newStatus = 'partial';
+                } else {
+                    $newStatus = 'success';
+                }
+
+                Log::info("Schedule ID {$schedule->id} : Nouvel état détecté : {$newStatus}, ancien : {$schedule->status}");
+
+                if ($schedule->status !== $newStatus) {
+                    $schedule->status = $newStatus;
+                    $schedule->save();
+
+                    if (in_array($newStatus, ['fail', 'partial'])) {
+                        $site = Site::find($schedule->site_id);
+                        $agent = $patrol->agent_id ? Agent::find($patrol->agent_id) : null;
+
+                        if ($site && $site->emails) {
+                            (new EmailController())->sendMail([
+                                "emails" => $site->emails,
+                                "title" => "Patrouille incomplète",
+                                "photo" => $patrol->photo ?? null,
+                                "agent" => $agent ? $agent->matricule . ' - ' . $agent->fullname : 'Non défini',
+                                "site" => $site->code . ' - ' . $site->name,
+                                "date" => Carbon::now()->format("d/m/y H:i")
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+
+        return response()->json([
+            'status' => 'done',
+            'verified' => $schedules
+        ]);
+    }
+
+
+
 
 
 
@@ -661,8 +787,7 @@ class AppManagerController extends Controller
             $schedule["agency_id"] = Auth::user()->agency_id;
 
             Schedules::updateOrCreate([
-                "site_id"=>$schedule["site_id"],
-                "libelle"=>$schedule["libelle"]
+                "id"=>$request->id
             ], $schedule);
 
             return response()->json([

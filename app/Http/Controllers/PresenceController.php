@@ -22,7 +22,7 @@ class PresenceController extends Controller
             ]);
             $response = PresenceHoraire::updateOrCreate(
                 [
-                    "libelle"=>$data["libelle"],
+                    "id"=>$request->id,
                 ],
                 $data
             );
@@ -40,12 +40,42 @@ class PresenceController extends Controller
             return response()->json(['errors' => $e->getMessage() ]);
         }
     }
+
+
+    public function createGroup(Request $request){
+        try{
+            $data = $request->validate([
+                "libelle"=>"required|string",
+                "horaire_id"=>"required|int|exists:presence_horaires,id",
+            ]);
+            $response = AgentGroup::updateOrCreate(
+                [
+                    "id"=>$request->id,
+                ],
+                $data
+            );
+            
+            return response()->json([
+                "status"=>"success",
+                "result"=>$response
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors ]);
+        }
+        catch (\Illuminate\Database\QueryException $e){
+            return response()->json(['errors' => $e->getMessage() ]);
+        }
+    }
+
+
+
     /*
     *Lionnel nawej
     *Creation de la presence des agents
     *16:10/15-05-2025
     */
-
     public function createPresenceAgent(Request $request)
     {
         try {
@@ -260,7 +290,7 @@ class PresenceController extends Controller
     }
     public function getAllGroups(Request $request){
         $all = $request->query("all") ?? null;
-        $groups =AgentGroup::with("horaire")->orderByDesc("id");
+        $groups = AgentGroup::with("horaire")->orderByDesc("id");
         return response()->json(['groups' => isset($all) ? $groups->get() : $groups->paginate(perPage: 10) ]);
     }
 

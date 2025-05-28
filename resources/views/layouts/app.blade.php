@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="{{ asset('dist/css/vendors/leaflet.css') }}">
     <link rel="stylesheet" href="{{ asset('dist/css/vendors/simplebar.css') }}">
     <link rel="stylesheet" href="{{ asset("dist/css/vendors/toastify.css") }}">
+    <link rel="stylesheet" href="{{ asset("dist/js/vendors/sweetalert2/sweetalert2.min.css") }}">
     <link rel="stylesheet" href="{{ asset("dist/css/vendors/highlight.css") }}">
     <link rel="stylesheet" href="{{ asset("dist/css/vendors/tippy.css") }}">
     <link rel="stylesheet" href="{{ asset('dist/css/components/mobile-menu.css') }}">
@@ -45,6 +46,7 @@
 
 
 <!-- BEGIN: Js assets -->
+ @vite('resources/js/app.js')
 <script src="{{ asset('dist/js/vendors/dom.js') }}"></script>
 <script src="{{ asset('dist/js/vendors/tailwind-merge.js') }}"></script>
 <script src="{{ asset("dist/js/vendors/image-zoom.js") }}"></script>
@@ -66,6 +68,7 @@
 <script src="{{ asset('dist/js/utils/helper.js') }}"></script>
 <script src="{{ asset('dist/js/vendors/simplebar.js') }}"></script>
 <script src="{{ asset('dist/js/vendors/modal.js') }}"></script>
+<script src="{{ asset('dist/js/vendors/sweetalert2/sweetalert2.min.js') }}"></script>
 <script src="{{ asset('dist/js/components/base/theme-color.js') }}"></script>
 <script src="{{ asset('dist/js/components/base/lucide.js') }}"></script>
 <script src="{{ asset('dist/js/components/base/tippy.js') }}"></script>

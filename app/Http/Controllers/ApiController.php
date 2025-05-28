@@ -18,10 +18,7 @@ class ApiController extends Controller
         $agencyId = Auth::user()->agency_id;
         $agents = Agent::where("status", "actif")
             ->where("agency_id", $agencyId)
-            ->with([
-                "site" => function ($query) {
-                    return $query->where("status", "actif");
-            }])->with("horaire")
+            ->with("site")->with("groupe")
             ->orderByDesc("id")
             ->paginate(perPage: 10);
         return response()->json([

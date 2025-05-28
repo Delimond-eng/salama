@@ -99,6 +99,7 @@ new Vue({
                     console.log(err);
                 });
         },
+
         toggleAccordion(index) {
             this.openAccordion = this.openAccordion === index ? null : index;
         },
@@ -141,24 +142,58 @@ new Vue({
 
         deleteArea(id) {
             let self = this;
-            this.load_id = id;
-            postJson("/delete", {
-                table: "areas",
-                id: id,
-            })
-                .then((res) => {
-                    const index = this.selectedAreas.findIndex(
-                        (objet) => objet.id === id
-                    );
-                    if (index !== -1) {
-                        this.selectedAreas.splice(index, 1);
-                    }
-                    self.load_id = "";
-                    self.viewAllSites();
-                })
-                .catch((err) => {
-                    self.load_id = "";
-                });
+            new Swal({
+                text: `Etes-vous sûr de vouloir supprimer définitivement cette zone de patrouille ??`,
+                icon: "warning",
+                showConfirmButton: 1,
+                showCancelButton: 1,
+                confirmButtonText: "Confirmer",
+                denyButtonText: `Annuler`,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    self.load_id = id;
+                    postJson("/table.delete", {
+                        table: "areas",
+                        id: id,
+                    })
+                        .then((res) => {
+                            const index = this.selectedAreas.findIndex(
+                                (objet) => objet.id === id
+                            );
+                            if (index !== -1) {
+                                this.selectedAreas.splice(index, 1);
+                            }
+                            self.load_id = "";
+                            self.viewAllSites();
+                        })
+                        .catch((err) => {
+                            self.load_id = "";
+                        });
+                }
+            });
+        },
+
+        deleteSite(data) {
+            const self = this;
+            new Swal({
+                text: `Etes-vous sûr de vouloir supprimer définitivement ce site ??`,
+                icon: "warning",
+                showConfirmButton: 1,
+                showCancelButton: 1,
+                confirmButtonText: "Confirmer",
+                denyButtonText: `Annuler`,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    self.delete_id = data.id;
+                    postJson("/table.delete", {
+                        table: "sites",
+                        id: data.id,
+                    }).then(() => {
+                        self.delete_id = "";
+                        self.viewAllSites();
+                    });
+                }
+            });
         },
 
         viewPresenceBySite() {
@@ -210,22 +245,6 @@ new Vue({
             XLSX.utils.book_append_sheet(workbook, worksheet, "Présences");
 
             XLSX.writeFile(workbook, "presences.xlsx");
-        },
-
-        deleteSite(id) {
-            let self = this;
-            this.delete_id = id;
-            postJson("/delete", {
-                table: "sites",
-                id: id,
-            })
-                .then((res) => {
-                    self.delete_id = "";
-                    self.viewAllSites();
-                })
-                .catch((err) => {
-                    self.delete_id = "";
-                });
         },
 
         changePage(page) {

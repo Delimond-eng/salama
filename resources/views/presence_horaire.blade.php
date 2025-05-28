@@ -102,12 +102,25 @@
                             <div class="text-slate-500">@{{ data.started_at }} -- @{{ data.ended_at }}</div>
                         </div>
                         <div class="flex items-center font-medium">
-                            <button class="text-blue-500 border border-slate-400 ml-3 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
-                                <i data-lucide="eye" class="w-3 h-3"></i>
+                            
+                            <button @click="form.id=data.id; form.libelle=data.libelle; form.started_at=data.started_at; form.ended_at = data.ended_at;" class="text-blue-500 border border-slate-400 ml-1 rounded-lg px-2 py-2 text-sm hover:bg-red-200 hover:border-red-400">
+                                <i data-lucide="edit" class="w-3 h-3"></i>
                             </button>
 
-                            <button class="text-danger border   border-slate-400 ml-1 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
-                                <i data-lucide="trash-2" class="w-3 h-3"></i>
+                            <button @click="deleteHoraire(data)" class="text-danger border border-slate-400 ml-1 rounded-lg px-2 py-2 text-sm hover:bg-red-200 hover:border-red-400">
+                                <span class="h-3 w-3" v-if="data.id === delete_id">
+                                    <svg width="14" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="red">
+                                        <g fill="none" fill-rule="evenodd">
+                                            <g transform="translate(1 1)" stroke-width="4">
+                                                <circle stroke-opacity=".5" cx="18" cy="18" r="18"></circle>
+                                                <path d="M36 18c0-9.94-8.06-18-18-18">
+                                                    <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"></animateTransform>
+                                                </path>
+                                            </g>
+                                        </g>
+                                    </svg>
+                                </span>
+                                <i v-else data-lucide="trash-2" class="w-3 h-3"></i>
                             </button>
                         </div>
 
@@ -148,8 +161,6 @@
                                         </label>
                                         <input v-model="form.libelle" id="vertical-form-1" type="text" placeholder="Libellé." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
                                     </div>
-
-
                                     <div class="grid grid-cols-12 gap-2 mt-3">
                                         <div class="col-span-6 2xl:col-span-6">
                                             <div>

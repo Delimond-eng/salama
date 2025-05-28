@@ -12,6 +12,7 @@ new Vue({
             isLoading: false,
             isDataLoading: false,
             pristine: null,
+            delete_id: "",
             form: {
                 title: "",
                 content: "",
@@ -88,20 +89,27 @@ new Vue({
             }
         },
 
-        deleteAnnounce(id) {
-            let self = this;
-            this.delete_id = id;
-            postJson("/delete", {
-                table: "announces",
-                id: id,
-            })
-                .then((res) => {
-                    this.viewAllAnnounces();
-                    self.delete_id = "";
-                })
-                .catch((err) => {
-                    self.delete_id = "";
-                });
+        deleteAnnounce(data) {
+            const self = this;
+            new Swal({
+                text: `Etes-vous sûr de vouloir supprimer définitivement ce communiqué ??`,
+                icon: "warning",
+                showConfirmButton: 1,
+                showCancelButton: 1,
+                confirmButtonText: "Confirmer",
+                denyButtonText: `Annuler`,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    self.delete_id = data.id;
+                    postJson("/table.delete", {
+                        table: "announces",
+                        id: data.id,
+                    }).then(() => {
+                        self.delete_id = "";
+                        self.viewAllAnnounces();
+                    });
+                }
+            });
         },
 
         reset() {

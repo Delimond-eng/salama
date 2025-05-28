@@ -5,12 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Agencie;
 use App\Models\Agent;
 use App\Models\Area;
+use App\Models\Patrol;
+use App\Models\PatrolScan;
 use App\Models\Schedules;
 use App\Models\Site;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class AdminController extends Controller
@@ -215,40 +219,27 @@ class AdminController extends Controller
     */
     public function createAgent(Request $request){
         try{
-            $data = null;
-            if($request->id){
-                $data = $request->validate([
-                    "site_id"=>"required|int|exists:sites,id"
-                ]);
-                $foundAgent = Agent::find($request->id);
-                $foundAgent->site_id = $data["site_id"];
-                $foundAgent->save();
-                return response()->json([
-                    "status"=>"success",
-                    "result"=>$foundAgent
-                ]);
-            }else{
-                $data = $request->validate([
-                    "matricule"=>"required|string",
-                    "fullname"=>"required|string",
-                    "password"=>"required|string",
-                    "site_id"=>"nullable|int|exists:sites,id",
-                    "role"=>"nullable|string",
-                    "horaire_id"=>"nullable|int|exists:presence_horaires,id",
-                ]);
-                $data["agency_id"] = Auth::user()->agency_id;
-                $response = Agent::updateOrCreate(
-                    [
-                        "agency_id"=>$data["agency_id"],
-                        "matricule"=>$data["matricule"],
-                    ],
-                    $data
-                );
-                return response()->json([
-                    "status"=>"success",
-                    "result"=>$response
-                ]);
-            }
+            $data = $request->validate([
+                "matricule"=>"required|string",
+                "fullname"=>"required|string",
+                "password"=>"required|string",
+                "site_id"=>"nullable|int|exists:sites,id",
+                "role"=>"nullable|string",
+                "groupe_id"=>"nullable|int|exists:agent_groups,id",
+            ]);
+            $data["agency_id"] = Auth::user()->agency_id;
+            $response = Agent::updateOrCreate(
+                [
+                    "agency_id"=>$data["agency_id"],
+                    "matricule"=>$data["matricule"],
+                    "id"=>$request->id ?? "",
+                ],
+                $data
+            );
+            return response()->json([
+                "status"=>"success",
+                "result"=>$response
+            ]);
         }
         catch (\Illuminate\Validation\ValidationException $e) {
             $errors = $e->validator->errors()->all();
@@ -329,6 +320,37 @@ class AdminController extends Controller
             "schedules"=> $datas
         ]);
     }
+
+     /**
+     * Delete from specify database
+     * @return JsonResponse
+    */
+    public function triggerDelete(Request $request):JsonResponse
+    {
+        try {
+            $data = $request->validate([
+                'table'=>'required|string',
+                'id'=>'required|int'
+            ]);
+            $result = DB::table($data['table'])
+                ->where("id", $data['id'])
+                ->delete();
+            return response()->json([
+                "status"=>"success",
+                "result"=>$result
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors ]);
+        }
+        catch (\Illuminate\Database\QueryException $e){
+            return response()->json(['errors' => $e->getMessage() ]);
+        }
+    }
+
+
+ 
 
 
 }

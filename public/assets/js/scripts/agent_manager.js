@@ -13,6 +13,7 @@ new Vue({
             isDataLoading: false,
             pristine: null,
             agents: [],
+            groups: [],
             pagination: {
                 current_page: 1,
                 last_page: 1,
@@ -21,6 +22,7 @@ new Vue({
             },
             search: "",
             showComment: null,
+            delete_id: "",
             form: {
                 id: "",
                 matricule: "",
@@ -51,7 +53,7 @@ new Vue({
             );
         }
         this.viewAllAgents();
-        this.viewAllHoraires();
+        this.viewAllGroups();
     },
 
     methods: {
@@ -112,6 +114,7 @@ new Vue({
                     });
             }
         },
+
         exportToExcel() {
             const data = this.allAgents.map((p) => ({
                 "Nom complet": p.fullname || "",
@@ -135,9 +138,44 @@ new Vue({
                 fullname: "",
                 password: "",
                 site_id: "",
-                horaire_id: "",
+                groupe_id: "",
                 role: "",
             };
+        },
+
+        editAgent(data) {
+            this.form = {
+                id: data.id,
+                matricule: data.matricule,
+                fullname: data.fullname,
+                password: data.password,
+                site_id: data.site_id,
+                groupe_id: data.groupe_id,
+                role: data.role,
+            };
+        },
+
+        deleteAgent(data) {
+            const self = this;
+            new Swal({
+                text: `Etes-vous sûr de vouloir supprimer l'agent ${data.matricule}`,
+                icon: "warning",
+                showConfirmButton: 1,
+                showCancelButton: 1,
+                confirmButtonText: "Confirmer",
+                denyButtonText: `Annuler`,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    self.delete_id = data.id;
+                    postJson("/table.delete", {
+                        table: "agents",
+                        id: data.id,
+                    }).then(() => {
+                        self.delete_id = "";
+                        self.viewAllAgents();
+                    });
+                }
+            });
         },
 
         viewAllAgents() {
@@ -170,17 +208,15 @@ new Vue({
             this.pagination.current_page = 1;
             this.viewAllAgents();
         },
-        viewAllHoraires() {
+
+        viewAllGroups() {
             this.isDataLoading = true;
-            get("/horaires")
+            get(`/groups?all=1`)
                 .then((res) => {
                     this.isDataLoading = false;
-                    this.horaires = res.data.horaires;
+                    this.groups = res.data.groups;
                 })
-                .catch((err) => {
-                    this.isDataLoading = false;
-                    console.log("error");
-                });
+                .catch((err) => console.log("error"));
         },
     },
 
@@ -208,6 +244,9 @@ new Vue({
                     return "Superviseur";
                 }
             };
+        },
+        allGroups() {
+            return this.groups;
         },
     },
 });

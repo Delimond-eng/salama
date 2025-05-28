@@ -17,12 +17,14 @@ new Vue({
             groups: [],
             delete_id: "",
             form: {
+                id: "",
                 libelle: "",
                 started_at: "",
                 ended_at: "",
                 tolerence: "",
             },
             formGroup: {
+                id: "",
                 libelle: "",
                 horaire_id: "",
             },
@@ -65,7 +67,7 @@ new Vue({
             this.isDataLoading = true;
             let isAll = location.pathname === "/agent.groupe";
             let url = isAll
-                ? "/horaires?all"
+                ? "/horaires?all=1"
                 : `/horaires?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}`;
             get(url)
                 .then((res) => {
@@ -86,6 +88,7 @@ new Vue({
                 })
                 .catch((err) => console.log("error"));
         },
+
         viewAllGroups() {
             this.isDataLoading = true;
             get(
@@ -114,6 +117,7 @@ new Vue({
                 this.viewAllHoraires();
             }
         },
+
         onPerPageChange(perPage) {
             this.pagination.per_page = perPage;
             this.pagination.current_page = 1;
@@ -126,10 +130,16 @@ new Vue({
 
         reset() {
             this.form = {
+                id: "",
                 libelle: "",
                 started_at: "",
                 ended_at: "",
                 tolerence: "",
+            };
+            this.formGroup = {
+                id: "",
+                libelle: "",
+                horaire_id: "",
             };
         },
 
@@ -174,6 +184,93 @@ new Vue({
                         console.log(err);
                     });
             }
+        },
+
+        createGroup(event) {
+            const isValid = this.pristine.validate();
+            if (isValid) {
+                const url = "/group.create";
+                this.isLoading = true;
+                postJson(url, this.formGroup)
+                    .then(({ data, status }) => {
+                        this.isLoading = false;
+                        // Gestion des erreurs
+                        if (data.errors !== undefined) {
+                            this.error = data.errors.toString();
+                        }
+                        if (data.result) {
+                            this.error = null;
+                            this.result = data.result;
+                            new Toastify({
+                                node: $("#success-notification-content-group")
+                                    .clone()
+                                    .removeClass("hidden")[0],
+                                duration: 3000,
+                                newWindow: true,
+                                close: true,
+                                gravity: "top",
+                                position: "right",
+                                stopOnFocus: true,
+                            }).showToast();
+
+                            this.viewAllGroups();
+                            // clean fields
+                            setTimeout(() => {
+                                this.reset();
+                            }, 100);
+                        }
+                    })
+                    .catch((err) => {
+                        this.isLoading = false;
+                        this.error = err;
+                        console.log(err);
+                    });
+            }
+        },
+
+        deleteHoraire(data) {
+            const self = this;
+            new Swal({
+                text: `Etes-vous sûr de vouloir supprimer définitivement cet horaire ??`,
+                icon: "warning",
+                showConfirmButton: 1,
+                showCancelButton: 1,
+                confirmButtonText: "Confirmer",
+                denyButtonText: `Annuler`,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    self.delete_id = data.id;
+                    postJson("/table.delete", {
+                        table: "presence_horaires",
+                        id: data.id,
+                    }).then(() => {
+                        self.delete_id = "";
+                        self.viewAllHoraires();
+                    });
+                }
+            });
+        },
+        deleteGroup(data) {
+            const self = this;
+            new Swal({
+                text: `Etes-vous sûr de vouloir supprimer définitivement ce groupe d'agent ??`,
+                icon: "warning",
+                showConfirmButton: 1,
+                showCancelButton: 1,
+                confirmButtonText: "Confirmer",
+                denyButtonText: `Annuler`,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    self.delete_id = data.id;
+                    postJson("/table.delete", {
+                        table: "agent_groups",
+                        id: data.id,
+                    }).then(() => {
+                        self.delete_id = "";
+                        self.viewAllGroups();
+                    });
+                }
+            });
         },
     },
 

@@ -11,6 +11,12 @@ class PresenceHoraire extends Model
     use HasFactory;
 
 
+    protected $table = "presence_horaires";
+
+
+    protected $primaryKey = 'id';
+
+
     /**
      * Attributes that should be mass-assignable.
      *

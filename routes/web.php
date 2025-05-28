@@ -83,6 +83,7 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/schedules', 'schedules')->name('schedules');
     Route::post('schedules.create', [AppManagerController::class, 'createPlanning'])->name('schedules.create');
     Route::get('/schedules.all', [AppManagerController::class, 'viewAllSchedulesByAdmin'])->name('schedules.all');
+    Route::get('/schedules.verify', [AppManagerController::class, 'verifySchedules'])->name('schedules.verify');
 
     /*
     |--------------------------------------------------------------------------
@@ -143,6 +144,8 @@ Route::middleware(['auth'])->group(function () {
     */
 
     Route::post('/horaire.create', [\App\Http\Controllers\PresenceController::class, 'createHoraire'])->name('horaire.create');
+    
+    Route::post('/group.create', [\App\Http\Controllers\PresenceController::class, 'createGroup'])->name('group.create');
 
     Route::get('/horaires', [\App\Http\Controllers\PresenceController::class, 'getAllHoraires'])->name('horaires');
     
@@ -160,5 +163,7 @@ Route::middleware(['auth'])->group(function () {
 
     //Emettre sur un canal de talkie walkie
     Route::post('/send.talk', [\App\Http\Controllers\TalkieWalkieController::class, 'sendTalkAudio'])->name('send.talk');
+
+    Route::post('/table.delete', [AdminController::class, 'triggerDelete'])->name('table.delete');
 
 });

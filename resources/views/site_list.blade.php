@@ -109,31 +109,22 @@
                         <div class="flex items-center space-x-2">
                             <button
                                 @click.stop="toggleAccordion(i)"
-                                class="bg-primary/10 text-primary border border-primary/30 rounded-lg px-2 py-1.5 text-sm hover:bg-primary/20 hover:border-primary/50">
+                                class="bg-primary/10 text-primary border border-primary/30 rounded-lg px-2 py-2 text-sm hover:bg-primary/20 hover:border-primary/50">
                                 <i v-if="openAccordion === i" data-lucide="eye-off" class="w-4 h-4"></i>
                                 <i v-else data-lucide="eye" class="w-4 h-4"></i>
                             </button>
-                            <button data-tw-toggle="modal" data-tw-target="#header-footer-modal-preview" @click="selectedAreas = data.areas; form.id = data.id; form.name = data.name; error=null" class="bg-blue-100 text-blue-600 border border-blue-300 rounded-lg px-2 py-1.5 text-sm hover:bg-blue-200 hover:border-blue-400">
+                            <button data-tw-toggle="modal" data-tw-target="#header-footer-modal-preview" @click="selectedAreas = data.areas; form.id = data.id; form.name = data.name; error=null" class="bg-blue-100 text-blue-600 border border-blue-300 rounded-lg px-2 py-2 text-sm hover:bg-blue-200 hover:border-blue-400">
                                 <i data-lucide="plus" class="w-4 h-4"></i>
                             </button>
-                            <button @click.stop="deleteSite(data.id)" class="bg-red-100 text-danger border border-red-300 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
-                                <span v-if="delete_id === data.id" class="h-4 w-4">
-                                    <svg class="h-full w-full" width="15" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
-                                        <defs>
-                                            <linearGradient id="a" x1="8.042%" y1="0%" x2="65.682%" y2="23.865%">
-                                                <stop stop-color="#2d3748" stop-opacity="0" offset="0%" />
-                                                <stop stop-color="#2d3748" offset="100%" />
-                                                <stop stop-color="#2d3748" stop-opacity=".631" offset="63.146%" />
-                                            </linearGradient>
-                                        </defs>
+                            <button @click="deleteSite(data)" class="bg-red-100 text-danger border border-red-300 rounded-lg px-2 py-2 text-sm hover:bg-red-200 hover:border-red-400">
+                                <span class="h-3 w-3" v-if="data.id === delete_id">
+                                    <svg width="14" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="red">
                                         <g fill="none" fill-rule="evenodd">
-                                            <g transform="translate(1 1)">
-                                                <path id="Oval-2" d="M36 18c0-9.94-8.06-18-18-18" stroke="url(#a)" stroke-width="3">
-                                                    <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="0.9s" repeatCount="indefinite" />
+                                            <g transform="translate(1 1)" stroke-width="4">
+                                                <circle stroke-opacity=".5" cx="18" cy="18" r="18"></circle>
+                                                <path d="M36 18c0-9.94-8.06-18-18-18">
+                                                    <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"></animateTransform>
                                                 </path>
-                                                <circle fill="#2d3748" cx="36" cy="18" r="1">
-                                                    <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="0.9s" repeatCount="indefinite" />
-                                                </circle>
                                             </g>
                                         </g>
                                     </svg>

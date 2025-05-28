@@ -168,7 +168,8 @@
                 <div v-if="isDataLoading">
                     <x-dom-loader></x-dom-loader>
                 </div>
-                <div v-else>
+            
+                <div class="box mt-5" v-else>
                     <x-empty-state message="Aucune requête disponible pour l'instant." v-else></x-empty-state>
                 </div>
             </div>
