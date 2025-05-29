@@ -86,7 +86,7 @@ class PresenceController extends Controller
                 "coordonnees" => "required|string",
             ]);
 
-            $agent = Agent::where('matricule', $data['matricule'])->firstOrFail();
+            $agent = Agent::with("groupe.horaire")->where('matricule', $data['matricule'])->firstOrFail();
             $now = Carbon::now();
 
             $lat1 = null;
@@ -112,14 +112,14 @@ class PresenceController extends Controller
                 foreach ($sites as $s) {
                     if (!$s->latlng) continue;
                     list($lat2, $lng2) = explode(',', $s->latlng);
-                    $d = app(AppManagerController::class)->calculateDistance($lat1, $lng1, $lat2, $lng2);
+                    $d = (new AppManagerController())->calculateDistance($lat1, $lng1, $lat2, $lng2);
                     if ($d < $minDistance) {
                         $minDistance = $d;
                         $siteProche = $s;
                     }
                 }
                 // Si on trouve un site proche à moins de 200m
-                if ($siteProche && $minDistance <= 200) {
+                if ($siteProche && $minDistance <= 400) {
                     $site = $siteProche;
                     $agent->site_id = $siteProche->id;
                 } else {
@@ -134,12 +134,12 @@ class PresenceController extends Controller
                 $distance = app(AppManagerController::class)->calculateDistance($lat1, $lng1, $lat2, $lng2);
                 $proximite = $distance <= 100 ? "dans le site" : "hors du site";
                 $commentaire_proximite = request('is_sortie') ?
-                    ($distance <= 100 ? "sorti du site" : "pas dans le site à la sortie") :
-                    ($distance <= 100 ? "arrivé dans le site" : "pas arrivé dans le site");
+                    ($distance <= 400 ? "sorti du site" : "pas dans le site à la sortie") :
+                    ($distance <= 400 ? "arrivé dans le site" : "pas arrivé dans le site");
                 $commentaire_distance = "$commentaire_proximite - " . round($distance) . " mètres du site";
             }
 
-            $horaire = $agent->horaire_id ? PresenceHoraire::find($agent->horaire_id) : null;
+            $horaire = $agent->groupe->horaire ? PresenceHoraire::find($agent->groupe->horaire_id) : null;
 
             $photoField = request('is_sortie') ? 'photos_fin' : 'photos_debut';
             $statusPhotoField = request('is_sortie') ? 'status_photo_fin' : 'status_photo_debut';
@@ -166,7 +166,7 @@ class PresenceController extends Controller
                 $presence = PresenceAgents::create([
                     'agent_id' => $agent->id,
                     'site_id' => $agent->site_id ?? 0,
-                    'horaire_id' => $agent->horaire_id,
+                    'horaire_id' => $agent->groupe->horaire_id,
                     'started_at' => $data['heure'],
                     'photos_debut' => $photoUrl ?? null,
                     'status_photo_debut' => $data['status_photo'] ?? null,

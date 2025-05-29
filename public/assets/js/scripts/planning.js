@@ -15,6 +15,8 @@ new Vue({
             schedules: [],
             delete_id: "",
 
+            selectedPlanning: null,
+
             form: {
                 id: "",
                 site_id: "",

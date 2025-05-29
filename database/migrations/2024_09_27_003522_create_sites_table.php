@@ -23,6 +23,7 @@ return new class extends Migration
             $table->text("emails")->nullable();
             $table->unsignedBigInteger("agency_id");
             $table->string("status")->default("actif");
+            $table->string("fcm_token")->nullable();
             $table->timestamps();
         });
     }

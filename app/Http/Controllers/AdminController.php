@@ -184,6 +184,79 @@ class AdminController extends Controller
         }
     }
 
+
+    /**
+     * complete notification token
+     * @return JsonResponse
+    */
+    public function completeToken(Request $request) : JsonResponse{
+        try {
+            $data = $request->validate([
+                "site_id"=>"required|int|exists:sites,id",
+                "fcm_token"=>"required|string"
+            ]);
+
+            $site = Site::find($data["site_id"]);
+            if($site){
+                $site->fcm_token = $data["fcm_token"];
+                $site->save();
+                return response()->json([
+                    "status" => "success",
+                    "result" => $site
+                ]);
+            }
+            else{
+                return response()->json(['errors' => "Echec." ]);
+            }
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors ]);
+        }
+        catch (\Illuminate\Database\QueryException $e){
+            return response()->json(['errors' => $e->getMessage() ]);
+        }
+    }
+
+
+    /**
+     * Enroll agent with photo
+     * @return JsonResponse
+    */
+    public function enrollAgent(Request $request) : JsonResponse{
+        try {
+            $data = $request->validate([
+                "matricule"=>"required|string|exists:agents,matricule",
+            ]);
+            $agent = Agent::where("matricule", $data["matricule"])->first();
+            if ($request->hasFile('photo') && isset($agent)) {
+                $file = $request->file('photo');
+                $filename = uniqid('agent_') . '.' . $file->getClientOriginalExtension();
+                $destination = public_path('uploads/agents');
+                $file->move($destination, $filename);
+                // Générer un lien complet sans utiliser storage
+                $data['photo'] = url('uploads/agents/' . $filename);
+            }
+
+            $agent->update([
+                "photo"=>$data["photo"]
+            ]);
+
+            return response()->json([
+                "status"=>"success",
+                "result"=>$agent
+            ]);
+
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors ]);
+        }
+        catch (\Illuminate\Database\QueryException $e){
+            return response()->json(['errors' => $e->getMessage() ]);
+        }
+    }
+
     /**
      * Generate qrcode data image
     */
@@ -227,10 +300,17 @@ class AdminController extends Controller
                 "role"=>"nullable|string",
                 "groupe_id"=>"nullable|int|exists:agent_groups,id",
             ]);
+            if ($request->hasFile('photo') && !isset($data["patrol_id"])) {
+                $file = $request->file('photo');
+                $filename = uniqid('agent_') . '.' . $file->getClientOriginalExtension();
+                $destination = public_path('uploads/agents');
+                $file->move($destination, $filename);
+                // Générer un lien complet sans utiliser storage
+                $data['photo'] = url('uploads/agents/' . $filename);
+            }
             $data["agency_id"] = Auth::user()->agency_id;
             $response = Agent::updateOrCreate(
                 [
-                    "agency_id"=>$data["agency_id"],
                     "matricule"=>$data["matricule"],
                     "id"=>$request->id ?? "",
                 ],

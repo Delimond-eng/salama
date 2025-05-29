@@ -181,8 +181,7 @@
                                             </div>
                                         </div>
                                     </div>
-
-
+                                    
                                     <button :disabled="isLoading" type="submit" class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-primary border-primary text-white dark:border-primary mt-5">Enregister
                                         <span class="ml-2 h-4 w-4" v-if="isLoading">
                                             <svg class="h-full w-full" width="25" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="white">
@@ -208,7 +207,6 @@
               </div>
         </div>
 
-
         <div id="success-notification-content" class="py-5 pl-5 pr-14 bg-white border border-slate-200/60 rounded-lg shadow-xl dark:bg-darkmode-600 dark:text-slate-300 dark:border-darkmode-600 hidden flex">
             <i data-tw-merge="" data-lucide="check-circle" class="stroke-1.5 w-5 h-5 text-success"></i>
             <div class="ml-4 mr-4">
@@ -217,6 +215,7 @@
             </div>
         </div>
     </div>
+
     <x-dom-loader></x-dom-loader>
 </div>
 <!-- END: Content -->

@@ -30,6 +30,7 @@ class Agent extends Model
      * @var array
      */
     protected $fillable = [
+        "photo",
         "matricule",
         "fullname",
         "password",

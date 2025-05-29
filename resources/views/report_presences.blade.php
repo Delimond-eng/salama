@@ -138,7 +138,7 @@
 
                     <!-- Content -->
                     <transition name="fade">
-                        <div v-if="openAccordion === i" class="grid grid-cols-12 gap-6 bg-slate-50 border-t border-slate-200 px-6 py-5">
+                        <div v-if="openAccordion === i" class="grid grid-cols-12 gap-6 bg-slate-50 border-t border-slate-200 px-6 py-5 overflow-auto 2xl:overflow-visible lg:overflow-visible">
                             <div class="intro-y col-span-12 mt-2 flex flex-wrap items-center xl:flex-nowrap overflow-auto 2xl:overflow-visible">
                                 <button v-show="presences.length !== 0"  @click.stop="exportToExcel" data-tw-merge="" class="transition duration-200 inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-primary text-white dark:border-darkmode-100 mr-2 shadow-md"><i data-tw-merge="" data-lucide="file-text" class="stroke-1.5 mr-2 h-4 w-4"></i>
                                     Exporter en Excel</button>
@@ -176,11 +176,11 @@
                                 </span>
                             </div>
 
-                            <div class="col-span-12 grid grid-cols-12" v-else>
+                            <div class="col-span-12 grid grid-cols-12 overflow-auto 2xl:overflow-visible lg:overflow-visible" v-else>
                                 <div class="col-span-12" v-if="presences.length === 0">
                                     <x-empty-state message="Aucun rapport de présence disponible"></x-empty-state>
                                 </div>
-                                <div v-else class="intro-y col-span-12 overflow-auto 2xl:overflow-visible">
+                                <div v-else class="intro-y col-span-12 overflow-auto 2xl:overflow-visible lg:overflow-visible">
                                     <table data-tw-merge="" class="w-full text-left -mt-2 border-separate border-spacing-y-[10px]">
                                         <thead ata-tw-merge="" class="text-blue-500 font-extrabold">
                                             <tr data-tw-merge="" class="">
@@ -189,28 +189,50 @@
                                                 <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 uppercase">ARRIVée</th>
                                                 <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">DEPART</th>
                                                 <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 uppercase">DURée</th>
-                                                <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">RETARD</th>
-                                                <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 uppercase">IMG.ARRIVée</th>
-                                                <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">IMG.DEPART</th>
+                                                <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 uppercase">IMG.ARV</th>
+                                                <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">IMG.DPT</th>
                                                 <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">DATE</th>
                                                 <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">ACTIONS</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr data-tw-merge="" class="intro-y" v-for="presence in filteredPresences" :key="presence.id">
-                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.agent.matricule }} @{{ presence.agent.fullname || 'N/A' }}</td>
+                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
+                                                    <div class="flex">
+                                                        <div class="image-fit zoom-in h-9 w-9">
+                                                            <img v-if="presence.agent.photo" data-action="zoom" data-placement="top" :src="presence.agent.photo" alt="photo" class="tooltip cursor-pointer rounded-lg border-white shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]">
+                                                            <img v-else data-placement="top" src="{{ asset("assets/images/profil-2.png") }}" alt="avatar" class="tooltip cursor-pointer rounded-lg border-white shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]">
+                                                        </div>
+                                                        <div class="ml-4">
+                                                            <a class="whitespace-nowrap font-medium" href="#">
+                                                                @{{ presence.agent.fullname || 'N/A' }}
+                                                            </a>
+                                                            <div class="mt-0.5 whitespace-nowrap text-xs text-slate-500">
+                                                                @{{ presence.agent.matricule }}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
                                                 <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.horaire.libelle }}</td>
                                                 <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.started_at }}</td>
                                                 <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.ended_at || '-' }}</td>
                                                 <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.duree || '-' }}</td>
-                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.retard }}</td>
-                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600"><a :href="presence.photos_debut" target="_blank"><img data-placement="top" title="Uploaded at 29 September 2020" :src="presence.photos_debut" class="tooltip cursor-pointer rounded-lg border-white w-9 h-9 shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]"></a></td>
-                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600"><a :href="presence.photos_fin" target="_blank"><img data-placement="top" title="Uploaded at 29 September 2020" :src="presence.photos_fin ?? 'assets/images/loading.gif'" class="tooltip cursor-pointer rounded-lg border-white w-9 h-9 shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]"></td>
+                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
+                                                    <div class="image-fit zoom-in h-9 w-9">
+                                                        <img data-action="zoom" data-placement="top" :src="presence.photos_debut" class="tooltip cursor-pointer rounded-lg border-white shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]">
+                                                    </div>
+                                                </td>
+                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
+                                                    <div class="image-fit zoom-in h-9 w-9">
+                                                        <img data-action="zoom" data-placement="top" :src="presence.photos_fin ?? 'assets/images/loading.gif'" class="tooltip cursor-pointer rounded-lg border-white shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]">
+                                                    </div>
+                                                </td>
                                                 <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.created_at }}</td>
                                                 <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
                                                     <button data-tw-toggle="modal" data-tw-target="#presence-details-modal" @click="selectedPresence = presence" class="text-blue-500 underline hover:text-blue-800 tooltip" :title="presence.commentaires">
                                                         Lire details
-                                                    </button></td>
+                                                    </button>
+                                                </td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -251,22 +273,22 @@
                             <div class="relative h-16 w-16 mr-4">
                                 <!-- Avatar -->
                                 <div class="image-fit h-16 w-16">
-                                    <img data-action="zoom" class="rounded-full" :src="selectedPresence.photos_debut" alt="avatar">
+                                    <a :href="selectedPresence.photos_debut" target="_blank"><img class="rounded" :src="selectedPresence.photos_debut" alt="avatar"></a>
                                 </div>
 
                                 <!-- Badge -->
-                                <div style="background-color: #059669;" class="absolute bottom-0 right-0 text-white text-[8px] px-1.5 py-0.5 rounded-full shadow-lg">
+                                <div style="background-color: #059669; top:0; left: 0;" class="absolute text-white text-[8px] px-1.5 py-0.5 rounded shadow-lg">
                                     in
                                 </div>
                             </div>
                             <div class="relative h-16 w-16 mr-4" v-if="selectedPresence.photos_fin">
                                 <!-- Avatar -->
                                 <div class="image-fit h-16 w-16">
-                                    <img data-action="zoom" class="rounded-full" :src="selectedPresence.photos_fin" alt="avatar">
+                                    <a :href="selectedPresence.photos_fin" target="_blank"><img class="rounded" :src="selectedPresence.photos_fin" alt="avatar"></a>
                                 </div>
 
                                 <!-- Badge -->
-                                <div style="background-color:rgb(195, 75, 6);" class="absolute bottom-0 right-0 text-white text-[8px] px-1.5 py-0.5 rounded-full shadow-lg">
+                                <div style="background-color:rgb(195, 75, 6);  top:0; left: 0;" class="absolute text-white text-[8px] px-1.5 py-0.5 rounded shadow-lg">
                                     out
                                 </div>
                             </div>
@@ -288,7 +310,10 @@
                         </div>
                         <div class="mt-4 flex">
                             <div class="mr-auto">Horaire</div>
-                            <div class="font-medium text-blue-500" v-if="selectedPresence.horaire">@{{ selectedPresence.horaire.libelle }}</div>
+                            <div class="font-medium flex flex-col" v-if="selectedPresence.horaire">
+                                <span class="text-blue-500 fw-bold">@{{ selectedPresence.horaire.libelle }}</span>
+                                <small>@{{ selectedPresence.horaire.started_at }} -- @{{ selectedPresence.horaire.ended_at }}</small>
+                            </div>
                         </div>
                         <div class="mt-4 flex">
                             <div class="mr-auto">Heure d'arrivée</div>

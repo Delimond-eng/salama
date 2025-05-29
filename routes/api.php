@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AppManagerController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\FCMController;
 use App\Models\Site;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +25,12 @@ Route::middleware(["cors"])->group(function(){
 
     //ALLOW TO COMPLETE AREA WITH GPS DATA LATLNG
     Route::post("area.complete", [\App\Http\Controllers\AdminController::class, "completeArea"])->name("area.complete");
+
+    //Insert site token
+    Route::post("site.token", [\App\Http\Controllers\AdminController::class, "completeToken"])->name("site.token");
+
+    // AGENT ENROLL PHOTO
+    Route::post("agent.enroll", [\App\Http\Controllers\AdminController::class, "enrollAgent"])->name("area.complete");
 
     //ALLOW TO MAKE PATROL SCAN RECORD
     Route::post("patrol.scan", [AppManagerController::class, "startPatrol"])->name("patrol.scan");
@@ -77,6 +84,7 @@ Route::middleware(["cors"])->group(function(){
      Route::get("/patrols.pending", [AppManagerController::class, "viewPendingPatrols"])->name("patrols.pending");
 
      Route::post("/send.mail", [EmailController::class, "sendMail"])->name("send.mail");
+     Route::post("/send.notication", [FCMController::class, "sendNotification"])->name("send.notification");
 });
 
 

@@ -1,4 +1,4 @@
-import { get, postJson } from "../modules/http.js";
+import { get, post, postJson } from "../modules/http.js";
 import Pagination from "../components/pagination.js";
 new Vue({
     el: "#App",
@@ -9,6 +9,7 @@ new Vue({
         return {
             error: null,
             result: null,
+            preview: null,
             isLoading: false,
             isDataLoading: false,
             pristine: null,
@@ -65,7 +66,17 @@ new Vue({
                 if (this.form.role === "supervisor") {
                     this.form.site_id = "";
                 }
-                postJson(url, this.form)
+
+                const formData = new FormData();
+                formData.append("id", this.form.id);
+                formData.append("matricule", this.form.matricule);
+                formData.append("fullname", this.form.fullname);
+                formData.append("password", this.form.password);
+                formData.append("site_id", this.form.site_id);
+                formData.append("groupe_id", this.form.groupe_id);
+                formData.append("role", this.form.role);
+                formData.append("photo", this.$refs.photoInput.files[0]);
+                post(url, formData)
                     .then(({ data, status }) => {
                         this.isLoading = false;
                         // Gestion des erreurs
@@ -141,6 +152,7 @@ new Vue({
                 groupe_id: "",
                 role: "",
             };
+            this.preview = null;
         },
 
         editAgent(data) {
@@ -153,6 +165,7 @@ new Vue({
                 groupe_id: data.groupe_id,
                 role: data.role,
             };
+            this.preview = data.photo ?? null;
         },
 
         deleteAgent(data) {
@@ -217,6 +230,23 @@ new Vue({
                     this.groups = res.data.groups;
                 })
                 .catch((err) => console.log("error"));
+        },
+
+        onFileChange(e) {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith("image/")) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.preview = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert("Veuillez sélectionner une image valide.");
+            }
+        },
+        removePhoto() {
+            this.preview = null;
+            this.$refs.photoInput.value = null;
         },
     },
 

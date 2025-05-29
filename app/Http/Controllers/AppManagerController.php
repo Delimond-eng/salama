@@ -11,6 +11,7 @@ use App\Models\PatrolScan;
 use App\Models\Schedules;
 use App\Models\Signalement;
 use App\Models\Site;
+use App\Services\FcmService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -33,6 +34,7 @@ class AppManagerController extends Controller
                 "site_id"   => "nullable|int|int|exists:sites,id",
                 "agency_id" => "nullable|int|exists:agencies,id",
                 "agent_id" => "required|int|exists:agents,id",
+                "schedule_id" => "nullable|int|exists:schedules,id",
                 "area_id"  => "required|int|exists:areas,id",
                 "comment"  => "nullable|string",
                 "latlng"   => "required|string",
@@ -94,7 +96,7 @@ class AppManagerController extends Controller
 
             if ($patrol) {
                 PatrolScan::create([
-                    "time"=>Carbon::now()->format("h:i"),
+                    "time"=>Carbon::now()->toDateTimeString(),
                     "latlng"=>$data["latlng"],
                     "comment"=>$data["comment"],
                     "distance"=>$distance,
@@ -310,6 +312,7 @@ class AppManagerController extends Controller
 
 
 
+
     /**
      * View all pending Patrol
      * @return JsonResponse
@@ -517,7 +520,7 @@ class AppManagerController extends Controller
 
             // Ajout des informations de fin de patrouille
             $now = Carbon::now();
-            $data["ended_at"] = $now->toDateTimeString();
+            $data["ended_at"] = $now;
             $data["status"] = "closed";
 
             $patrol = Patrol::find($data["patrol_id"]);
@@ -566,27 +569,42 @@ class AppManagerController extends Controller
 
         if (!$schedule) return;
 
-        $start = Carbon::parse($schedule->date . ' ' . $schedule->start_time);
-        $end = $schedule->end_time ? Carbon::parse($schedule->date . ' ' . $schedule->end_time) : null;
-        $patrolStart = Carbon::parse($patrol->started_at);
-        $patrolEnd = $patrol->ended_at ? Carbon::parse($patrol->ended_at) : null;
-        if ($end && $patrolStart->gt($end)) {
-            $schedule->status = 'fail';
-        } elseif ($patrolStart->lt($start)) {
-            $schedule->status = 'pending';
-        } else {
+        try {
+            $cleanDate = Carbon::parse($schedule->date)->toDateString();
+            $start = Carbon::parse("{$cleanDate} {$schedule->start_time}");
+            $end = $schedule->end_time ? Carbon::parse("{$cleanDate} {$schedule->end_time}") : null;
+
+            $patrolStart = Carbon::parse($patrol->started_at);
+            $patrolEnd = $patrol->ended_at ? Carbon::parse($patrol->ended_at) : null;
+
             $allAreas = Area::where('site_id', $patrol->site_id)->pluck('id')->toArray();
             $scannedAreas = PatrolScan::where('patrol_id', $patrol->id)->pluck('area_id')->toArray();
-            if (empty($scannedAreas)) {
+
+            if ($patrolStart->lt($start)) {
+                // Patrouille effectuée en avance
+                $schedule->status = 'early';
+            } elseif ($end && $patrolStart->gt($end)) {
+                $schedule->status = 'fail';
+            } elseif (empty($scannedAreas)) {
                 $schedule->status = 'fail';
             } elseif (count($scannedAreas) < count($allAreas)) {
                 $schedule->status = 'partial';
             } else {
                 $schedule->status = 'success';
             }
+
+            $schedule->save();
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'analyse ou la mise à jour du planning : ' . $e->getMessage(), [
+                'schedule_id' => $schedule->id ?? null,
+                'site_id' => $schedule->site_id ?? null,
+                'patrol_id' => $patrol->id
+            ]);
         }
-        $schedule->save();
     }
+
+
     /**
      * Verification de planning de patrouille
     */
@@ -618,7 +636,12 @@ class AppManagerController extends Controller
             if (!$patrol) {
                 if ($schedule->status !== 'fail') {
                     Log::info("Mise à jour du status à 'fail' pour Schedule ID {$schedule->id}");
-                    $schedule->status = 'fail';
+                    if($schedule->status === 'early'){
+                        $schedule->status ='early';
+                    }
+                    else{
+                        $schedule->status = 'fail';
+                    }
                     $schedule->save();
 
                     $site = Site::find($schedule->site_id);
@@ -786,10 +809,22 @@ class AppManagerController extends Controller
             $schedule = $data["schedule"];
             $schedule["agency_id"] = Auth::user()->agency_id;
 
+            $site = Site::find($schedule["site_id"]);
+
             Schedules::updateOrCreate([
                 "id"=>$request->id
             ], $schedule);
 
+            // Envoyer une notification FCM
+            if ($site->fcm_token) {
+                $fcm = new FcmService();
+                $title = "Nouvelle Patrouille programmée";
+                $date = $schedule['date'];
+                $start = $schedule['start_time'];
+                $end = $schedule['end_time'];
+                $body = "Vous avez une nouvelle patrouille le $date de $start à $end.";
+                $fcm->sendNotification($site->fcm_token, $title, $body);
+            }
             return response()->json([
                 "status" => "success",
                 "result" => $schedule,
@@ -810,13 +845,13 @@ class AppManagerController extends Controller
     {
         $agencyId = Auth::user()->agency_id;
         $date = $request->query("date") ?? null;
-        $req = Schedules::with("site")->with("patrol");
+        $req = Schedules::with("site")->with(["patrol.site", "patrol.agent", "patrol.scans.area"]);
         if(isset($date)){
             $req->whereDate("date", $date);
         } 
         $schedules = $req
             ->where("agency_id", $agencyId)
-            ->orderByDesc("id")->paginate(5);
+            ->orderByDesc("id")->paginate(4);
         return response()->json([
             "status"=>"success",
             "schedules"=>$schedules
@@ -831,11 +866,9 @@ class AppManagerController extends Controller
     */
     public function viewAllSchedulesByApp(Request $request):JsonResponse
     {
-        $agencyId = $request->query("agency_id");
         $siteId = $request->query("site_id");
         $schedules = Schedules::with("site")
             ->where("status", "actif")
-            ->where("agency_id", $agencyId)
             ->where("site_id", $siteId)
             ->get();
         return response()->json([
@@ -843,6 +876,7 @@ class AppManagerController extends Controller
             "schedules"=>$schedules
         ]);
     }
+
 
     /**
      * Login agent
@@ -866,6 +900,41 @@ class AppManagerController extends Controller
                 ]);
             }else{
                 return response()->json(['errors' => 'Matricule ou mot de passe erroné !'], );
+            }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors], );
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()], );
+        }
+    }
+
+
+    /**
+     * Login agent
+     * @param Request $request
+     * @return JsonResponse
+    */
+    public function saveMessagingToken(Request $request) {
+        try {
+            // Validation des données
+            $data = $request->validate([
+                "site_id" => "required|int|exists:sites,id",
+                "fcm_token" => "required|string",
+            ]);
+            $site = Site::find($data["site_id"]);
+            if($site){
+                $site->fcm_token = $data["fcm_token"];
+                $site->save();
+                return response()->json([
+                    "status"=>"success",
+                    "result"=>$site
+                ]);
+            }
+            else{
+                 return response()->json([
+                    "errors"=>"Echec de traitement des données"
+                ]);
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
             $errors = $e->validator->errors()->all();
@@ -925,7 +994,9 @@ class AppManagerController extends Controller
                 $distance = $this->calculateDistance($lat1, $lng1, $lat2, $lng2);
 
                 $time = Carbon::parse($scan->time);
+
                 $durationSincePrevious = 0;
+                
                 if ($index > 0) {
                     $previousTime = Carbon::parse($scans[$index - 1]->time);
                     $durationSincePrevious = $previousTime->diffInSeconds($time);

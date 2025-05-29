@@ -128,9 +128,9 @@
                     <tr data-tw-merge="" class="intro-y" v-for="(data, index) in allPatrolReports" :key="index">
                         <td class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
                             <div class="flex items-center">
-                                <a class="image-fit zoom-in h-9 w-9" :href="data.photo" target="_blank">
-                                    <img data-placement="top" :src="data.photo ?? 'assets/images/loading.gif'" alt="photo" class="tooltip cursor-pointer rounded-lg border-white shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]">
-                                </a>
+                                <div class="image-fit zoom-in h-9 w-9">
+                                    <img data-placement="top" data-action="zoom" :src="data.photo ?? 'assets/images/loading.gif'" alt="photo" class="tooltip cursor-pointer rounded-lg border-white shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]">
+                                </div>
                                 <div class="ml-4">
                                     <a class="whitespace-nowrap font-medium" href="#">
                                         @{{ data.agent.fullname }}
@@ -301,22 +301,20 @@
                                                     </div>
                                                     <div>
                                                         <div class="ml-auto mt-1">
-                                                            <div :class="data.distance_meters <= 1 ? 'bg-success' : 'bg-pending'" class="rounded py-[2px] px-2 text-xs font-medium text-white">
-                                                                @{{ data.distance_meters <= 1 ? 'succès' : 'éloigné' }}
+                                                            <div :class="data.distance_meters <= 100 ? 'bg-success' : 'bg-pending'" class="rounded py-[2px] px-2 text-xs font-medium text-white">
+                                                                @{{ data.distance_meters <= 100 ? 'succès' : 'éloigné' }}
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="flex justify-between mt-1">
                                                     <div class="text-blue-500 text-xs">Temps depuis le précédent @{{ data.duration_since_previous_seconds }} s</div>
-                                                    <div class="ml-auto text-xs text-slate-500">Distance <span :class="data.distance_meters <=1 ? 'text-success' : ''">@{{ data.distance_meters }}m</span></div>
+                                                    <div class="ml-auto text-xs text-slate-500">Distance <span :class="data.distance_meters <=1 ? 'text-success' : ''">@{{ data.distance_meters <= 100 ? 0 : data.distance_meters }}m</span></div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                
                             </div>
                         </div>
 

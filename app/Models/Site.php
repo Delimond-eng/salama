@@ -38,6 +38,7 @@ class Site extends Model
         "adresse",
         "phone",
         "emails",
+        "fcm_token",
         "agency_id",
     ];
 
