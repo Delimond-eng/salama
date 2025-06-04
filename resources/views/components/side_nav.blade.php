@@ -259,6 +259,16 @@
              </a>
          </li>
          <li>
+             <a href="{{ url("/signalements") }}" class="side-menu {{ Route::is("signalements") ? 'side-menu--active' : '' }}">
+                 <div class="side-menu__icon">
+                     <i data-tw-merge="" data-lucide="bell-ring" class="stroke-1.5 w-5 h-5"></i>
+                 </div>
+                 <div class="side-menu__title">
+                     Signalements
+                 </div>
+             </a>
+         </li>
+         <li>
              <a href="javascript:;" class="side-menu  {{ Route::is("log.phones") || Route::is("log.activities") || Route::is("log.panics") ? 'side-menu--active': '' }}">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="history" class="stroke-1.5 w-5 h-5"></i>

@@ -304,10 +304,6 @@
         <!-- end toast -->
     </div>
 
-
-
-    
-
 </div>
 <!-- END: Content -->
 @endsection

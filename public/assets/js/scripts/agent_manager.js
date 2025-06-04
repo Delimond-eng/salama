@@ -15,6 +15,7 @@ new Vue({
             pristine: null,
             agents: [],
             groups: [],
+            sites: [],
             pagination: {
                 current_page: 1,
                 last_page: 1,
@@ -53,6 +54,7 @@ new Vue({
                 }
             );
         }
+        this.viewAllSites();
         this.viewAllAgents();
         this.viewAllGroups();
     },
@@ -211,6 +213,16 @@ new Vue({
                     console.log("error");
                 });
         },
+        viewAllSites() {
+            this.isDataLoading = true;
+            get(`/sites`)
+                .then((res) => {
+                    this.sites = res.data.sites;
+                })
+                .catch((err) => {
+                    console.log("error");
+                });
+        },
 
         changePage(page) {
             this.pagination.current_page = page;
@@ -276,6 +288,9 @@ new Vue({
             };
         },
         allGroups() {
+            return this.groups;
+        },
+        allSites() {
             return this.groups;
         },
     },

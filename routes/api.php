@@ -4,6 +4,7 @@ use App\Http\Controllers\AppManagerController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\FCMController;
 use App\Models\Site;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -85,6 +86,27 @@ Route::middleware(["cors"])->group(function(){
 
      Route::post("/send.mail", [EmailController::class, "sendMail"])->name("send.mail");
      Route::post("/send.notication", [FCMController::class, "sendNotification"])->name("send.notification");
+
+     Route::post("/parse.date", function(Request $req){
+        Carbon::setLocale('fr');
+        $date = Carbon::parse($req->input("date"));
+        $today = Carbon::today();
+        $tomorrow = Carbon::tomorrow();
+
+        if ($date->isSameDay($today)) {
+            $formattedDate = "aujourd'hui";
+        } elseif ($date->isSameDay($tomorrow)) {
+            $formattedDate = "demain";
+        } else {
+            // Exemple : Jeudi 10 avril 2025
+            $formattedDate = $date->translatedFormat('l j F Y');
+        }
+        $body = "Vous avez une nouvelle patrouille $formattedDate";
+
+        return response()->json([
+            "message"=>$body
+        ]);
+     });
 });
 
 

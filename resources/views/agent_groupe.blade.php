@@ -106,7 +106,7 @@
                                 <i data-lucide="edit" class="w-3 h-3"></i>
                             </button>
 
-                            <button @click="deleteGroup(data)" class="text-danger border   border-slate-400 ml-1 rounded-lg px-2 py-2 text-sm hover:bg-red-200 hover:border-red-400">
+                            <button @click="deleteGroup(data)" class="text-danger border border-slate-400 ml-1 rounded-lg px-2 py-2 text-sm hover:bg-red-200 hover:border-red-400">
                                 <span class="h-3 w-3" v-if="data.id === delete_id">
                                     <svg width="14" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="red">
                                         <g fill="none" fill-rule="evenodd">

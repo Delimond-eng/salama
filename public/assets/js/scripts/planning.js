@@ -48,6 +48,7 @@ new Vue({
             errorTextParent: "input-form",
             errorTextClass: "text-danger mt-2",
         });
+        this.verifySchedules();
         this.viewAllSchedules();
         this.viewAllSites();
     },
@@ -80,6 +81,14 @@ new Vue({
                     console.log("error");
                 });
         },
+
+        verifySchedules() {
+            get("/schedules.verify").then((res)=>{
+                console.log(JSON.stringify(res.data));
+                
+            });
+        },
+
         reset() {
             this.form = {
                 id: "",

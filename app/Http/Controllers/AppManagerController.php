@@ -244,11 +244,11 @@ class AppManagerController extends Controller
                 // Vérifier si un fichier est fourni dans le champ 'media'
                 if ($request->hasFile('media')) {
                     $file = $request->file('media');
-                    $agencyId = $data['agency_id'];
-                    $filename = time() . '_' . $file->getClientOriginalName();
-                    $path = "uploads/agence_" . $agencyId;
-                    $file->storeAs($path, $filename, 'public');
-                    $data['media'] = url("storage/$path/$filename");
+                    $filename = uniqid('signalement_') . '.' . $file->getClientOriginalExtension();
+                    $destination = public_path(path: 'uploads/signalements');
+                    $file->move($destination, $filename);
+                    // Générer un lien complet sans utiliser storage
+                    $data['media'] = url('uploads/signalements/' . $filename);
                 }
                 $response = Signalement::create($data);
 
@@ -274,19 +274,62 @@ class AppManagerController extends Controller
      * view all signalements
      * @return JsonResponse
     */
-    public function viewAllSignalements():JsonResponse
+    public function viewAllSignalements(Request $request):JsonResponse
     {
-        $agencyId = Auth::user()->agency_id;
-        $signalements = Signalement::with("agent")
-            ->with("site")
-            ->where("agency_id", $agencyId)
-            ->orderByDesc("id")
-            ->get();
+        $date = $request->query("date");
+        $siteId = $request->query("siteId");
+        //$agencyId = Auth::user()->agency_id;
+        $signalements = Signalement::with(["agent", "site"])
+        ->when($date, function ($query, $date) {
+            $query->whereDate("created_at", $date);
+        })
+        ->when($siteId, function ($query, $siteId) {
+            $query->where("site_id", $siteId);
+        })
+        ->orderByDesc("id")
+        ->paginate(3);
+        // Ajoute le champ formattedDate à chaque signalement
+        $signalements->getCollection()->transform(function ($item) {
+            $item->formattedDate = $this->formatDateHumanReadable($item->created_at);
+            return $item;
+        });
+
+        $sites = Site::all();
         return response()->json([
             "status"=>"success",
-            "signalements"=>$signalements
+            "signalements"=>$signalements,
+            "sites"=>$sites
         ]);
     }
+
+    private function formatDateHumanReadable($date)
+    {
+        $now = Carbon::now();
+        $diffInMinutes = $date->diffInMinutes($now);
+
+        if ($diffInMinutes < 1) {
+            return "Maintenant";
+        } elseif ($diffInMinutes < 60) {
+            return "Il y a de cela " . $diffInMinutes . " min";
+        }
+        $diffInHours = $date->diffInHours($now);
+        if ($diffInHours < 24) {
+            return "Il y a de cela " . $diffInHours . "h";
+        }
+        $diffInDays = $date->diffInDays($now);
+        if ($diffInDays == 1) {
+            return "Il y a de cela 1 jour";
+        } elseif ($diffInDays <= 6) {
+            return "Il y a de cela " . $diffInDays . " jours";
+        } elseif ($diffInDays < 30) {
+            return "Il y a de cela une semaine";
+        } elseif ($diffInDays < 60) {
+            return "Il y a de cela un mois";
+        } else {
+            return "Il y a de cela " . $date->diffInMonths($now) . " mois";
+        }
+    }
+
 
 
 
@@ -561,102 +604,124 @@ class AppManagerController extends Controller
         }
     }
 
+
     private function updateScheduleStatusFromPatrol(Patrol $patrol)
     {
+        $patrolStart = Carbon::parse($patrol->started_at)->addHour(); // Décalage horaire +1
+        $toleranceMinutes = 5;
+
         $schedule = Schedules::where('site_id', $patrol->site_id)
-            ->whereDate('date', Carbon::parse($patrol->started_at)->toDateString())
+            ->whereDate('date', $patrolStart->toDateString())
             ->first();
 
+        // Si aucun planning trouvé → on ne fait rien
         if (!$schedule) return;
+
+        // 🔒 Éviter de recalculer si le planning est déjà validé
+        if ($schedule->status === 'success') {
+            Log::info("Planning #{$schedule->id} déjà en succès, aucune mise à jour nécessaire.");
+            return;
+        }
 
         try {
             $cleanDate = Carbon::parse($schedule->date)->toDateString();
-            $start = Carbon::parse("{$cleanDate} {$schedule->start_time}");
-            $end = $schedule->end_time ? Carbon::parse("{$cleanDate} {$schedule->end_time}") : null;
+            $start = Carbon::parse("{$cleanDate} {$schedule->start_time}")->addHour();
+            $end = $schedule->end_time
+                ? Carbon::parse("{$cleanDate} {$schedule->end_time}")->addHour()
+                : Carbon::now()->addHour();
 
-            $patrolStart = Carbon::parse($patrol->started_at);
-            $patrolEnd = $patrol->ended_at ? Carbon::parse($patrol->ended_at) : null;
+            $toleranceStart = $start->copy()->subMinutes($toleranceMinutes);
+            $toleranceEnd = $end->copy()->addMinutes($toleranceMinutes);
 
-            $allAreas = Area::where('site_id', $patrol->site_id)->pluck('id')->toArray();
-            $scannedAreas = PatrolScan::where('patrol_id', $patrol->id)->pluck('area_id')->toArray();
+            Log::info("Mise à jour du planning #{$schedule->id} via patrouille #{$patrol->id}", [
+                'patrolStart' => $patrolStart->format('Y-m-d H:i:s'),
+                'toleranceStart' => $toleranceStart->format('Y-m-d H:i:s'),
+                'toleranceEnd' => $toleranceEnd->format('Y-m-d H:i:s'),
+            ]);
 
-            if ($patrolStart->lt($start)) {
-                // Patrouille effectuée en avance
-                $schedule->status = 'early';
-            } elseif ($end && $patrolStart->gt($end)) {
+            if ($patrolStart->lt($toleranceStart)) {
+                $schedule->status = 'early'; // trop tôt
+            } elseif ($patrolStart->gt($toleranceEnd)) {
                 $schedule->status = 'fail';
-            } elseif (empty($scannedAreas)) {
-                $schedule->status = 'fail';
-            } elseif (count($scannedAreas) < count($allAreas)) {
-                $schedule->status = 'partial';
+                $this->sendFailureEmail($schedule, $patrol->agent ?? null, $patrol->photo ?? null, $patrolStart);
             } else {
-                $schedule->status = 'success';
-            }
+                $allAreas = Area::where('site_id', $patrol->site_id)->pluck('id')->toArray();
+                $scannedAreas = PatrolScan::where('patrol_id', $patrol->id)->pluck('area_id')->unique()->toArray();
 
+                if (empty($scannedAreas)) {
+                    $schedule->status = 'fail';
+                    $this->sendFailureEmail($schedule, $patrol->agent ?? null, $patrol->photo ?? null, $patrolStart);
+                } elseif (count($scannedAreas) < count($allAreas)) {
+                    $schedule->status = 'partial';
+                } else {
+                    $schedule->status = 'success';
+                }
+            }
             $schedule->save();
 
         } catch (\Exception $e) {
-            Log::error('Erreur lors de l\'analyse ou la mise à jour du planning : ' . $e->getMessage(), [
+            Log::error("Erreur lors de la mise à jour du planning", [
+                'message' => $e->getMessage(),
                 'schedule_id' => $schedule->id ?? null,
-                'site_id' => $schedule->site_id ?? null,
-                'patrol_id' => $patrol->id
+                'patrol_id' => $patrol->id,
             ]);
         }
     }
 
-
-    /**
-     * Verification de planning de patrouille
-    */
-    
     public function verifySchedules()
     {
-        $today = Carbon::today()->toDateString();
-        $schedules = Schedules::whereDate('date', $today)->get();
+        $now = Carbon::now()->addHour(); // Date actuelle + 1h
+        $toleranceMinutes = 5;
 
-        foreach ($schedules as $schedule) {
+        $schedules = Schedules::whereDate('date', $now->toDateString()) // Uniquement aujourd’hui
+            ->whereNotIn('status', ['success', 'partial', 'fail'])
+            ->get();
+
+        /* foreach ($schedules as $schedule) {
             try {
-                // Extraire uniquement la date (sans l'heure) pour éviter les erreurs de parsing
-                $dateOnly = Carbon::parse($schedule->date)->toDateString();
+                Log::info("Schedule ID: {$schedule->id} | Date: {$schedule->date} | Start: {$schedule->start_time} | End: {$schedule->end_time}");
 
-                $start = Carbon::parse("{$dateOnly} {$schedule->start_time}");
-                $end = $schedule->end_time ? Carbon::parse("{$dateOnly} {$schedule->end_time}") : null;
-            } catch (\Exception $e) {
-                Log::error("Erreur de parsing horaire pour Schedule ID {$schedule->id} : " . $e->getMessage());
-                continue;
-            }
+                $start = $this->parseDateTime($schedule->date, $schedule->start_time)->addHour();
+                $end = $schedule->end_time
+                    ? $this->parseDateTime($schedule->date, $schedule->end_time)->addHour()
+                    : $now;
 
-            $patrol = Patrol::where('site_id', $schedule->site_id)
-                ->where('schedule_id', $schedule->id)
-                ->whereBetween('started_at', [$start, $end ?? Carbon::now()])
-                ->first();
+                // Appliquer la tolérance
+                $toleranceStart = $start->copy()->subMinutes($toleranceMinutes);
+                $toleranceEnd = $end->copy()->addMinutes($toleranceMinutes);
 
-            Log::info("Schedule ID: {$schedule->id}, Patrol found: " . ($patrol ? 'yes' : 'no'));
+                // Patrouilles dans l'intervalle du planning
+                $patrol = Patrol::with("agent")
+                    ->where('site_id', $schedule->site_id)
+                    ->whereBetween('started_at', [$toleranceStart, $toleranceEnd])
+                    ->latest()
+                    ->first();
 
-            if (!$patrol) {
-                if ($schedule->status !== 'fail') {
-                    Log::info("Mise à jour du status à 'fail' pour Schedule ID {$schedule->id}");
-                    if($schedule->status === 'early'){
-                        $schedule->status ='early';
-                    }
-                    else{
+                $newStatus = 'fail'; // Par défaut
+
+                if (!$patrol) {
+                    // Aucun début de patrouille dans l'intervalle, mais on attend que le créneau soit terminé
+                    if ($now->gt($toleranceEnd)) {
+                        $this->sendFailureEmail($schedule, null, null, $now);
                         $schedule->status = 'fail';
+                        $schedule->save();
                     }
-                    $schedule->save();
-
-                    $site = Site::find($schedule->site_id);
-                    if ($site && $site->emails) {
-                        (new EmailController())->sendMail([
-                            "emails" => $site->emails,
-                            "title" => "Patrouille manquante",
-                            "photo" => null,
-                            "agent" => "N/A",
-                            "site" => $site->code . ' - ' . $site->name,
-                            "date" => Carbon::now()->format("d/m/y H:i")
-                        ]);
-                    }
+                    continue;
                 }
-            } else {
+
+                // Vérifier si la patrouille est vraiment dans l’intervalle exact (pas seulement tolérance)
+                $startedAt = Carbon::parse($patrol->started_at);
+                if ($startedAt->lt($start) || $startedAt->gt($end)) {
+                    // Patrouille faite hors du vrai créneau
+                    if ($now->gt($toleranceEnd)) {
+                        $this->sendFailureEmail($schedule, $patrol->agent ?? null, $patrol->photo ?? null, $now);
+                        $schedule->status = 'fail';
+                        $schedule->save();
+                    }
+                    continue;
+                }
+
+                // Comparer les zones
                 $allAreas = Area::where('site_id', $schedule->site_id)->pluck('id')->toArray();
                 $scannedAreas = PatrolScan::where('patrol_id', $patrol->id)->pluck('area_id')->unique()->toArray();
 
@@ -668,36 +733,51 @@ class AppManagerController extends Controller
                     $newStatus = 'success';
                 }
 
-                Log::info("Schedule ID {$schedule->id} : Nouvel état détecté : {$newStatus}, ancien : {$schedule->status}");
-
-                if ($schedule->status !== $newStatus) {
-                    $schedule->status = $newStatus;
-                    $schedule->save();
-
-                    if (in_array($newStatus, ['fail', 'partial'])) {
-                        $site = Site::find($schedule->site_id);
-                        $agent = $patrol->agent_id ? Agent::find($patrol->agent_id) : null;
-
-                        if ($site && $site->emails) {
-                            (new EmailController())->sendMail([
-                                "emails" => $site->emails,
-                                "title" => "Patrouille incomplète",
-                                "photo" => $patrol->photo ?? null,
-                                "agent" => $agent ? $agent->matricule . ' - ' . $agent->fullname : 'Non défini',
-                                "site" => $site->code . ' - ' . $site->name,
-                                "date" => Carbon::now()->format("d/m/y H:i")
-                            ]);
-                        }
-                    }
+                if ($newStatus === 'fail') {
+                    $this->sendFailureEmail($schedule, $patrol->agent ?? null, $patrol->photo ?? null, $now);
                 }
+
+                $schedule->status = $newStatus;
+                $schedule->save();
+
+            } catch (\Exception $e) {
+                Log::error("Erreur lors de la vérification du schedule ID {$schedule->id} : " . $e->getMessage());
             }
-        }
+        } */
 
         return response()->json([
-            'status' => 'done',
-            'verified' => $schedules
+            "status" => "success",
+            "verified" => count($schedules),
+            "time"=>$now
         ]);
     }
+
+    protected function sendFailureEmail($schedule, $agent, $photo, $now)
+    {
+        $site = Site::find($schedule->site_id);
+        if ($site && $site->emails) {
+            (new EmailController())->sendMail([
+                "emails" => $site->emails,
+                "title" => "Patrouille non respectée",
+                "photo" => $photo,
+                "agent" => $agent ? ($agent->matricule . ' - ' . $agent->fullname) : null,
+                "site" => $site->code . ' - ' . $site->name,
+                "date" => $now->format("d/m/y H:i")
+            ]);
+        }
+    }
+    private function parseDateTime($date, $time)
+    {
+        if (preg_match('/\d{2}:\d{2}:\d{2}/', $date)) {
+            return Carbon::parse($date);
+        }
+
+        return Carbon::parse("{$date} {$time}");
+    }
+
+
+
+
 
 
 
@@ -816,13 +896,37 @@ class AppManagerController extends Controller
             ], $schedule);
 
             // Envoyer une notification FCM
-            if ($site->fcm_token) {
+            /* if ($site->fcm_token) {
                 $fcm = new FcmService();
                 $title = "Nouvelle Patrouille programmée";
                 $date = $schedule['date'];
                 $start = $schedule['start_time'];
                 $end = $schedule['end_time'];
                 $body = "Vous avez une nouvelle patrouille le $date de $start à $end.";
+                $fcm->sendNotification($site->fcm_token, $title, $body);
+            } */
+           
+            if ($site->fcm_token) {
+                $fcm = new FcmService();
+                $title = "Nouvelle Patrouille programmée";
+                Carbon::setLocale('fr');
+                $date = Carbon::parse($schedule['date']);
+                $start = $schedule['start_time'];
+                $end = $schedule['end_time'];
+
+                $today = Carbon::today();
+                $tomorrow = Carbon::tomorrow();
+
+                if ($date->isSameDay($today)) {
+                    $formattedDate = "aujourd'hui";
+                } elseif ($date->isSameDay($tomorrow)) {
+                    $formattedDate = "demain";
+                } else {
+                    // Exemple : Jeudi 10 avril 2025
+                    $formattedDate = $date->translatedFormat('l j F Y');
+                }
+
+                $body = "Vous avez une nouvelle patrouille $formattedDate de $start à $end.";
                 $fcm->sendNotification($site->fcm_token, $title, $body);
             }
             return response()->json([

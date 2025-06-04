@@ -11,7 +11,7 @@
                 <table cellpadding="20" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
                     <tr>
                         <td align="center">
-                            <img src="assets/images/mamba-2.png" alt="Logo" width="100" style="margin-bottom: 20px;">
+                            <!-- <img src="assets/images/mamba-2.png" alt="Logo" width="100" style="margin-bottom: 20px;"> -->
                             <h2 style="color: #333333; margin-bottom: 10px;">{{ $titre }}</h2>
                         </td>
                     </tr>

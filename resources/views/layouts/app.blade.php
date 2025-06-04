@@ -46,7 +46,7 @@
 
 
 <!-- BEGIN: Js assets -->
- @vite('resources/js/app.js')
+ <!-- @vite('resources/js/app.js') -->
 <script src="{{ asset('dist/js/vendors/dom.js') }}"></script>
 <script src="{{ asset('dist/js/vendors/tailwind-merge.js') }}"></script>
 <script src="{{ asset("dist/js/vendors/image-zoom.js") }}"></script>

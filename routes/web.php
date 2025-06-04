@@ -34,7 +34,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/agents.list', function () {
         $agencyId = Auth::user()->agency_id;
-        $sites = Site::where('status', 'actif')->where('agency_id', $agencyId)->get();
+        $sites = Site::all();
         return view('agent_list', ['sites' => $sites]);
     })->name('agents.list');
 
