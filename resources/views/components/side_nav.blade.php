@@ -6,7 +6,8 @@
      </a>
      <div class="my-6 side-nav__divider"></div>
      <ul>
-         <li>
+        @if (Auth::user()->hasMenu("patrouilles"))
+        <li>
              <a href="javascript:;" class="side-menu {{ Route::is("dashboard") || Route::is("reports.patrols") ? 'side-menu--active' : '' }}">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="monitor" class="stroke-1.5 w-5 h-5"></i>
@@ -30,6 +31,7 @@
                          </div>
                      </a>
                  </li>
+                  @if (Auth::user()->hasPermission("patrouilles", "view"))
                  <li>
                      <a href="{{ url('/reports.patrols') }}" class="side-menu">
                          <div class="side-menu__icon">
@@ -40,9 +42,13 @@
                          </div>
                      </a>
                  </li>
+                 @endif
              </ul>
-         </li>
-         <li>
+        </li>
+        @endif
+        
+        @if (Auth::user()->hasMenu("sites"))
+        <li>
              <a href="javascript:;" class="side-menu {{ Route::is("site.create.view") || Route::is("sites.list")  ? 'side-menu--active' : '' }}">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="home" class="stroke-1.5 w-5 h-5"></i>
@@ -55,6 +61,7 @@
                  </div>
              </a>
              <ul class="">
+                 @if (Auth::user()->hasPermission("sites", "create"))
                  <li>
                      <a href="/site.create" class="side-menu">
                          <div class="side-menu__icon">
@@ -65,6 +72,8 @@
                          </div>
                      </a>
                  </li>
+                 @endif
+                 @if (Auth::user()->hasPermission("site", "view"))
                  <li>
                      <a href="{{ url("/sites.list") }}" class="side-menu">
                          <div class="side-menu__icon">
@@ -75,9 +84,13 @@
                          </div>
                      </a>
                  </li>
+                 @endif
              </ul>
-         </li>
-         <li>
+        </li>
+        @endif
+
+        @if (Auth::user()->hasMenu("agents"))
+        <li>
              <a href="javascript:;" class="side-menu {{ Route::is("agent.create") || Route::is("agents.list") ? 'side-menu--active' : '' }}">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="users" class="stroke-1.5 w-5 h-5"></i>
@@ -90,6 +103,7 @@
                  </div>
              </a>
              <ul class="">
+                 @if (Auth::user()->hasPermission("agents", "create"))
                  <li>
                      <a href="/agent.create" class="side-menu">
                          <div class="side-menu__icon">
@@ -100,7 +114,10 @@
                          </div>
                      </a>
                  </li>
-                 <li>
+                 @endif
+
+                @if (Auth::user()->hasPermission("agents","view"))
+                <li>
                      <a href="/agents.list" class="side-menu">
                          <div class="side-menu__icon">
                              <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
@@ -110,9 +127,13 @@
                          </div>
                      </a>
                  </li>
+                 @endif
              </ul>
-         </li>
-         <li>
+        </li>
+        @endif
+
+        @if (Auth::user()->hasMenu("taches"))
+        <li>
              <a href="javascript:;" class="side-menu {{ Route::is("tasks") || Route::is("reports.tasks") ? 'side-menu--active' : '' }}">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="check-square" class="stroke-1.5 w-5 h-5"></i>
@@ -125,6 +146,7 @@
                  </div>
              </a>
              <ul class="">
+                
                  <li>
                      <a href="{{ url("/tasks") }}" class="side-menu">
                          <div class="side-menu__icon">
@@ -146,9 +168,12 @@
                      </a>
                  </li>
              </ul>
-         </li>
-         <li>
-             <a href="javascript:;" class="side-menu {{  Route::is("visit.creating") ? 'side-menu--active' : ''  }}">
+        </li>
+        @endif
+
+        @if (Auth::user()->hasMenu("visites"))
+        <li>
+            <a href="javascript:;" class="side-menu {{  Route::is("visit.creating") ? 'side-menu--active' : ''  }}">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="badge-check" class="stroke-1.5 w-5 h-5"></i>
                  </div>
@@ -181,8 +206,11 @@
                      </a>
                  </li>
              </ul>
-         </li>
-         <li>
+        </li>
+        @endif
+
+        @if (Auth::user()->hasMenu("presences"))
+        <li>
              <a href="javascript:;" class="side-menu {{ Route::is("presence.horaires") || Route::is("reports.presences") || Route::is("agent.groupe") ? 'side-menu--active' : ''}} ">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="calendar" class="stroke-1.5 w-5 h-5"></i>
@@ -195,6 +223,7 @@
                  </div>
              </a>
              <ul class="">
+                 @if (Auth::user()->hasPermission("presences", "create"))
                  <li>
                      <a href="{{ url("/presence.horaires") }}" class="side-menu">
                          <div class="side-menu__icon">
@@ -215,6 +244,8 @@
                          </div>
                      </a>
                  </li>
+                 @endif
+                  @if (Auth::user()->hasPermission("presences", "view"))
                  <li>
                      <a href="{{ url("/reports.presences") }}" class="side-menu">
                          <div class="side-menu__icon">
@@ -225,10 +256,12 @@
                          </div>
                      </a>
                  </li>
+                 @endif
              </ul>
-         </li>
-
-         <li>
+        </li>
+        @endif
+        @if (Auth::user()->hasMenu("requetes"))
+        <li>
              <a href="{{ url("/requests") }}" class="side-menu {{ Route::is("requests") ? 'side-menu--active' : '' }}">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="message-circle" class="stroke-1.5 w-5 h-5"></i>
@@ -237,8 +270,11 @@
                      Requêtes
                  </div>
              </a>
-         </li>
-         <li>
+        </li>
+        @endif
+
+        @if (Auth::user()->hasMenu("planning"))
+        <li>
              <a href="{{ url("/schedules") }}" class="side-menu {{ Route::is("schedules") ? 'side-menu--active' : '' }}">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="clock" class="stroke-1.5 w-5 h-5"></i>
@@ -247,8 +283,11 @@
                      Planning
                  </div>
              </a>
-         </li>
-         <li>
+        </li>
+        @endif
+
+        @if (Auth::user()->hasMenu("communiques"))
+        <li>
              <a href="{{ url("/announces") }}" class="side-menu {{ Route::is("announces") ? 'side-menu--active' : '' }}">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="clipboard" class="stroke-1.5 w-5 h-5"></i>
@@ -257,8 +296,11 @@
                      Communiqués
                  </div>
              </a>
-         </li>
-         <li>
+        </li>
+        @endif
+
+        @if (Auth::user()->hasMenu("signalements"))
+        <li>
              <a href="{{ url("/signalements") }}" class="side-menu {{ Route::is("signalements") ? 'side-menu--active' : '' }}">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="bell-ring" class="stroke-1.5 w-5 h-5"></i>
@@ -267,8 +309,65 @@
                      Signalements
                  </div>
              </a>
-         </li>
+        </li>
+        @endif
+    
+        <div class="my-4 side-nav__divider"></div>
+        @if (Auth::user()->hasMenu("utilisateurs"))
          <li>
+             <a href="javascript:;" class="side-menu {{ Route::is("user.add") || Route::is("user.list") ? 'side-menu--active' : '' }}">
+                 <div class="side-menu__icon">
+                     <i data-tw-merge="" data-lucide="user" class="stroke-1.5 w-5 h-5"></i>
+                 </div>
+                 <div class="side-menu__title">
+                     Utilisateurs
+                     <div class="side-menu__sub-icon ">
+                         <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-3 h-3"></i>
+                     </div>
+                 </div>
+             </a>
+             <ul class="">
+                 @if (Auth::user()->hasPermission("utilisateurs", "create"))
+                 <li>
+                     <a href="{{ url("/user.add") }}" class="side-menu">
+                         <div class="side-menu__icon">
+                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                         </div>
+                         <div class="side-menu__title">
+                            Création utilisateur
+                         </div>
+                     </a>
+                 </li>
+                @endif
+                @if (Auth::user()->hasPermission("utilisateurs", "view"))
+                 <li>
+                     <a href="{{ url("/user.list") }}" class="side-menu">
+                         <div class="side-menu__icon">
+                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                         </div>
+                         <div class="side-menu__title">
+                             Liste des utilisateurs
+                         </div>
+                     </a>
+                 </li>
+                 @endif
+
+                <!-- <li>
+                    <a href="azzezeezee" class="side-menu">
+                        <div class="side-menu__icon">
+                            <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                        </div>
+                        <div class="side-menu__title">
+                            Attribution accès
+                        </div>
+                    </a>
+                </li> -->
+             </ul>
+         </li>
+        @endif
+
+        @if (Auth::user()->hasMenu("logs"))
+        <li>
              <a href="javascript:;" class="side-menu  {{ Route::is("log.phones") || Route::is("log.activities") || Route::is("log.panics") ? 'side-menu--active': '' }}">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="history" class="stroke-1.5 w-5 h-5"></i>
@@ -313,51 +412,7 @@
                  </li>
              </ul>
          </li>
-         <li>
-             <a href="javascript:;" class="side-menu">
-                 <div class="side-menu__icon">
-                     <i data-tw-merge="" data-lucide="user" class="stroke-1.5 w-5 h-5"></i>
-                 </div>
-                 <div class="side-menu__title">
-                     Utilisateurs
-                     <div class="side-menu__sub-icon ">
-                         <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-3 h-3"></i>
-                     </div>
-                 </div>
-             </a>
-             <ul class="">
-                 <li>
-                     <a href="zaaazazaz" class="side-menu">
-                         <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
-                         </div>
-                         <div class="side-menu__title">
-                             Rôle & habilitation
-                         </div>
-                     </a>
-                 </li>
-                 <li>
-                     <a href="azzezeezee" class="side-menu">
-                         <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
-                         </div>
-                         <div class="side-menu__title">
-                             Attribution accès
-                         </div>
-                     </a>
-                 </li>
-                 <li>
-                     <a href="rubick-side-menu-add-product-page.html" class="side-menu">
-                         <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
-                         </div>
-                         <div class="side-menu__title">
-                             Liste des utilisateurs
-                         </div>
-                     </a>
-                 </li>
-             </ul>
-         </li>
+        @endif
 
      </ul>
  </nav>

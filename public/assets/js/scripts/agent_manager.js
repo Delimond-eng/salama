@@ -25,6 +25,7 @@ new Vue({
             search: "",
             showComment: null,
             delete_id: "",
+            filter_status: "",
             form: {
                 id: "",
                 matricule: "",
@@ -33,6 +34,7 @@ new Vue({
                 site_id: "",
                 groupe_id: "",
                 role: "",
+                status: "permenant",
             },
         };
     },
@@ -166,6 +168,7 @@ new Vue({
                 site_id: data.site_id,
                 groupe_id: data.groupe_id,
                 role: data.role,
+                status: data.status,
             };
             this.preview = data.photo ?? null;
         },
@@ -196,7 +199,7 @@ new Vue({
         viewAllAgents() {
             this.isDataLoading = true;
             get(
-                `/agents?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}`
+                `/agents?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&status=${this.filter_status}`
             )
                 .then((res) => {
                     this.isDataLoading = false;
@@ -213,6 +216,7 @@ new Vue({
                     console.log("error");
                 });
         },
+
         viewAllSites() {
             this.isDataLoading = true;
             get(`/sites`)
@@ -228,6 +232,7 @@ new Vue({
             this.pagination.current_page = page;
             this.viewAllAgents();
         },
+
         onPerPageChange(perPage) {
             this.pagination.per_page = perPage;
             this.pagination.current_page = 1;

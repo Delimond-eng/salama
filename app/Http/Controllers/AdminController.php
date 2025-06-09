@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Action;
 use App\Models\Agencie;
 use App\Models\Agent;
+use App\Models\AgentHistory;
 use App\Models\Area;
+use App\Models\Menu;
 use App\Models\Patrol;
 use App\Models\PatrolScan;
 use App\Models\Schedules;
@@ -298,6 +301,7 @@ class AdminController extends Controller
                 "password"=>"required|string",
                 "site_id"=>"nullable|int|exists:sites,id",
                 "role"=>"nullable|string",
+                "status"=>"nullable|string",
                 "groupe_id"=>"nullable|int|exists:agent_groups,id",
             ]);
             if ($request->hasFile('photo') && !isset($data["patrol_id"])) {
@@ -316,6 +320,11 @@ class AdminController extends Controller
                 ],
                 $data
             );
+
+            $response->status = isset($data["status"]) ? $data["status"] : "permenant";
+            $response->save();
+            $this->createAgentHistory($response);
+
             return response()->json([
                 "status"=>"success",
                 "result"=>$response
@@ -329,6 +338,64 @@ class AdminController extends Controller
             return response()->json(['errors' => $e->getMessage() ]);
         }
     }
+
+    /**
+     * GET ALL AGENTS LIST
+     * @param Request $request
+     * @return JsonResponse
+    */
+     public function fetchAgents(Request $request){
+        $agencyId = Auth::user()->agency_id;
+        $agents = Agent::whereIn("status", ["actif", "permenant", "dispo"])
+            ->where("agency_id", $agencyId)
+            ->with("site")->with("groupe")
+            ;
+        if($request->query("status")){
+            $agents->where("status", $request->query("status"));
+        }
+        $datas = $agents->orderByDesc("id")->paginate(10);
+        return response()->json([
+            "agents" => $datas
+        ]);
+    }
+
+
+    /**
+     * Crée l'historique de mouvement des agents
+     * @return AgentHistory
+    */
+    protected function createAgentHistory(Agent $agent){
+        $history = AgentHistory::create([
+            "agent_id"=>$agent->id,
+            "site_id"=>$agent->site_id,
+            "status"=>$agent->status,
+            "date"=>Carbon::now(),
+        ]);
+        return $history;
+    }
+
+
+    /**
+     * View all agents histories
+     * @return JsonResponse
+    */
+    public function viewAgentHistories(Request $request){
+        $date = $request->query("date") ?? null;
+        $datas = AgentHistory::with('agent')->with("site");
+
+        if($date){
+            $datas->whereDate("date", $date);
+        }
+        $histories = $datas->paginate(10);
+
+        return response()->json([
+            "status"=>"success",
+            "histories"=>$histories
+        ]);
+    }
+
+
+    
 
 
     /**
@@ -430,7 +497,77 @@ class AdminController extends Controller
     }
 
 
- 
+    /**
+     * CREATE NEW USER
+     * @param Request $request
+     * @return JsonResponse
+    */
+    public function createUser(Request $request){
+        try{
+            $data = $request->validate([
+                'name' => 'required|string',
+                'email' => 'required|email|unique:users,email',
+                'role' => 'required|string',
+                'password' => 'required|string|min:6',
+                'permissions' => 'nullable|array',
+                'permissions.*.menu_id' => 'nullable|exists:menus,id',
+                'permissions.*.actions' => 'nullable|array',
+            ]);
 
+            DB::beginTransaction();
+
+            // Création de l'utilisateur
+            $user = User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'role' => $data['role'],
+                'agency_id'=> 1,
+                'password' => bcrypt($data['password'])
+            ]);
+
+            // Attribution des permissions
+            if ($user->role === 'admin') {
+                // Admin : toutes les permissions
+                $menus = Menu::all();
+                $actions = Action::all();
+                foreach ($menus as $menu) {
+                    foreach ($actions as $action) {
+                        $user->permissions()->create([
+                            'menu_id' => $menu->id,
+                            'action_id' => $action->id,
+                        ]);
+                    }
+                }
+            } else {
+                // Permissions personnalisées
+                if (!empty($data['permissions'])) {
+                    foreach ($data['permissions'] as $perm) {
+                        if (!empty($perm['actions'])) {
+                            foreach ($perm['actions'] as $action) {
+                                $user->permissions()->create([
+                                    'menu_id' => $perm['menu_id'],
+                                    'action_id' => $action["id"],
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                "status" => "success",
+                "result" => $user
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors ]);
+        }
+        catch (\Illuminate\Database\QueryException $e){
+            return response()->json(['errors' => $e->getMessage() ]);
+        }
+    }
 
 }

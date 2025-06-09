@@ -3,6 +3,7 @@
 use App\Http\Controllers\AppManagerController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\FCMController;
+use App\Http\Controllers\LogController;
 use App\Models\Site;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -53,6 +54,10 @@ Route::middleware(["cors"])->group(function(){
 
     //ALLOW TO CREATE REQUEST
     Route::post("/request.create", [AppManagerController::class, "createRequest"])->name("request.create");
+
+
+    //ALLOW TO CREATE AGENT PHONE LOG
+    Route::post("/log.create", [LogController::class, 'createPhoneLog'])->name('log.create');
 
     //ALLOW TO GET ALL SCHEDULES
     Route::get("/schedules.all", [AppManagerController::class, "viewAllSchedulesByApp"])->name("schedules.all");

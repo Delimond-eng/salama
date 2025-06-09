@@ -4,8 +4,10 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
+use App\Models\Menu;
 use App\Models\PresenceHoraire;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -43,6 +45,28 @@ class DatabaseSeeder extends Seeder
                 ],
             );
 
+            $menus = [
+            'Gestion Patrouilles',
+            'Gestion Sites',
+            'Gestion Agents',
+            'Gestion Tâches',
+            'Gestion visiteurs',
+            'Gestion Présences',
+            'Gestion Planning',
+            'Requêtes',
+            'Communiqués',
+            'Signalements',
+            'Gestion Utilisateurs',
+            'Rapport des logs',
+        ];
 
+        foreach ($menus as $menu) {
+            Menu::updateOrCreate(["name"=>$menu],[
+                'name' => $menu,
+                'slug' => Str::slug($menu),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 }

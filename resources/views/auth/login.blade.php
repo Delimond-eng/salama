@@ -26,7 +26,7 @@
             </div>
             <!-- END: Login Info -->
             <!-- BEGIN: Login Form -->
-            <form id="Auth" v-cloak method="POST" @submit.prevent="login" action="{{ route('login') }}" class="my-10 flex h-screen py-5 xl:my-0 xl:h-auto xl:py-0 login-form">
+            <form id="App" v-cloak method="POST" @submit.prevent="login" action="{{ route('login') }}" class="my-10 flex h-screen py-5 xl:my-0 xl:h-auto xl:py-0 login-form">
                 @csrf
                 <div
                     class="mx-auto my-auto w-full rounded-md bg-white px-5 py-8 shadow-md dark:bg-darkmode-600 sm:w-3/4 sm:px-8 lg:w-2/4 xl:ml-20 xl:w-auto xl:bg-transparent xl:p-0 xl:shadow-none">

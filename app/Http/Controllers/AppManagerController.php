@@ -135,8 +135,6 @@ class AppManagerController extends Controller
     }
 
 
-
-
     /**
      * Create announce
      * @param Request $request
@@ -673,11 +671,11 @@ class AppManagerController extends Controller
         $now = Carbon::now()->addHour(); // Date actuelle + 1h
         $toleranceMinutes = 5;
 
-        $schedules = Schedules::whereDate('date', $now->toDateString()) // Uniquement aujourd’hui
+        $schedules = Schedules::whereDate('date', $now->toDateString())
             ->whereNotIn('status', ['success', 'partial', 'fail'])
             ->get();
 
-        /* foreach ($schedules as $schedule) {
+        foreach ($schedules as $schedule) {
             try {
                 Log::info("Schedule ID: {$schedule->id} | Date: {$schedule->date} | Start: {$schedule->start_time} | End: {$schedule->end_time}");
 
@@ -743,13 +741,7 @@ class AppManagerController extends Controller
             } catch (\Exception $e) {
                 Log::error("Erreur lors de la vérification du schedule ID {$schedule->id} : " . $e->getMessage());
             }
-        } */
-
-        return response()->json([
-            "status" => "success",
-            "verified" => count($schedules),
-            "time"=>$now
-        ]);
+        }
     }
 
     protected function sendFailureEmail($schedule, $agent, $photo, $now)

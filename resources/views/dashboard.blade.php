@@ -95,7 +95,7 @@
                             La cartographie de tous les sites qui utilisent la plateforme salama.
                         </div>
                         <div data-lat="-6.2425342" data-long="106.8626478" data-sources=""
-                            class="main-leaflet leaflet z-0 [&_.leaflet-tile-pane]:contrast-105 [&_.leaflet-tile-pane]:grayscale [&_.leaflet-tile-pane]:dark:contrast-[.8] [&_.leaflet-tile-pane]:dark:invert mt-5 rounded-md bg-slate-200" style="height: 500px;">
+                            class="main-leaflet leaflet z-0 [&_.leaflet-tile-pane]:contrast-105 [&_.leaflet-tile-pane]:grayscale [&_.leaflet-tile-pane]:dark:contrast-[.8] [&_.leaflet-tile-pane]:dark:invert mt-5 rounded-md bg-slate-200" style="height: 100vh;">
                         </div>
                     </div>
                 </div>

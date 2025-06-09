@@ -77,17 +77,16 @@
     <!-- END: Top Bar -->
     <div class="grid grid-cols-12 gap-6" id="App" v-cloak>
         <!-- BEGIN: Weekly Top Products -->
-        <div class="col-span-12 mt-3">
+        <div class="col-span-12 lg:col-span-10 mt-3">
             <div class="intro-y block h-10 items-center sm:flex">
                 <h2 class="mr-5 truncate text-lg font-medium">
                     Liste de Rapport Logs
                 </h2>
                 <div class="mt-3 flex items-center sm:ml-auto sm:mt-0">
-                    <button data-tw-merge=""
-                        class="transition duration-200 border shadow-sm items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed !box flex text-slate-600 dark:text-slate-300"><i
-                            data-tw-merge="" data-lucide="file-text"
-                            class="stroke-1.5 mr-2 hidden h-4 w-4 sm:block"></i>
-                        Export to Excel</button>
+                    <div class="relative w-56 text-slate-500 ">
+                        <input data-tw-merge="" v-model="filter_date" @input="viewPhoneLogs" type="date"  class="border border-slate-400 disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
+                        <i data-tw-merge="" data-lucide="search" class="stroke-1.5 absolute inset-y-0 right-0 my-auto mr-3 h-4 w-4"></i>
+                    </div>
                     <button data-tw-merge=""
                         class="transition duration-200 border shadow-sm items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed !box ml-3 flex text-slate-600 dark:text-slate-300"><i
                             data-tw-merge="" data-lucide="file-text"
@@ -95,147 +94,100 @@
                         Export to PDF</button>
                 </div>
             </div>
-            <!-- <div class="intro-y mt-8 overflow-auto sm:mt-0 lg:overflow-visible">
-                <table data-tw-merge=""
-                    class="w-full text-left border-separate border-spacing-y-[10px] sm:mt-2">
-                    <thead data-tw-merge="" class="">
-                        <tr data-tw-merge="" class="">
-                            <th data-tw-merge=""
-                                class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">
-                                Date & Heure
-                            </th>
-                            <th data-tw-merge=""
-                                class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">
-                                AGENT
-                            </th>
-                            <th data-tw-merge=""
-                                class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">
-                                SITE
-                            </th>
-                            <th data-tw-merge=""
-                                class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">
-                                BATTERIE %
-                            </th>
-                            <th data-tw-merge=""
-                                class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">
-                                LOCALISATION
-                            </th>
-                            <th data-tw-merge=""
-                                class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">
-                                ETAT
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr data-tw-merge="" class="intro-x">
-                            <td data-tw-merge=""
-                                class="px-5 py-3 border-b dark:border-darkmode-300 box rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
-                                <a class="whitespace-nowrap font-medium" href="#">
-                                    22/11/2022 11:00
-                                </a>
-                            </td>
-                            <td data-tw-merge=""
-                                class="px-5 py-3 border-b dark:border-darkmode-300 box rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
-                                <div class="mt-0.5 whitespace-nowrap text-xs text-slate-500">
-                                    <a class="whitespace-nowrap font-medium" href="#">
-                                        Gaston delimond
-                                    </a>
-                                    <div class="mt-0.5 whitespace-nowrap text-xs text-slate-500">
-                                        E22212
-                                    </div>
-                                </div>
-                            </td>
-                           
-                            <td data-tw-merge=""
-                                class="px-5 py-3 border-b dark:border-darkmode-300 box rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
-                                <div class="mt-0.5 whitespace-nowrap text-xs text-slate-500">
-                                    <a class="whitespace-nowrap font-medium" href="#">
-                                        Parcelle JM
-                                    </a>
-                                    <div class="mt-0.5 whitespace-nowrap text-xs text-slate-500">
-                                        E22212
-                                    </div>
-                                </div>
-                            </td>
 
-                            <td data-tw-merge=""
-                                class="px-5 py-3 border-b dark:border-darkmode-300 box rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
-                                60 %
-                            </td>
-                            <td data-tw-merge=""
-                                class="px-5 py-3 border-b dark:border-darkmode-300 box rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
-                                -4.325,15.298
-                            </td>
-                            <td data-tw-merge=""
-                                class="px-5 py-3 border-b dark:border-darkmode-300 box w-40 rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
-                                <div class="flex items-center justify-center text-success">
-                                    <i data-tw-merge="" data-lucide="check-square"
-                                        class="stroke-1.5 mr-2 h-4 w-4"></i>
-                                    Off 
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="box mt-3" v-if="phoneLogs.length > 0">
+                <div class="overflow-x-auto">
+                    <table
+                        data-tw-merge
+                        class="w-full text-left">
+                        <thead
+                            data-tw-merge
+                            class="">
+                            <tr
+                                data-tw-merge
+                                class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
+                                <th
+                                    data-tw-merge
+                                    class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
+                                    DATE & HEURE
+                                </th>
+                                <th
+                                    data-tw-merge
+                                    class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
+                                    RAISON/MOTIF
+                                </th>
+                                <th
+                                    data-tw-merge
+                                    class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
+                                    NIVEAU BATTERIE
+                                </th>
+                                <th
+                                    data-tw-merge
+                                    class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
+                                    AGENT
+                                </th>
+                                <th
+                                    data-tw-merge
+                                    class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
+                                    SITE
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(data, index) in phoneLogs" :key="index"
+                                data-tw-merge
+                                class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
+                                <td
+                                    data-tw-merge
+                                    class="px-5 py-3 border-b dark:border-darkmode-300">
+                                    @{{ data.date_and_time }}
+                                </td>
+                                <td
+                                    data-tw-merge
+                                    class="px-5 py-3 border-b dark:border-darkmode-300" :class="{'text-pending': data.reason === 'shutdown', 'text-blue-500': data.reason === 'shutdown'}">
+                                    @{{ data.reason }}
+                                </td>
+                                <td
+                                    data-tw-merge
+                                    class="px-5 py-3 border-b dark:border-darkmode-300">
+                                    @{{ data.battery_level }} %
+                                </td>
+                                <td
+                                    data-tw-merge
+                                    class="px-5 py-3 border-b dark:border-darkmode-300">
+                                    <div v-if="data.agent">@{{ data.agent.matricule }} | @{{ data.agent.fullname }}</div>
+                                </td>
+                                <td
+                                    data-tw-merge
+                                    class="px-5 py-3 border-b dark:border-darkmode-300">
+                                    <div v-if="data.site">@{{ data.site.code }} | @{{ data.site.name }}</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="intro-y mt-3 flex flex-wrap items-center sm:flex-row sm:flex-nowrap">
-                <nav class="w-full sm:mr-auto sm:w-auto">
-                    <ul class="flex w-full mr-0 sm:mr-auto sm:w-auto">
-                        <li class="flex-1 sm:flex-initial">
-                            <a data-tw-merge=""
-                                class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3"><i
-                                    data-tw-merge="" data-lucide="chevrons-left"
-                                    class="stroke-1.5 h-4 w-4"></i></a>
-                        </li>
-                        <li class="flex-1 sm:flex-initial">
-                            <a data-tw-merge=""
-                                class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3"><i
-                                    data-tw-merge="" data-lucide="chevron-left"
-                                    class="stroke-1.5 h-4 w-4"></i></a>
-                        </li>
-                        <li class="flex-1 sm:flex-initial">
-                            <a data-tw-merge=""
-                                class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3">...</a>
-                        </li>
-                        <li class="flex-1 sm:flex-initial">
-                            <a data-tw-merge=""
-                                class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3">1</a>
-                        </li>
-                        <li class="flex-1 sm:flex-initial">
-                            <a data-tw-merge=""
-                                class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3 !box dark:bg-darkmode-400">2</a>
-                        </li>
-                        <li class="flex-1 sm:flex-initial">
-                            <a data-tw-merge=""
-                                class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3">3</a>
-                        </li>
-                        <li class="flex-1 sm:flex-initial">
-                            <a data-tw-merge=""
-                                class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3">...</a>
-                        </li>
-                        <li class="flex-1 sm:flex-initial">
-                            <a data-tw-merge=""
-                                class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3"><i
-                                    data-tw-merge="" data-lucide="chevron-right"
-                                    class="stroke-1.5 h-4 w-4"></i></a>
-                        </li>
-                        <li class="flex-1 sm:flex-initial">
-                            <a data-tw-merge=""
-                                class="transition duration-200 border items-center justify-center py-2 rounded-md cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed min-w-0 sm:min-w-[40px] shadow-none font-normal flex border-transparent text-slate-800 sm:mr-2 dark:text-slate-300 px-1 sm:px-3"><i
-                                    data-tw-merge="" data-lucide="chevrons-right"
-                                    class="stroke-1.5 h-4 w-4"></i></a>
-                        </li>
-                    </ul>
-                </nav>
-                <select data-tw-merge=""
-                    class="disabled:bg-slate-100 disabled:cursor-not-allowed disabled:dark:bg-darkmode-800/50 [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md py-2 px-3 pr-8 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 group-[.form-inline]:flex-1 !box mt-3 w-20 sm:mt-0">
-                    <option>10</option>
-                    <option>25</option>
-                    <option>35</option>
-                    <option>50</option>
-                </select>
-            </div> -->
-             <x-empty-state message="Aucune rapport de log disponible pour l'instant."></x-empty-state>
+
+            <div v-else>
+               <div v-if="isDataLoading">
+                   <x-dom-loader></x-dom-loader>
+               </div>
+               <div class="box mt-4" v-else>
+                    <x-empty-state message="Aucune rapport de log disponible pour l'instant."></x-empty-state>
+               </div>
+            </div>
+
+            <!-- BEGIN: Pagination -->
+            <Pagination
+                :current-page="pagination.current_page"
+                :last-page="pagination.last_page"
+                :total-items="pagination.total"
+                :per-page="pagination.per_page"
+                @page-changed="changePage"
+                @per-page-changed="onPerPageChange"
+            />
+            <!-- END: Pagination -->
+
         </div>
         <!-- END: Weekly Top Products -->
     </div>
@@ -245,5 +197,5 @@
 @endsection
 
 @push("scripts")
-<script type="module" src="{{ asset("assets/js/scripts/agent_manager.js") }}"></script>
+<script type="module" src="{{ asset("assets/js/scripts/logs.js") }}"></script>
 @endpush

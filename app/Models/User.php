@@ -20,6 +20,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'role',
         'password',
         'agency_id'
     ];
@@ -45,5 +46,21 @@ class User extends Authenticatable
 
     public function agencie(){
         return $this->belongsTo(Agencie::class, foreignKey: 'agency_id');
+    }
+
+    public function permissions()
+    {
+        return $this->hasMany(Permission::class);
+    }
+
+    public function hasPermission($menuSlug, $actionSlug)
+    {
+        return $this->permissions()->whereHas('menu', fn($q) => $q->where('slug', $menuSlug))
+                                ->whereHas('action', fn($q) => $q->where('slug', $actionSlug))
+                                ->exists();
+    }
+
+    public function hasMenu($menuSlug){
+        return $this->permissions()->whereHas('menu', fn($q) => $q->where('slug', $menuSlug))->exists();
     }
 }

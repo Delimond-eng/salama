@@ -18,7 +18,7 @@ License: You must have a valid license purchased only from themeforest(the above
     <meta name="description" content="Midone admin is super flexible, powerful, clean & modern responsive tailwind admin template with unlimited possibilities.">
     <meta name="keywords" content="admin template, midone Admin Template, dashboard template, flat admin template, responsive admin template, web app">
     <meta name="author" content="LEFT4CODE">
-    <title>Error Page - Midone - Tailwind Admin Dashboard Template</title>
+    <title>Error Page - Salama</title>
     <!-- BEGIN: CSS Assets-->
     <!-- END: CSS Assets-->
     <link rel="stylesheet" href="dist/css/app.css">
@@ -30,7 +30,7 @@ License: You must have a valid license purchased only from themeforest(the above
             <!-- BEGIN: Error Page -->
             <div class="flex flex-col items-center justify-center h-screen text-center error-page lg:flex-row lg:text-left">
                 <div class="-intro-x lg:mr-20">
-                    <img class="h-48 w-[450px] lg:h-auto" src="dist/images/logo.svg" alt="Midone - Tailwind Admin Dashboard Template">
+                    <img class="h-48 w-[450px] lg:h-auto" src="dist/images/logo.svg" alt="Salama">
                 </div>
                 <div class="mt-10 text-white lg:mt-0">
                     <div class="font-medium intro-x text-8xl">404</div>
@@ -40,7 +40,7 @@ License: You must have a valid license purchased only from themeforest(the above
                     <div class="mt-3 text-lg intro-x">
                         Vous avez peut-être mal saisi l'adresse ou la page a peut-être été déplacée.
                     </div>
-                    <a href="{{ url()->previous() }}" data-tw-merge="" class="transition duration-200 border shadow-sm inline-flex items-center justify-center rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed px-4 py-3 mt-10 text-white border-white intro-x dark:border-darkmode-400 dark:text-slate-200">Retour à l'accueil</a>
+                    <a href="/" data-tw-merge="" class="transition duration-200 border shadow-sm inline-flex items-center justify-center rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed px-4 py-3 mt-10 text-white border-white intro-x dark:border-darkmode-400 dark:text-slate-200">Retour à l'accueil</a>
                 </div>
             </div>
             <!-- END: Error Page -->
