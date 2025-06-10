@@ -14,35 +14,39 @@ class ScheduleService
 {
     public function verifySchedules()
     {
-        $now = Carbon::now()->addHour(); // UTC +1 si serveur en UTC
+        $now = Carbon::now('Africa/Kinshasa');
         $toleranceMinutes = 5;
 
-        $schedules = Schedules::whereDate('date', $now->toDateString())
-            ->whereNotIn('status', ['success', 'partial', 'fail'])
+        $schedules = Schedules::where('status', 'actif')
+            ->whereDate('date', '<=', $now->toDateString())
             ->get();
+
+        Log::info("🕒 Vérification des plannings à {$now->format('Y-m-d H:i:s')}");
+        Log::info("Nombre de plannings à vérifier : " . $schedules->count());
 
         foreach ($schedules as $schedule) {
             try {
-                Log::info("Schedule ID: {$schedule->id} | Date: {$schedule->date} | Start: {$schedule->start_time} | End: {$schedule->end_time}");
+                Log::info("🔍 Vérification du planning ID: {$schedule->id}");
 
-                $start = $this->parseDateTime($schedule->date, $schedule->start_time)->addHour();
+                $start = $this->parseDateTime($schedule->date, $schedule->start_time);
                 $end = $schedule->end_time
-                    ? $this->parseDateTime($schedule->date, $schedule->end_time)->addHour()
+                    ? $this->parseDateTime($schedule->date, $schedule->end_time)
                     : $now;
 
                 $toleranceStart = $start->copy()->subMinutes($toleranceMinutes);
                 $toleranceEnd = $end->copy()->addMinutes($toleranceMinutes);
 
-                $patrol = Patrol::with("agent")
+                Log::info("Plage tolérée : {$toleranceStart} → {$toleranceEnd}");
+
+                $patrol = Patrol::with('agent')
                     ->where('site_id', $schedule->site_id)
                     ->whereBetween('started_at', [$toleranceStart, $toleranceEnd])
                     ->latest()
                     ->first();
 
-                $newStatus = 'fail';
-
                 if (!$patrol) {
                     if ($now->gt($toleranceEnd)) {
+                        Log::warning("❌ Aucune patrouille trouvée pour le planning ID {$schedule->id}.");
                         $this->sendFailureEmail($schedule, null, null, $now);
                         $schedule->status = 'fail';
                         $schedule->save();
@@ -50,9 +54,11 @@ class ScheduleService
                     continue;
                 }
 
-                $startedAt = Carbon::parse($patrol->started_at);
+                $startedAt = Carbon::parse($patrol->started_at)->setTimezone('Africa/Kinshasa');
+
                 if ($startedAt->lt($start) || $startedAt->gt($end)) {
                     if ($now->gt($toleranceEnd)) {
+                        Log::warning("⚠️ Patrouille hors créneau strict (start={$start}, end={$end}).");
                         $this->sendFailureEmail($schedule, $patrol->agent ?? null, $patrol->photo ?? null, $now);
                         $schedule->status = 'fail';
                         $schedule->save();
@@ -60,34 +66,61 @@ class ScheduleService
                     continue;
                 }
 
+                // Vérification des zones scannées
                 $allAreas = Area::where('site_id', $schedule->site_id)->pluck('id')->toArray();
                 $scannedAreas = PatrolScan::where('patrol_id', $patrol->id)->pluck('area_id')->unique()->toArray();
 
-                if (empty($scannedAreas)) {
-                    $newStatus = 'fail';
-                } elseif (count($scannedAreas) < count($allAreas)) {
-                    $newStatus = 'partial';
+                $totalAreas = count($allAreas);
+                $scannedCount = count($scannedAreas);
+                $ratio = $totalAreas > 0 ? ($scannedCount / $totalAreas) : 0;
+
+                $newStatus = 'fail';
+                if ($scannedCount > 0) {
+                    $newStatus = ($ratio < 1.0 && $ratio >= 0.5) ? 'partial' : 'success';
                 } else {
-                    $newStatus = 'success';
+                    Log::warning("Patrouille ID {$patrol->id} sans scan de zone.");
                 }
 
                 if ($newStatus === 'fail') {
                     $this->sendFailureEmail($schedule, $patrol->agent ?? null, $patrol->photo ?? null, $now);
                 }
 
-                $schedule->status = $newStatus;
-                $schedule->save();
+                // Ne pas écraser un échec existant
+                if ($schedule->status !== 'fail') {
+                    $schedule->status = $newStatus;
+                    $schedule->save();
+                    Log::info("✅ Planning ID {$schedule->id} → statut mis à jour : {$newStatus}");
+                }
 
             } catch (\Exception $e) {
-                Log::error("Erreur lors de la vérification du schedule ID {$schedule->id} : " . $e->getMessage());
+                Log::error("💥 Erreur sur le planning ID {$schedule->id} : " . $e->getMessage());
             }
         }
     }
 
-    private function parseDateTime($date, $time)
+
+
+    protected function parseDateTime($date, $time)
     {
-        return Carbon::createFromFormat('Y-m-d H:i:s', "{$date} {$time}");
+        try {
+            $date = trim($date);
+            $time = trim($time);
+
+            // 🧽 Correction si la date contient aussi une heure
+            if (strlen($date) > 10) {
+                $date = Carbon::parse($date)->format('Y-m-d');
+            }
+
+            $datetime = "{$date} {$time}";
+
+            return Carbon::parse($datetime, 'Africa/Kinshasa');
+
+        } catch (\Exception $e) {
+            Log::error("⛔ Erreur de parsing sur date={$date}, time={$time} : " . $e->getMessage());
+            throw $e;
+        }
     }
+
 
     protected function sendFailureEmail($schedule, $agent, $photo, $now)
     {

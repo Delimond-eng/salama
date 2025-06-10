@@ -16,6 +16,10 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
+        $schedule->command('schedules:verify')
+        ->everyMinute() // ou ->everyMinute(), ->hourly(), etc.
+        ->timezone('Africa/Kinshasa')
+        ->withoutOverlapping(); 
     }
 
     /**

@@ -1,6 +1,6 @@
  <!-- BEGIN: Side Menu -->
  <nav class="side-nav hidden w-[80px] overflow-x-hidden pb-16 pr-5 md:block xl:w-[230px]">
-     <a class="flex items-center pt-4 pl-5 intro-x" href="#">
+     <a class="flex items-center pt-4 pl-5 intro-x" href="/">
          <img class="w-6" src="dist/images/logo.svg" alt="logo">
          <span class="hidden ml-3 text-lg text-white xl:block"> Salama </span>
      </a>
@@ -73,7 +73,7 @@
                      </a>
                  </li>
                  @endif
-                 @if (Auth::user()->hasPermission("site", "view"))
+                 @if (Auth::user()->hasPermission("sites", "view"))
                  <li>
                      <a href="{{ url("/sites.list") }}" class="side-menu">
                          <div class="side-menu__icon">

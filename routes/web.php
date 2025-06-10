@@ -88,7 +88,7 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/schedules', 'schedules')->name('schedules')->middleware('check.permission:planning,view');
     Route::post('schedules.create', [AppManagerController::class, 'createPlanning'])->name('schedules.create')->middleware('check.permission:planning,create');
     Route::get('/schedules.all', [AppManagerController::class, 'viewAllSchedulesByAdmin'])->name('schedules.all')->middleware('check.permission:planning,view');
-    Route::get('/schedules.verify', [AppManagerController::class, 'verifySchedules'])->name('schedules.verify');
+    //Route::get('/schedules.verify', [AppManagerController::class, 'verifySchedules'])->name('schedules.verify');
 
     /*
     |--------------------------------------------------------------------------

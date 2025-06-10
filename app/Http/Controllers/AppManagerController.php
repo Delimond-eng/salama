@@ -88,7 +88,7 @@ class AppManagerController extends Controller
                 ]);
             }
 
-            $now = Carbon::now();
+            $now = Carbon::now()->setTimezone('Africa/Kinshasa');
             $data["started_at"] = $now->toDateTimeString();
             $data["status"] = "pending";
 
@@ -560,7 +560,7 @@ class AppManagerController extends Controller
             }
 
             // Ajout des informations de fin de patrouille
-            $now = Carbon::now();
+            $now = Carbon::now()->setTimezone('Africa/Kinshasa');
             $data["ended_at"] = $now;
             $data["status"] = "closed";
 
@@ -605,145 +605,106 @@ class AppManagerController extends Controller
 
     private function updateScheduleStatusFromPatrol(Patrol $patrol)
     {
-        $patrolStart = Carbon::parse($patrol->started_at)->addHour(); // Décalage horaire +1
+        $patrolStart = Carbon::parse($patrol->started_at)->setTimezone('Africa/Kinshasa');
         $toleranceMinutes = 5;
 
         $schedule = Schedules::where('site_id', $patrol->site_id)
             ->whereDate('date', $patrolStart->toDateString())
             ->first();
 
-        // Si aucun planning trouvé → on ne fait rien
-        if (!$schedule) return;
+        if (!$schedule) {
+            Log::info("⛔ Aucun planning trouvé pour la patrouille ID {$patrol->id}");
+            return;
+        }
 
-        // 🔒 Éviter de recalculer si le planning est déjà validé
-        if ($schedule->status === 'success') {
-            Log::info("Planning #{$schedule->id} déjà en succès, aucune mise à jour nécessaire.");
+        // Ne pas recalculer si planning déjà marqué comme 'fail'
+        if (in_array($schedule->status, ['success', 'fail', 'partial'])) {
+            Log::info("⏭️ Planning #{$schedule->id} déjà traité avec statut '{$schedule->status}'.");
             return;
         }
 
         try {
-            $cleanDate = Carbon::parse($schedule->date)->toDateString();
-            $start = Carbon::parse("{$cleanDate} {$schedule->start_time}")->addHour();
+            $start = $this->parseDateTime($schedule->date, $schedule->start_time);
             $end = $schedule->end_time
-                ? Carbon::parse("{$cleanDate} {$schedule->end_time}")->addHour()
-                : Carbon::now()->addHour();
+                ? $this->parseDateTime($schedule->date, $schedule->end_time)
+                : now('Africa/Kinshasa');
 
             $toleranceStart = $start->copy()->subMinutes($toleranceMinutes);
             $toleranceEnd = $end->copy()->addMinutes($toleranceMinutes);
 
-            Log::info("Mise à jour du planning #{$schedule->id} via patrouille #{$patrol->id}", [
-                'patrolStart' => $patrolStart->format('Y-m-d H:i:s'),
-                'toleranceStart' => $toleranceStart->format('Y-m-d H:i:s'),
-                'toleranceEnd' => $toleranceEnd->format('Y-m-d H:i:s'),
+            Log::info("🔁 Mise à jour via patrouille #{$patrol->id} → planning #{$schedule->id}", [
+                'patrolStart' => $patrolStart,
+                'start' => $start,
+                'end' => $end,
+                'toleranceStart' => $toleranceStart,
+                'toleranceEnd' => $toleranceEnd,
             ]);
 
-            if ($patrolStart->lt($toleranceStart)) {
-                $schedule->status = 'early'; // trop tôt
-            } elseif ($patrolStart->gt($toleranceEnd)) {
-                $schedule->status = 'fail';
-                $this->sendFailureEmail($schedule, $patrol->agent ?? null, $patrol->photo ?? null, $patrolStart);
-            } else {
-                $allAreas = Area::where('site_id', $patrol->site_id)->pluck('id')->toArray();
-                $scannedAreas = PatrolScan::where('patrol_id', $patrol->id)->pluck('area_id')->unique()->toArray();
-
-                if (empty($scannedAreas)) {
-                    $schedule->status = 'fail';
+            if ($patrolStart->lt($start) || $patrolStart->gt($end)) {
+                if (now('Africa/Kinshasa')->gt($toleranceEnd)) {
+                    Log::warning("⚠️ Patrouille hors créneau strict.");
                     $this->sendFailureEmail($schedule, $patrol->agent ?? null, $patrol->photo ?? null, $patrolStart);
-                } elseif (count($scannedAreas) < count($allAreas)) {
-                    $schedule->status = 'partial';
-                } else {
-                    $schedule->status = 'success';
+                    $schedule->status = 'fail';
+                    $schedule->save();
                 }
+                return;
             }
-            $schedule->save();
 
-        } catch (\Exception $e) {
-            Log::error("Erreur lors de la mise à jour du planning", [
-                'message' => $e->getMessage(),
-                'schedule_id' => $schedule->id ?? null,
-                'patrol_id' => $patrol->id,
-            ]);
-        }
-    }
+            // Vérification des zones scannées
+            $allAreas = Area::where('site_id', $schedule->site_id)->pluck('id')->toArray();
+            $scannedAreas = PatrolScan::where('patrol_id', $patrol->id)->pluck('area_id')->unique()->toArray();
 
-    public function verifySchedules()
-    {
-        $now = Carbon::now()->addHour(); // Date actuelle + 1h
-        $toleranceMinutes = 5;
+            $totalAreas = count($allAreas);
+            $scannedCount = count($scannedAreas);
+            $ratio = $totalAreas > 0 ? ($scannedCount / $totalAreas) : 0;
 
-        $schedules = Schedules::whereDate('date', $now->toDateString())
-            ->whereNotIn('status', ['success', 'partial', 'fail'])
-            ->get();
+            $newStatus = 'fail';
+            if ($scannedCount > 0) {
+                $newStatus = ($ratio < 1.0 && $ratio >= 0.5) ? 'partial' : 'success';
+            } else {
+                Log::warning("Patrouille ID {$patrol->id} sans scan de zone.");
+            }
 
-        foreach ($schedules as $schedule) {
-            try {
-                Log::info("Schedule ID: {$schedule->id} | Date: {$schedule->date} | Start: {$schedule->start_time} | End: {$schedule->end_time}");
+            if ($newStatus === 'fail') {
+                $this->sendFailureEmail($schedule, $patrol->agent ?? null, $patrol->photo ?? null, $patrolStart);
+            }
 
-                $start = $this->parseDateTime($schedule->date, $schedule->start_time)->addHour();
-                $end = $schedule->end_time
-                    ? $this->parseDateTime($schedule->date, $schedule->end_time)->addHour()
-                    : $now;
-
-                // Appliquer la tolérance
-                $toleranceStart = $start->copy()->subMinutes($toleranceMinutes);
-                $toleranceEnd = $end->copy()->addMinutes($toleranceMinutes);
-
-                // Patrouilles dans l'intervalle du planning
-                $patrol = Patrol::with("agent")
-                    ->where('site_id', $schedule->site_id)
-                    ->whereBetween('started_at', [$toleranceStart, $toleranceEnd])
-                    ->latest()
-                    ->first();
-
-                $newStatus = 'fail'; // Par défaut
-
-                if (!$patrol) {
-                    // Aucun début de patrouille dans l'intervalle, mais on attend que le créneau soit terminé
-                    if ($now->gt($toleranceEnd)) {
-                        $this->sendFailureEmail($schedule, null, null, $now);
-                        $schedule->status = 'fail';
-                        $schedule->save();
-                    }
-                    continue;
-                }
-
-                // Vérifier si la patrouille est vraiment dans l’intervalle exact (pas seulement tolérance)
-                $startedAt = Carbon::parse($patrol->started_at);
-                if ($startedAt->lt($start) || $startedAt->gt($end)) {
-                    // Patrouille faite hors du vrai créneau
-                    if ($now->gt($toleranceEnd)) {
-                        $this->sendFailureEmail($schedule, $patrol->agent ?? null, $patrol->photo ?? null, $now);
-                        $schedule->status = 'fail';
-                        $schedule->save();
-                    }
-                    continue;
-                }
-
-                // Comparer les zones
-                $allAreas = Area::where('site_id', $schedule->site_id)->pluck('id')->toArray();
-                $scannedAreas = PatrolScan::where('patrol_id', $patrol->id)->pluck('area_id')->unique()->toArray();
-
-                if (empty($scannedAreas)) {
-                    $newStatus = 'fail';
-                } elseif (count($scannedAreas) < count($allAreas)) {
-                    $newStatus = 'partial';
-                } else {
-                    $newStatus = 'success';
-                }
-
-                if ($newStatus === 'fail') {
-                    $this->sendFailureEmail($schedule, $patrol->agent ?? null, $patrol->photo ?? null, $now);
-                }
-
+            if ($schedule->status !== 'fail') {
                 $schedule->status = $newStatus;
                 $schedule->save();
-
-            } catch (\Exception $e) {
-                Log::error("Erreur lors de la vérification du schedule ID {$schedule->id} : " . $e->getMessage());
+                Log::info("✅ Planning #{$schedule->id} mis à jour en statut : {$newStatus}");
             }
+
+        } catch (\Exception $e) {
+            Log::error("💥 Erreur de mise à jour du planning #{$schedule->id} via patrouille #{$patrol->id} : " . $e->getMessage());
         }
     }
 
+
+    //Formatte bien la date et l'heure
+    protected function parseDateTime($date, $time)
+    {
+        try {
+            $date = trim($date);
+            $time = trim($time);
+
+            // 🧽 Correction si la date contient aussi une heure
+            if (strlen($date) > 10) {
+                $date = Carbon::parse($date)->format('Y-m-d');
+            }
+
+            $datetime = "{$date} {$time}";
+
+            return Carbon::parse($datetime, 'Africa/Kinshasa');
+
+        } catch (\Exception $e) {
+            Log::error("⛔ Erreur de parsing sur date={$date}, time={$time} : " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+
+    //Fonction pour envoyer un mail en cas d'une patrouille manquée
     protected function sendFailureEmail($schedule, $agent, $photo, $now)
     {
         $site = Site::find($schedule->site_id);
@@ -758,24 +719,7 @@ class AppManagerController extends Controller
             ]);
         }
     }
-    private function parseDateTime($date, $time)
-    {
-        if (preg_match('/\d{2}:\d{2}:\d{2}/', $date)) {
-            return Carbon::parse($date);
-        }
-
-        return Carbon::parse("{$date} {$time}");
-    }
-
-
-
-
-
-
-
-
-
-
+    
 
     /**
      * Calcul de la distance entre deux points GPS en mètres
@@ -947,7 +891,7 @@ class AppManagerController extends Controller
         } 
         $schedules = $req
             ->where("agency_id", $agencyId)
-            ->orderByDesc("id")->paginate(4);
+            ->orderByDesc("id")->paginate(10);
         return response()->json([
             "status"=>"success",
             "schedules"=>$schedules
