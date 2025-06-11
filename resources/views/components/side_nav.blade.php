@@ -260,6 +260,7 @@
              </ul>
         </li>
         @endif
+
         @if (Auth::user()->hasMenu("requetes"))
         <li>
              <a href="{{ url("/requests") }}" class="side-menu {{ Route::is("requests") ? 'side-menu--active' : '' }}">
@@ -275,14 +276,49 @@
 
         @if (Auth::user()->hasMenu("planning"))
         <li>
-             <a href="{{ url("/schedules") }}" class="side-menu {{ Route::is("schedules") ? 'side-menu--active' : '' }}">
+             <a href="javascript:;" class="side-menu {{ Route::is("schedules") || Route::is("schedules.supervisor") || Route::is("schedules.report")  ? 'side-menu--active' : '' }}">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="clock" class="stroke-1.5 w-5 h-5"></i>
                  </div>
                  <div class="side-menu__title">
-                     Planning
+                     Plannings
+                     <div class="side-menu__sub-icon ">
+                         <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-3 h-3"></i>
+                     </div>
                  </div>
              </a>
+             <ul class="">
+                 <li>
+                     <a href="{{ url("/schedules") }}" class="side-menu">
+                         <div class="side-menu__icon">
+                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                         </div>
+                         <div class="side-menu__title">
+                            Planning agents
+                         </div>
+                     </a>
+                 </li>
+                 <li>
+                     <a href="{{ url("/schedules.supervisor") }}" class="side-menu">
+                         <div class="side-menu__icon">
+                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                         </div>
+                         <div class="side-menu__title">
+                             Planning superviseurs
+                         </div>
+                     </a>
+                 </li>
+                 <li>
+                     <a href="{{ url("/schedules.report") }}" class="side-menu">
+                         <div class="side-menu__icon">
+                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                         </div>
+                         <div class="side-menu__title">
+                            Rapport de planning
+                         </div>
+                     </a>
+                 </li>
+             </ul>
         </li>
         @endif
 

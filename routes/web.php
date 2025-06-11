@@ -86,10 +86,16 @@ Route::middleware(['auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::view('/schedules', 'schedules')->name('schedules')->middleware('check.permission:planning,view');
+    Route::view('/schedules.report', 'schedules_report')->name('schedules.report')->middleware('check.permission:planning,view');
+    Route::get('/schedules.supervisor', function(){
+        $supervisors = Agent::where("role", "supervisor")->orderBy("fullname", "asc")->get();
+        return view('schedules_sup', ["supervisors"=>$supervisors]);
+    })->name('schedules.supervisor')->middleware('check.permission:planning,view');
     Route::post('schedules.create', [AppManagerController::class, 'createPlanning'])->name('schedules.create')->middleware('check.permission:planning,create');
+    Route::post('schedules.supervisor.create', [AppManagerController::class, 'createSupervisorPlanning'])->name('schedules.supervisor.create')->middleware('check.permission:planning,create');
     Route::get('/schedules.all', [AppManagerController::class, 'viewAllSchedulesByAdmin'])->name('schedules.all')->middleware('check.permission:planning,view');
+    Route::get('/schedules.supervisor.all', [AppManagerController::class, 'viewSupervisorSchedules'])->name('schedules.supervisor.all')->middleware('check.permission:planning,view');
     //Route::get('/schedules.verify', [AppManagerController::class, 'verifySchedules'])->name('schedules.verify');
-
     /*
     |--------------------------------------------------------------------------
     | RAPPORTS

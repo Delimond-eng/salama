@@ -9,6 +9,7 @@ use App\Models\Area;
 use App\Models\Patrol;
 use App\Models\PatrolScan;
 use App\Models\Schedules;
+use App\Models\ScheduleSupervisor;
 use App\Models\Signalement;
 use App\Models\Site;
 use App\Services\FcmService;
@@ -865,6 +866,7 @@ class AppManagerController extends Controller
                 $body = "Vous avez une nouvelle patrouille $formattedDate de $start à $end.";
                 $fcm->sendNotification($site->fcm_token, $title, $body);
             }
+            
             return response()->json([
                 "status" => "success",
                 "result" => $schedule,
@@ -877,6 +879,73 @@ class AppManagerController extends Controller
         }
     }
 
+    /**
+     * Create planning for supervisor
+     * @param Request $request
+     * @return JsonResponse
+    */
+    public function createSupervisorPlanning(Request $request): JsonResponse
+    {
+        try {
+            $data = $request->validate([
+                'title' => 'required|string',
+                'date' => 'required|date|after:now',
+                'agent_id' => 'required|exists:agents,id',
+                'sites' => 'required|array|min:1',
+                'sites.*.site_id' => 'required|exists:sites,id',
+                'sites.*.started_at' => 'required|date_format:H:i',
+                'sites.*.ended_at' => 'required|date_format:H:i|after:sites.*.started_at',
+                'sites.*.order' => 'nullable|integer',
+            ]);
+
+            // Créer le planning superviseur
+            $schedule = ScheduleSupervisor::updateOrCreate([
+                "id"=>$request->id ?? null
+            ],[
+                'title' => $data['title'],
+                'date' => $data['date'],
+                'status' =>  "pending",
+                'comment' => $data['comment'] ?? null,
+                'agent_id' => $data['agent_id'],
+                'user_id' => Auth::id(),
+            ]);
+            // Ajouter les sites avec horaires spécifiques
+            foreach ($data['sites'] as $siteData) {
+                $schedule->sites()->updateOrCreate([
+                    'site_id' => $siteData['site_id'],
+                ],[
+                    'site_id' => $siteData['site_id'],
+                    'order' => $siteData['order'] ?? 1,
+                    'started_at' => $siteData['started_at'],
+                    'ended_at' => $siteData['ended_at'],
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'result' => $schedule->load('sites.site')
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->validator->errors()->all()]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
+    }
+
+
+    /**
+     * View all schedules for supervisor
+     * @return JsonResponse
+    */
+    public function viewSupervisorSchedules()
+    {
+        $schedules = ScheduleSupervisor::with('agent', 'user', 'sites.site')->paginate(10);
+        return response()->json([
+            "status"=>"success",
+            "schedules"=>$schedules
+        ]);
+    }
     /**
      * View all schedules from admin
      * @return JsonResponse

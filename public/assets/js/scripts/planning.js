@@ -12,6 +12,7 @@ new Vue({
             isLoading: false,
             isDataLoading: false,
             pristine: null,
+            tom: null,
             schedules: [],
             delete_id: "",
 
@@ -24,6 +25,19 @@ new Vue({
                 date: "",
                 start_time: "",
                 end_time: "",
+            },
+            formSup: {
+                title: "",
+                date: "",
+                agent_id: "",
+                sites: [
+                    {
+                        site_id: "",
+                        started_at: "",
+                        ended_at: "",
+                        order: 1,
+                    },
+                ],
             },
             pagination: {
                 current_page: 1,
@@ -42,18 +56,101 @@ new Vue({
         if ($("#loader").length) {
             document.getElementById("loader").style.display = "none";
         }
-        this.pristine = new Pristine(document.querySelector(".form-planning"), {
-            classTo: "input-form",
-            errorClass: "has-error",
-            errorTextParent: "input-form",
-            errorTextClass: "text-danger mt-2",
-        });
-        this.verifySchedules();
-        this.viewAllSchedules();
+        if ($(".form-planning").length) {
+            this.pristine = new Pristine(
+                document.querySelector(".form-planning"),
+                {
+                    classTo: "input-form",
+                    errorClass: "has-error",
+                    errorTextParent: "input-form",
+                    errorTextClass: "text-danger mt-2",
+                }
+            );
+        }
+
+        if ($(".tom-select").length) {
+            const self = this;
+            const tom = new TomSelect(".tom-select", {
+                plugins: {
+                    dropdown_input: {},
+                },
+                create: false,
+                placeholder: "Séléctionnez un superviseur",
+            });
+            self.tom = tom;
+            tom.on("change", function (value) {
+                self.formSup.agent_id = value;
+            });
+        }
+        if (location.pathname === "/schedules.supervisor") {
+            this.viewAllSupervisorSchedules();
+        } else {
+            this.viewAllSchedules();
+        }
         this.viewAllSites();
     },
 
     methods: {
+        addSupField() {
+            const lastIndex = this.formSup.sites.length;
+            this.formSup.sites.push({
+                site_id: "",
+                started_at: "",
+                ended_at: "",
+                order: lastIndex + 1,
+            });
+        },
+
+        deleteSupField(field) {
+            const index = this.formSup.sites.indexOf(field);
+            this.formSup.sites.splice(index, 1);
+        },
+
+        editSupSchedule(data) {
+            const supData = JSON.parse(JSON.stringify(data)); // clone profond
+            const [day, month, year] = supData.date.split("/");
+            supData.date = `${year}-${month}-${day}`;
+            this.formSup = supData;
+
+            $(".tom-select")[0].tomselect.setValue(supData.agent_id);
+        },
+
+        createSupervisorSchedule(event) {
+            this.isLoading = true;
+            postJson("schedules.supervisor.create", this.formSup)
+                .then(({ data, status }) => {
+                    this.isLoading = false;
+                    // Gestion des erreurs
+                    if (data.errors !== undefined) {
+                        this.error = data.errors.toString();
+                        return;
+                    }
+                    if (data.result) {
+                        this.error = null;
+                        this.result = data.result;
+                        new Toastify({
+                            node: $("#success-notification-content")
+                                .clone()
+                                .removeClass("hidden")[0],
+                            duration: 3000,
+                            newWindow: true,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            stopOnFocus: true,
+                        }).showToast();
+                        this.viewAllSupervisorSchedules();
+                        // clean fields
+                        this.reset();
+                    }
+                })
+                .catch((err) => {
+                    this.isLoading = false;
+                    this.error = err;
+                    console.log(err);
+                });
+        },
+
         viewAllSites() {
             get("/sites")
                 .then((res) => {
@@ -61,6 +158,7 @@ new Vue({
                 })
                 .catch((err) => console.log("error"));
         },
+
         viewAllSchedules() {
             this.isDataLoading = true;
             get(
@@ -82,11 +180,25 @@ new Vue({
                 });
         },
 
-        verifySchedules() {
-            get("/schedules.verify").then((res)=>{
-                console.log(JSON.stringify(res.data));
-                
-            });
+        viewAllSupervisorSchedules() {
+            this.isDataLoading = true;
+            get(
+                `/schedules.supervisor.all?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&date=${this.filter_date}`
+            )
+                .then((res) => {
+                    this.isDataLoading = false;
+                    this.schedules = res.data.schedules.data;
+                    this.pagination = {
+                        current_page: res.data.schedules.current_page,
+                        last_page: res.data.schedules.last_page,
+                        total: res.data.schedules.total,
+                        per_page: res.data.schedules.per_page,
+                    };
+                })
+                .catch((err) => {
+                    this.isDataLoading = false;
+                    console.log("error");
+                });
         },
 
         reset() {
@@ -97,6 +209,20 @@ new Vue({
                 start_time: "",
                 end_time: "",
             };
+            this.formSup = {
+                title: "",
+                date: "",
+                agent_id: "",
+                sites: [
+                    {
+                        site_id: "",
+                        started_at: "",
+                        ended_at: "",
+                        order: 1,
+                    },
+                ],
+            };
+            $(".tom-select")[0].tomselect.clear();
         },
 
         createSchedules(event) {
@@ -177,16 +303,46 @@ new Vue({
                 }
             });
         },
+        deleteSupPlanning(data) {
+            const self = this;
+            new Swal({
+                text: `Etes-vous sûr de vouloir supprimer définitivement ce planning ??`,
+                icon: "warning",
+                showConfirmButton: 1,
+                showCancelButton: 1,
+                confirmButtonText: "Confirmer",
+                denyButtonText: `Annuler`,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    self.delete_id = data.id;
+                    postJson("/table.delete", {
+                        table: "schedule_supervisors",
+                        id: data.id,
+                    }).then(() => {
+                        self.delete_id = "";
+                        self.viewAllSupervisorSchedules();
+                    });
+                }
+            });
+        },
 
         changePage(page) {
             this.pagination.current_page = page;
-            this.viewAllSchedules();
+            if (location.pathname === "/schedules.supervisor") {
+                this.viewAllSupervisorSchedules();
+            } else {
+                this.viewAllSchedules();
+            }
         },
 
         onPerPageChange(perPage) {
             this.pagination.per_page = perPage;
             this.pagination.current_page = 1;
-            this.viewAllSchedules();
+            if (location.pathname === "/schedules.supervisor") {
+                this.viewAllSupervisorSchedules();
+            } else {
+                this.viewAllSchedules();
+            }
         },
     },
 
@@ -203,6 +359,18 @@ new Vue({
             } else {
                 return this.schedules;
             }
+        },
+
+        status() {
+            return (st) => {
+                if (st === "pending") {
+                    return "En attente";
+                } else if (st === "partial") {
+                    return "Non complet";
+                } else {
+                    return "Effectué";
+                }
+            };
         },
     },
 });

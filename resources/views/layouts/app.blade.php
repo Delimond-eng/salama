@@ -13,6 +13,7 @@
     <meta name="user-id" content="{{ Auth::user()->id }}">
     <title>Salama Plateforme</title>
     <!-- BEGIN: CSS Assets-->
+    <link rel="stylesheet" href="{{ asset("dist/css/vendors/tom-select.css") }}">
     <link rel="stylesheet" href="{{ asset("dist/css/vendors/zoom-vanilla.css") }}">
     <link rel="stylesheet" href="{{ asset('dist/css/vendors/tippy.css') }}">
     <link rel="stylesheet" href="{{ asset('dist/css/vendors/litepicker.css') }}">
@@ -49,6 +50,7 @@
  <!-- @vite('resources/js/app.js') -->
 <script src="{{ asset('dist/js/vendors/dom.js') }}"></script>
 <script src="{{ asset('dist/js/vendors/tailwind-merge.js') }}"></script>
+<script src="{{ asset("dist/js/vendors/tom-select.js") }}"></script>
 <script src="{{ asset("dist/js/vendors/image-zoom.js") }}"></script>
 <script src="{{ asset("dist/js/vendors/alert.js") }}"></script>
 <script src="{{ asset('dist/js/vendors/lucide.js') }}"></script>
