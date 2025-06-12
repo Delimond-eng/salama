@@ -77,7 +77,7 @@
         <!-- END: Account Menu -->
     </div>
     <!-- END: Top Bar -->
-    <div class="mt-5 grid grid-cols-12 gap-6" id="App">
+    <div class="mt-5 grid grid-cols-12 gap-6" id="App" v-cloak>
         <div class="intro-y col-span-12 mt-2 flex flex-wrap items-center xl:flex-nowrap">
             <div class="flex w-full sm:w-auto">
                 <div class="relative w-48 text-slate-500">
@@ -156,51 +156,30 @@
 
                             <div class="col-span-12">
                                 <div class="grid grid-cols-12 mb-4" v-for="(input, index) in formSup.sites" :key="index">
-                                    <div class="col-span-12 lg:col-span-6">
+                                    <div class="col-span-12">
                                         <label for="vertical-form-2" class="inline-block text-blue-500 font-bold mb-2 group-[.form-inline]:mb-2 group-[.form-inline]:sm:mb-0 group-[.form-inline]:sm:mr-5 group-[.form-inline]:sm:text-right">
                                             Sites à superviser *
                                         </label>
-                                        <div class="flex">
+                                        <div class="flex gap-2">
                                             <select v-model="input.site_id" class="mr-1 disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
                                                 <option value="" selected hidden>--Sélectionnez un site--</option>
                                                 <option v-for="(data, index) in allSites" :value="data.id">@{{ data.name }}</option>
                                             </select>
-                                        </div>
-                                    </div>
 
-                                    <div class="grid grid-cols-12 gap-2 col-span-12 lg:col-span-6" >
-                                        <div class="col-span-6 2xl:col-span-6">
-                                            <div>
-                                                <label for="vertical-form-1" class="inline-block text-blue-500 font-bold mb-2 group-[.form-inline]:mb-2 group-[.form-inline]:sm:mb-0 group-[.form-inline]:sm:mr-5 group-[.form-inline]:sm:text-right">
-                                                    Heure début
-                                                </label>
-                                                <input id="vertical-form-1" type="time" v-model="input.started_at" step="60" class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
-                                            </div>
-                                        </div>
-
-                                        <div class="col-span-6 2xl:col-span-6">
-                                            <div>
-                                                <label for="vertical-form-1" class="inline-block text-blue-500 font-bold mb-2 group-[.form-inline]:mb-2 group-[.form-inline]:sm:mb-0 group-[.form-inline]:sm:mr-5 group-[.form-inline]:sm:text-right">
-                                                    Heure Fin
-                                                </label>
-                                                <div class="flex gap-2">
-                                                    <input id="vertical-form-1" v-model="input.ended_at" step="60" type="time" class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
-                                                    <button v-if="index===0" type="button" @click.prevent="addSupField" 
-                                                        data-tw-merge
-                                                        class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed border-secondary text-slate-500 dark:border-darkmode-100/40 dark:text-slate-300 [&:hover:not(:disabled)]:bg-secondary/20 [&:hover:not(:disabled)]:dark:bg-darkmode-100/10 hidden sm:flex hidden sm:flex"><i
-                                                            data-tw-merge
-                                                            data-lucide="plus"
-                                                            class="stroke-1.5 text-blue-500 h-4 w-4"></i>
-                                                    </button>
-                                                    <button v-else type="button" @click.prevent="deleteSupField(input)" 
-                                                        data-tw-merge
-                                                        class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed border-secondary text-slate-500 dark:border-darkmode-100/40 dark:text-slate-300 [&:hover:not(:disabled)]:bg-secondary/20 [&:hover:not(:disabled)]:dark:bg-darkmode-100/10 hidden sm:flex hidden sm:flex"><i
-                                                            data-tw-merge
-                                                            data-lucide="x"
-                                                            class="stroke-1.5 text-danger h-4 w-4"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
+                                            <button v-if="index===0" type="button" @click.prevent="addSupField" 
+                                                data-tw-merge
+                                                class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed border-secondary text-slate-500 dark:border-darkmode-100/40 dark:text-slate-300 [&:hover:not(:disabled)]:bg-secondary/20 [&:hover:not(:disabled)]:dark:bg-darkmode-100/10 hidden sm:flex hidden sm:flex"><i
+                                                    data-tw-merge
+                                                    data-lucide="plus"
+                                                    class="stroke-1.5 text-blue-5000 h-4 w-4"></i>
+                                            </button>
+                                            <button v-else type="button" @click.prevent="deleteSupField(input)" 
+                                                data-tw-merge
+                                                class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed border-secondary text-slate-500 dark:border-darkmode-100/40 dark:text-slate-300 [&:hover:not(:disabled)]:bg-secondary/20 [&:hover:not(:disabled)]:dark:bg-darkmode-100/10 hidden sm:flex hidden sm:flex"><i
+                                                    data-tw-merge
+                                                    data-lucide="x"
+                                                    class="stroke-1.5 text-danger h-4 w-4"></i>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -249,8 +228,16 @@
                 </div>
             </div>
         </div>
+        <div class="intro-y col-span-12 mt-2 flex justify-center flex-wrap items-center xl:flex-nowrap" v-if="allSchedules.length === 0">
+            <div v-if="isDataLoading">
+                <x-dom-loader></x-dom-loader>
+            </div>
+            <div v-else>
+                <x-empty-state message="Aucun planning disponible." v-else></x-empty-state>
+            </div>
+        </div>
         <!-- BEGIN: Data List -->
-        <div class="intro-y col-span-12 overflow-auto 2xl:overflow-visible">
+        <div v-else class="intro-y col-span-12 overflow-auto 2xl:overflow-visible">
             <table data-tw-merge="" class="w-full text-left -mt-2 border-separate border-spacing-y-[10px]">
                 <thead data-tw-merge="" class="">
                     <tr data-tw-merge="" class="">
@@ -333,7 +320,7 @@
                                 <a data-tw-toggle="modal" data-tw-target="#modal-add-schedule" @click="editSupSchedule(data)" class="flex items-center whitespace-nowrap text-primary mr-2" href="#">
                                     <i data-tw-merge="" data-lucide="edit" class="stroke-1.5 mr-1 h-4 w-4"></i>
                                 </a>
-                                
+
                                 <a @click.prevent="deleteSupPlanning(data)" class="flex items-center whitespace-nowrap text-danger" href="#">
                                     <span class="h-3 w-3" v-if="data.id === delete_id">
                                         <svg class="h-full w-full" width="25" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="red">
@@ -374,6 +361,8 @@
             @per-page-changed="onPerPageChange" />
         <!-- END: Pagination -->
     </div>
+
+    <x-dom-loader></x-dom-loader>
 
 </div>
 <!-- END: Content -->

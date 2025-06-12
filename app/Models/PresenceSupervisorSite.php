@@ -6,16 +6,23 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ScheduleSupervisorSite extends Model
+class PresenceSupervisorSite extends Model
 {
     use HasFactory;
 
-
     protected $fillable = [
+        'date',
+        'started_at',
+        'ended_at',
+        'start_photo',
+        'end_photo',
+        'latlng',
+        'distance',
+        'comment',
         'schedule_id',
         'site_id',
-        'order',
-        'status',
+        'agent_id',
+        'status'
     ];
 
     /**
@@ -26,6 +33,9 @@ class ScheduleSupervisorSite extends Model
     protected $casts = [
         'created_at'=>'datetime:d/m/Y H:i',
         'updated_at'=>'datetime:d/m/Y H:i',
+        'date'=>'datetime:d/m/Y',
+        'started_at'=>'datetime:H:i',
+        'ended_at'=>'datetime:H:i',
     ];
 
     /**
@@ -42,5 +52,14 @@ class ScheduleSupervisorSite extends Model
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class, 'site_id');
+    }
+
+
+    /**
+     * Agent concerné par cette presence.
+     */
+    public function agent(): BelongsTo
+    {
+        return $this->belongsTo(Agent::class, 'agent_id');
     }
 }

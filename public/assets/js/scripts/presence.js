@@ -59,6 +59,20 @@ new Vue({
             );
         }
 
+        if ($(".tom-select").length) {
+            const self = this;
+            const tom = new TomSelect(".tom-select", {
+                plugins: {
+                    dropdown_input: {},
+                },
+                create: false,
+                placeholder: "Séléctionnez un agent",
+            });
+            tom.on("change", function (value) {
+                console.log("Agent selected : ", value);
+            });
+        }
+
         this.viewAllHoraires();
         this.viewAllGroups();
     },

@@ -211,7 +211,7 @@
 
         @if (Auth::user()->hasMenu("presences"))
         <li>
-             <a href="javascript:;" class="side-menu {{ Route::is("presence.horaires") || Route::is("reports.presences") || Route::is("agent.groupe") ? 'side-menu--active' : ''}} ">
+             <a href="javascript:;" class="side-menu {{ Route::is("presence.horaires") || Route::is("reports.presences") || Route::is("agent.groupe") || Route::is("reports.presences.filter") ? 'side-menu--active' : ''}} ">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="calendar" class="stroke-1.5 w-5 h-5"></i>
                  </div>
@@ -244,19 +244,29 @@
                          </div>
                      </a>
                  </li>
-                 @endif
-                  @if (Auth::user()->hasPermission("presences", "view"))
-                 <li>
-                     <a href="{{ url("/reports.presences") }}" class="side-menu">
-                         <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
-                         </div>
-                         <div class="side-menu__title">
-                             Rapport des présences
-                         </div>
-                     </a>
-                 </li>
-                 @endif
+                @endif
+                @if (Auth::user()->hasPermission("presences", "view"))
+                <li>
+                    <a href="{{ url("/reports.presences") }}" class="side-menu">
+                        <div class="side-menu__icon">
+                            <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                        </div>
+                        <div class="side-menu__title">
+                            Rapport des présences
+                        </div>
+                    </a>
+                </li>
+                @endif
+                <li>
+                    <a href="{{ url("/reports.presences.filter") }}" class="side-menu">
+                        <div class="side-menu__icon">
+                            <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                        </div>
+                        <div class="side-menu__title">
+                            Rapport filtré
+                        </div>
+                    </a>
+                </li>
              </ul>
         </li>
         @endif

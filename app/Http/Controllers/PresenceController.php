@@ -9,6 +9,9 @@ use Carbon\Carbon;
 use App\Models\Site;
 use App\Models\Agent;
 use App\Models\AgentGroup;
+use App\Models\PresenceSupervisorSite;
+use App\Models\ScheduleSupervisor;
+use Illuminate\Http\JsonResponse;
 
 class PresenceController extends Controller
 {
@@ -87,7 +90,7 @@ class PresenceController extends Controller
             ]);
 
             $agent = Agent::with("groupe.horaire")->where('matricule', $data['matricule'])->firstOrFail();
-            $now = Carbon::now();
+            $now = Carbon::now()->setTimezone('Africa/Kinshasa');
 
             $lat1 = null;
             $lng1 = null;
@@ -234,6 +237,91 @@ class PresenceController extends Controller
                     "result" => $presence
                 ]);
             }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->validator->errors()->all()]);
+        } catch (\Exception $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
+    }
+
+
+    /**
+     * Creation de la presence visite du superviseur dans les sites
+     * @param Request $request HTTP REQ
+     * @return JsonResponse
+    */
+    public function createSupervisorSiteVisit(Request $request): JsonResponse
+    {
+        try {
+            $data = $request->validate([
+                "matricule" => "required|string|exists:agents,matricule",
+                "site_id" => "required|int|exists:sites,id",
+                "schedule_id" => "required|int|exists:schedule_supervisors,id",
+                "photo" => "required|file",
+                "comment"=> "nullable|string",
+                "latlng" => "required|string",
+            ]);
+
+            $agent = Agent::where('matricule', $data['matricule'])->where("role", "supervisor")->first();
+            if(!$agent){
+                return response()->json(["errors"=>"Unauthorized"]);
+            }
+            $now = Carbon::now()->setTimezone('Africa/Kinshasa');
+            $site = Site::find($data["site_id"]);
+            // Gestion de la distance et du commentaire
+            list($lat1, $lng1) = explode(",", $data["latlng"]);
+            list($lat2, $lng2) = explode(",", $site->latlng);
+        
+            $distance = (new AppManagerController())->calculateDistance($lat1, $lng1, $lat2, $lng2);
+            $photoUrl = "";
+            //Capture photo agent debut
+            if ($request->hasFile('photo')) {
+                $photo = $request->file('photo');
+                $filename = time() . '_' . $photo->getClientOriginalName();
+                $photo->move(public_path('uploads/supervisor_visits'), $filename);
+                $photoUrl = url('uploads/supervisor_visits/' . $filename);
+            }
+            $data["date"] = $now->toDateString();
+            $data["agent_id"] = $agent->id;
+
+            $presence = PresenceSupervisorSite::where('agent_id', $data["agent_id"])
+                ->where('site_id', $site->id)
+                ->whereDate('date', Carbon::today())
+                ->whereNull('ended_at')
+                ->whereNull('end_photo')
+                ->first();
+            if($presence){
+                $data["ended_at"] = $now->format('H:i');
+                $data["end_photo"] = $photoUrl;
+            }
+            else{
+                $data["distance"] = $distance;
+                $data["start_photo"] = $photoUrl;
+                $data["started_at"] = $now->format('H:i');
+            }
+
+
+            unset($data['matricule']);
+            unset($data['photo']);
+            $schedule = ScheduleSupervisor::find($data["schedule_id"]);
+            $scheduleDate = Carbon::parse($schedule->date);
+            $submittedDate = Carbon::parse($data["date"]);
+
+            if ($scheduleDate->gt($submittedDate)) {
+                $data["status"] = "Effectué avant";
+            } elseif ($scheduleDate->lt($submittedDate)) {
+                $data["status"] = "Non respecté";
+            } else {
+                $data["status"] = "success";
+            }
+
+            $result = PresenceSupervisorSite::updateOrCreate(["id"=>$presence->id ?? null], $data);
+
+            return response()->json([
+                "status"=>"success",
+                "result"=> $result,
+            ]);
+
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->validator->errors()->all()]);
         } catch (\Exception $e) {

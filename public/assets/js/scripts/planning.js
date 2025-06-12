@@ -33,8 +33,6 @@ new Vue({
                 sites: [
                     {
                         site_id: "",
-                        started_at: "",
-                        ended_at: "",
                         order: 1,
                     },
                 ],
@@ -70,16 +68,18 @@ new Vue({
 
         if ($(".tom-select").length) {
             const self = this;
-            const tom = new TomSelect(".tom-select", {
-                plugins: {
-                    dropdown_input: {},
-                },
-                create: false,
-                placeholder: "Séléctionnez un superviseur",
-            });
-            self.tom = tom;
-            tom.on("change", function (value) {
-                self.formSup.agent_id = value;
+            $(".tom-select").each(function () {
+                const tom = new TomSelect(this, {
+                    plugins: {
+                        dropdown_input: {},
+                    },
+                    create: false,
+                    placeholder: "Sélectionnez un agent",
+                });
+
+                tom.on("change", function (value) {
+                    self.formSup.agent_id = value;
+                });
             });
         }
         if (location.pathname === "/schedules.supervisor") {
@@ -95,14 +95,18 @@ new Vue({
             const lastIndex = this.formSup.sites.length;
             this.formSup.sites.push({
                 site_id: "",
-                started_at: "",
-                ended_at: "",
                 order: lastIndex + 1,
             });
         },
 
-        deleteSupField(field) {
+        async deleteSupField(field) {
             const index = this.formSup.sites.indexOf(field);
+            if (this.formSup.sites[index].id !== undefined) {
+                await postJson("/table.delete", {
+                    table: "schedule_supervisor_sites",
+                    id: this.formSup.sites[index].id,
+                });
+            }
             this.formSup.sites.splice(index, 1);
         },
 
@@ -216,8 +220,6 @@ new Vue({
                 sites: [
                     {
                         site_id: "",
-                        started_at: "",
-                        ended_at: "",
                         order: 1,
                     },
                 ],
@@ -303,6 +305,7 @@ new Vue({
                 }
             });
         },
+
         deleteSupPlanning(data) {
             const self = this;
             new Swal({

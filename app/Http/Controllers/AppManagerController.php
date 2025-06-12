@@ -893,8 +893,6 @@ class AppManagerController extends Controller
                 'agent_id' => 'required|exists:agents,id',
                 'sites' => 'required|array|min:1',
                 'sites.*.site_id' => 'required|exists:sites,id',
-                'sites.*.started_at' => 'required|date_format:H:i',
-                'sites.*.ended_at' => 'required|date_format:H:i|after:sites.*.started_at',
                 'sites.*.order' => 'nullable|integer',
             ]);
 
@@ -916,8 +914,6 @@ class AppManagerController extends Controller
                 ],[
                     'site_id' => $siteData['site_id'],
                     'order' => $siteData['order'] ?? 1,
-                    'started_at' => $siteData['started_at'],
-                    'ended_at' => $siteData['ended_at'],
                 ]);
             }
 

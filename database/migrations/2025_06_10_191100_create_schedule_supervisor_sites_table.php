@@ -15,8 +15,6 @@ return new class extends Migration
     {
         Schema::create('schedule_supervisor_sites', function (Blueprint $table) {
             $table->id();
-            $table->time("started_at")->nullable();
-            $table->time("ended_at")->nullable();
             $table->foreignId("schedule_id")->nullable()->constrained("schedule_supervisors", "id")->nullOnDelete();
             $table->foreignId("site_id")->nullable()->constrained("sites", "id")->nullOnDelete();
             $table->integer("order")->default(1);

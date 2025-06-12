@@ -58,8 +58,6 @@ new Vue({
         }, 5000);
 
         this.viewAllPendingScans(); // Starts fetching pending patrols
-
-        this.verifySchedules();
     },
 
     beforeDestroy() {
@@ -487,12 +485,6 @@ new Vue({
                 .finally(() => {
                     this.isLoading = false;
                 });
-        },
-
-        verifySchedules() {
-            get("/schedules.verify").then((res) => {
-                console.log(JSON.stringify(res.data));
-            });
         },
 
         onSelectItem(item) {

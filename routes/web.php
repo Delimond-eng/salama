@@ -14,11 +14,10 @@ use App\Models\Menu;
 use App\Models\Site;
 use App\Models\User;
 
- Route::post('/horaire.create', [\App\Http\Controllers\PresenceController::class, 'createHoraire'])->name('horaire.create');
 
 Auth::routes();
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['geo.restricted','auth'])->group(function () {
 
     // Tableau de bord
     Route::get('/', [HomeController::class, 'index'])->name('dashboard');
@@ -104,6 +103,7 @@ Route::middleware(['auth'])->group(function () {
     Route::view('/reports.patrols', 'report_patrols')->name('reports.patrols')->middleware('check.permission:patrouilles,view');
     Route::view('/reports.tasks', 'report_tasks')->name('reports.tasks');
     Route::view('/reports.presences', 'report_presences')->name('reports.presences')->middleware('check.permission:presences,view');
+    Route::view('/reports.presences.filter', 'presence_report_filter')->name('reports.presences.filter')->middleware('check.permission:presences,view');
 
     Route::get('/pdf.patrols.reports', [AppManagerController::class, 'generatePatrolPdfReport'])->name('pdf.patrols.reports')->middleware('check.permission:patrouilles,export');
 
@@ -161,7 +161,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/horaires', [\App\Http\Controllers\PresenceController::class, 'getAllHoraires'])->name('horaires');
     
     Route::get('/groups', [\App\Http\Controllers\PresenceController::class, 'getAllGroups'])->name('groups');
-
 
      /*
     |--------------------------------------------------------------------------

@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(["cors"])->group(function(){
+Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function(){
     //ALLOW TO CREATE AGENCY
     Route::post("/agency.create", [\App\Http\Controllers\AdminController::class, "createAgencie"])->name("agency.create");
 
@@ -65,6 +65,8 @@ Route::middleware(["cors"])->group(function(){
     Route::post('/horaire.create', [\App\Http\Controllers\PresenceController::class, 'createHoraire'])->name('horaire.create');
     //pour la creation de presence agent
     Route::post('/presence.create', [\App\Http\Controllers\PresenceController::class, 'createPresenceAgent'])->name('presence.create');
+    //Enregistre la visit d'un superviseur au site programmé
+    Route::post('/supervisor.visit.create', [\App\Http\Controllers\PresenceController::class, 'createSupervisorSiteVisit'])->name('supervisor.visit.create');
     //donnees presence
     Route::get('/presences', [\App\Http\Controllers\PresenceController::class, 'getPresencesBySiteAndDate'])->name('presences');
     //Emettre sur un canal de talkie walkie
