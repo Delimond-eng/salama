@@ -11,6 +11,7 @@ use App\Models\Agent;
 use App\Models\AgentGroup;
 use App\Models\PresenceSupervisorSite;
 use App\Models\ScheduleSupervisor;
+use App\Models\ScheduleSupervisorSite;
 use Illuminate\Http\JsonResponse;
 
 class PresenceController extends Controller
@@ -379,15 +380,130 @@ class PresenceController extends Controller
     }
 
 
+    //Renvoie la liste de l'horaire complet
     public function getAllHoraires(Request $request){
         $all = $request->query("all") ?? null;
         $horaires = PresenceHoraire::orderByDesc("id");
         return response()->json(['horaires' => isset($all) ? $horaires->get() : $horaires->paginate(10) ]);
     }
+
     public function getAllGroups(Request $request){
         $all = $request->query("all") ?? null;
         $groups = AgentGroup::with("horaire")->orderByDesc("id");
         return response()->json(['groups' => isset($all) ? $groups->get() : $groups->paginate(perPage: 10) ]);
     }
+
+
+
+    private function getDateRange(Request $request, $year)
+    {
+        $now = Carbon::now();
+
+        return match ($request->period) {
+            'week' => [
+                'start' => Carbon::now()->startOfWeek()->toDateString(),
+                'end' => Carbon::now()->endOfWeek()->toDateString(),
+            ],
+            'month' => [
+                'start' => Carbon::now()->startOfMonth()->toDateString(),
+                'end' => Carbon::now()->endOfMonth()->toDateString(),
+            ],
+            'quarter' => [
+                'start' => Carbon::now()->firstOfQuarter()->toDateString(),
+                'end' => Carbon::now()->lastOfQuarter()->toDateString(),
+            ],
+            'year' => [
+                'start' => Carbon::create($year)->startOfYear()->toDateString(),
+                'end' => Carbon::create($year)->endOfYear()->toDateString(),
+            ],
+            'custom' => [
+                'start' => Carbon::parse($request->date_begin)->toDateString(),
+                'end' => Carbon::parse($request->date_end)->toDateString(),
+            ],
+            default => [
+                'start' => Carbon::create($year)->startOfYear()->toDateString(),
+                'end' => Carbon::create($year)->endOfYear()->toDateString(),
+            ],
+        };
+    }
+
+    private function parseToMinutes($duree)
+    {
+        if (!$duree || !str_contains($duree, ':')) return 0;
+
+        [$h, $m] = explode(':', $duree);
+        return ((int)$h * 60) + (int)$m;
+    }
+
+
+    public function getSupervisorReport(Request $request)
+    {
+        $validated = $request->validate([
+            'agent_id' => 'nullable|exists:agents,id',
+            'site_id' => 'nullable|exists:sites,id',
+            'year' => 'nullable|integer',
+            'period' => 'nullable|in:week,month,quarter,year,custom',
+            'date_begin' => 'nullable|date|required_if:period,custom',
+            'date_end' => 'nullable|date|required_if:period,custom',
+        ]);
+
+        $year = $request->input('year', now()->year);
+
+        // Gère la période de recherche
+        $range = $this->getDateRange($request, $year);
+
+        $agents = Agent::where("role", "supervisor");
+
+        if ($request->filled('agent_id')) {
+            $agents->where('id', $request->agent_id);
+        }
+
+        $agents = $agents->get();
+        $reports = [];
+
+        foreach ($agents as $agent) {
+            $scheduleIds = ScheduleSupervisor::where('agent_id', $agent->id)
+                ->whereBetween('date', [$range['start'], $range['end']])
+                ->pluck('id');
+
+            $scheduledSites = ScheduleSupervisorSite::whereIn('schedule_id', $scheduleIds);
+
+            if ($request->filled('site_id')) {
+                $scheduledSites->where('site_id', $request->site_id);
+            }
+            $scheduledCount = $scheduledSites->count();
+            $presences = PresenceSupervisorSite::where('agent_id', $agent->id)
+                ->whereBetween('date', [$range['start'], $range['end']]);
+
+            if ($request->filled('site_id')) {
+                $presences->where('site_id', $request->site_id);
+            }
+
+            $presenceData = $presences->get();
+
+            $visitedCount = $presenceData->count();
+            $totalDuration = $presenceData->sum(fn($p) => $this->parseToMinutes($p->duree));
+            $avgDuration = $visitedCount ? round($totalDuration / $visitedCount) : 0;
+            $statusCounts = $presenceData->groupBy('status')->map->count();
+
+            $reports[] = [
+                'supervisor' => $agent->fullname,
+                'matricule' => $agent->matricule,
+                'scheduled_sites' => $scheduledCount,
+                'visited_sites' => $visitedCount,
+                'coverage' => $scheduledCount ? round(($visitedCount / $scheduledCount) * 100, 2) . '%' : '0%',
+                'total_duration_minutes' => $totalDuration,
+                'average_duration_minutes' => $avgDuration,
+                'status_breakdown' => $statusCounts,
+            ];
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $reports,
+        ]);
+    }
+
+
 
 }
