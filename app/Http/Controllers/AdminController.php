@@ -1,0 +1,577 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Action;
+use App\Models\Agencie;
+use App\Models\Agent;
+use App\Models\AgentHistory;
+use App\Models\Area;
+use App\Models\Menu;
+use App\Models\Patrol;
+use App\Models\PatrolScan;
+use App\Models\Schedules;
+use App\Models\Site;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
+class AdminController extends Controller
+{
+    /**
+     * CREATE AGENCY
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function createAgencie(Request $request)
+    {
+        try{
+            $data = $request->validate([
+                "name"=>"required|string|unique:agencies,name",
+                "adresse"=>"required|string",
+                "logo"=>"nullable|file",
+                "phone"=>"nullable|string",
+                "email"=>"email|string",
+                "password"=>"required|string",
+                "username"=>"required|string"
+            ]);
+            $response = Agencie::create($data);
+            if($response){
+                User::create([
+                    "name"=>$data["username"],
+                    "password"=>bcrypt($data["password"]),
+                    "email"=>$data["email"],
+                    "agency_id"=>$response->id
+                ]);
+            }
+            return response()->json([
+                "status"=>"success",
+                "response"=>$response
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors ]);
+        }
+        catch (\Illuminate\Database\QueryException $e){
+            return response()->json(['errors' => $e->getMessage() ]);
+        }
+    }
+
+
+    /**
+     * Add or Create Site for Agency and areas
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function createAgencieSite(Request $request):JsonResponse
+    {
+        try{
+            $data = null;
+            if($request->id){
+                $data = $request->validate([
+                    "areas.*.libelle"=>"required|string",
+                ]);
+                //Crée les zones de patrouille pour un site nouvellement créé
+                $areas = $data["areas"];
+                foreach ($areas as $area) {
+                    $area['site_id'] = $request->id;
+                    $latestArea = Area::updateOrCreate(
+                        [
+                            "site_id"=>$area["site_id"],
+                            "libelle"=>$area["libelle"]
+                        ],
+                        $area
+                    );
+                    $json = $latestArea->toJson();
+                    $qrCode = $this->generateQRCode($json);
+                    $latestArea->qrcode = $qrCode;
+                    $latestArea->save();
+                }
+                return response()->json([
+                    "status"=>"success",
+                    "result"=>"Nouveaux sites ajoutés avec succès !"
+                ]);
+            }
+            else{
+                $data = $request->validate([
+                    "name"=>"required|string",
+                    "code"=>"required|string|unique:sites,code",
+                    "latlng"=>"nullable|string",
+                    "adresse"=>"required|string",
+                    "phone"=>"nullable|string",
+                    "areas.*.libelle"=>"required|string",
+                    "emails"=>"nullable|string",
+                ]);
+                $data["agency_id"] = Auth::user()->agency_id;
+                $response = Site::updateOrCreate(
+                    [
+                        "code"=>$data["code"],
+                        "agency_id"=>$data["agency_id"],
+                    ],
+                    $data
+                );
+                if($response){
+                    //Crée les zones de patrouille pour un site nouvellement créé
+                    $areas = $data["areas"];
+                    foreach ($areas as $area) {
+                        $area['site_id'] = $response->id;
+                        $latestArea = Area::updateOrCreate(
+                            [
+                                "site_id"=>$area["site_id"],
+                                "libelle"=>$area["libelle"]
+                            ],
+                            $area
+                        );
+                        $json = $latestArea->toJson();
+                        $qrCode = $this->generateQRCode($json);
+                        $latestArea->qrcode = $qrCode;
+                        $latestArea->save();
+                    }
+                }
+                return response()->json([
+                    "status"=>"success",
+                    "result"=>$response
+                ]);
+            }
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors ]);
+        }
+        catch (\Illuminate\Database\QueryException $e){
+            return response()->json(['errors' => $e->getMessage() ]);
+        }
+    }
+
+
+    /**
+     * complete existing area with GPS DATA
+     * @return JsonResponse
+    */
+    public function completeArea(Request $request) : JsonResponse{
+        try {
+            $data = $request->validate([
+                "area_id"=>"required|int|exists:areas,id",
+                "latlng"=>"required|string",
+                "libelle"=>"nullable|string"
+            ]);
+
+            $area = Area::where("status", "actif")->where("id", $data["area_id"])->first();
+            if($area){
+                $area->latlng = $data["latlng"];
+                $area->libelle = $data["libelle"] ?? $area->libelle;
+                $area->save();
+                $site = Site::find($area->site_id);
+                $site->latlng = $data["latlng"];
+                $site->save();
+                return response()->json([
+                    "status" => "success",
+                    "result" => $area
+                ]);
+            }
+            else{
+                return response()->json(['errors' => "Zone scannée non valide ." ]);
+            }
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors ]);
+        }
+        catch (\Illuminate\Database\QueryException $e){
+            return response()->json(['errors' => $e->getMessage() ]);
+        }
+    }
+
+
+    /**
+     * complete notification token
+     * @return JsonResponse
+    */
+    public function completeToken(Request $request) : JsonResponse{
+        try {
+            $data = $request->validate([
+                "site_id"=>"required|int|exists:sites,id",
+                "fcm_token"=>"required|string"
+            ]);
+
+            $site = Site::find($data["site_id"]);
+            if($site){
+                $site->fcm_token = $data["fcm_token"];
+                $site->save();
+                return response()->json([
+                    "status" => "success",
+                    "result" => $site
+                ]);
+            }
+            else{
+                return response()->json(['errors' => "Echec." ]);
+            }
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors ]);
+        }
+        catch (\Illuminate\Database\QueryException $e){
+            return response()->json(['errors' => $e->getMessage() ]);
+        }
+    }
+
+
+    /**
+     * Enroll agent with photo
+     * @return JsonResponse
+    */
+    public function enrollAgent(Request $request) : JsonResponse{
+        try {
+            $data = $request->validate([
+                "matricule"=>"required|string|exists:agents,matricule",
+            ]);
+            $agent = Agent::where("matricule", $data["matricule"])->first();
+            if ($request->hasFile('photo') && isset($agent)) {
+                $file = $request->file('photo');
+                $filename = uniqid('agent_') . '.' . $file->getClientOriginalExtension();
+                $destination = public_path('uploads/agents');
+                $file->move($destination, $filename);
+                // Générer un lien complet sans utiliser storage
+                $data['photo'] = url('uploads/agents/' . $filename);
+            }
+
+            $agent->update([
+                "photo"=>$data["photo"]
+            ]);
+
+            return response()->json([
+                "status"=>"success",
+                "result"=>$agent
+            ]);
+
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors ]);
+        }
+        catch (\Illuminate\Database\QueryException $e){
+            return response()->json(['errors' => $e->getMessage() ]);
+        }
+    }
+
+    /**
+     * Generate qrcode data image
+    */
+    private function generateQRCode($data):string
+    {
+        $qrCode = QrCode::size(50)->generate($data);
+        return 'data:image/png;base64,' . base64_encode($qrCode);
+    }
+
+    /**
+     * View all agents by agency
+     * @return JsonResponse
+    */
+    public function viewAllSites(){
+        $user = Auth::user();
+        $datas = Site::with('agencie')
+            ->where('status', 'actif')
+            ->where('agency_id', $user->agency_id)
+            ->orderByDesc('id')
+            ->get();
+        return response()->json([
+            "status"=>"success",
+            "sites"=>$datas
+        ]);
+    }
+
+
+
+    /**
+     * CREATE OR ASSIGN AGENT
+     * @param Request $request
+     * @return JsonResponse
+    */
+    public function createAgent(Request $request){
+        (new Carbon())->setTimezone("Africa/Kinshasa");
+        try{
+            $data = $request->validate([
+                "matricule"=>"required|string",
+                "fullname"=>"required|string",
+                "password"=>"required|string",
+                "site_id"=>"nullable|int|exists:sites,id",
+                "role"=>"nullable|string",
+                "status"=>"nullable|string",
+                "groupe_id"=>"nullable|int|exists:agent_groups,id",
+            ]);
+            if ($request->hasFile('photo') && !isset($data["patrol_id"])) {
+                $file = $request->file('photo');
+                $filename = uniqid('agent_') . '.' . $file->getClientOriginalExtension();
+                $destination = public_path('uploads/agents');
+                $file->move($destination, $filename);
+                // Générer un lien complet sans utiliser storage
+                $data['photo'] = url('uploads/agents/' . $filename);
+            }
+            $data["agency_id"] = Auth::user()->agency_id;
+            $agent = Agent::findOrFail($request->id);
+            $response = Agent::updateOrCreate(
+                [
+                    "matricule"=>$data["matricule"],
+                    "id"=>$request->id ?? "",
+                ],
+                $data
+            );
+
+            $response->status = isset($data["status"]) ? $data["status"] : "permenant";
+            $response->save();
+            $this->createAgentHistory($response, $agent->site_id);
+
+            return response()->json([
+                "status"=>"success",
+                "result"=>$response
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors ]);
+        }
+        catch (\Illuminate\Database\QueryException $e){
+            return response()->json(['errors' => $e->getMessage() ]);
+        }
+    }
+
+    /**
+     * GET ALL AGENTS LIST
+     * @param Request $request
+     * @return JsonResponse
+    */
+     public function fetchAgents(Request $request){
+        $agencyId = Auth::user()->agency_id;
+        $agents = Agent::whereIn("status", ["actif", "permenant", "dispo"])
+            ->where("agency_id", $agencyId)
+            ->with("site")->with("groupe")
+            ;
+        if($request->query("status")){
+            $agents->where("status", $request->query("status"));
+        }
+        $datas = $agents->orderByDesc("id")->paginate(10);
+        return response()->json([
+            "agents" => $datas
+        ]);
+    }
+
+
+    /**
+     * Crée l'historique de mouvement des agents
+     * @return AgentHistory
+    */
+    protected function createAgentHistory(Agent $agent, $siteId = null){
+        (new Carbon())->setTimezone("Africa/Kinshasa");
+        $history = AgentHistory::create([
+            "agent_id"=>$agent->id,
+            "site_id"=>$agent->site_id,
+            "site_provenance_id"=>$siteId,
+            "status"=>$agent->status,
+            "date"=>Carbon::now(),
+        ]);
+        return $history;
+    }
+
+
+    /**
+     * View all agents histories
+     * @return JsonResponse
+    */
+    public function viewAgentHistories(Request $request){
+        $date = $request->query("date") ?? null;
+        $datas = AgentHistory::with('agent')->with("site")->with("from");
+
+        if($date){
+            $datas->whereDate("date", $date);
+        }
+        $histories = $datas->orderByDesc('created_at')-> paginate(10);
+
+        return response()->json([
+            "status"=>"success",
+            "histories"=>$histories
+        ]);
+    }
+
+
+    
+
+
+    /**
+     * View all agents by agency
+     * @return JsonResponse
+    */
+    public function viewAllAgents(){
+        $user = Auth::user();
+        $datas = Agent::with('agencie')->with('site')
+            ->where('status', 'actif')
+            ->where('agency_id', $user->agency_id)
+            ->orderByDesc('id')
+            ->get();
+        return response()->json([
+            "status"=>"success",
+            "agents"=>$datas
+        ]);
+    }
+
+
+    /**
+     * CREATE SCANNING SCHEDULES
+     * @param Request $request
+     * @return JsonResponse
+    */
+    public function createScanningSchedule(Request $request){
+        try{
+            $data = $request->validate([
+                "libelle"=>"required|string",
+                "start_time"=>"required|string",
+                "end_time"=>"nullable|string",
+                "site_id"=>"required|int|exists:sites,id"
+            ]);
+            $response = Schedules::updateOrCreate(
+                [
+                    "libelle"=>$data["libelle"],
+                    "site_id"=>$data["site_id"],
+                ],
+                $data
+            );
+            return response()->json([
+                "status"=>"success",
+                "response"=>$response
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors ]);
+        }
+        catch (\Illuminate\Database\QueryException $e){
+            return response()->json(['errors' => $e->getMessage() ]);
+        }
+    }
+
+
+    /**
+     * VIEW ALL SCHEDULES
+     * @return JsonResponse
+    */
+    public function viewAllScanSchedules(){
+        $user = Auth::user();
+        $datas = Schedules::with('site')
+                    ->where("status", "actif")
+                    ->where("agency_id", $user->agency_id)
+                    ->orderByDesc('id')
+                    ->get();
+        return response()->json([
+            "status" => "success",
+            "schedules"=> $datas
+        ]);
+    }
+
+     /**
+     * Delete from specify database
+     * @return JsonResponse
+    */
+    public function triggerDelete(Request $request):JsonResponse
+    {
+        try {
+            $data = $request->validate([
+                'table'=>'required|string',
+                'id'=>'required|int'
+            ]);
+            $result = DB::table($data['table'])
+                ->where("id", $data['id'])
+                ->delete();
+            return response()->json([
+                "status"=>"success",
+                "result"=>$result
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors ]);
+        }
+        catch (\Illuminate\Database\QueryException $e){
+            return response()->json(['errors' => $e->getMessage() ]);
+        }
+    }
+
+
+    /**
+     * CREATE NEW USER
+     * @param Request $request
+     * @return JsonResponse
+    */
+    public function createUser(Request $request){
+        try{
+            $data = $request->validate([
+                'name' => 'required|string',
+                'email' => 'required|email|unique:users,email',
+                'role' => 'required|string',
+                'password' => 'required|string|min:6',
+                'permissions' => 'nullable|array',
+                'permissions.*.menu_id' => 'nullable|exists:menus,id',
+                'permissions.*.actions' => 'nullable|array',
+            ]);
+
+            DB::beginTransaction();
+
+            // Création de l'utilisateur
+            $user = User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'role' => $data['role'],
+                'agency_id'=> 1,
+                'password' => bcrypt($data['password'])
+            ]);
+
+            // Attribution des permissions
+            if ($user->role === 'admin') {
+                // Admin : toutes les permissions
+                $menus = Menu::all();
+                $actions = Action::all();
+                foreach ($menus as $menu) {
+                    foreach ($actions as $action) {
+                        $user->permissions()->create([
+                            'menu_id' => $menu->id,
+                            'action_id' => $action->id,
+                        ]);
+                    }
+                }
+            } else {
+                // Permissions personnalisées
+                if (!empty($data['permissions'])) {
+                    foreach ($data['permissions'] as $perm) {
+                        if (!empty($perm['actions'])) {
+                            foreach ($perm['actions'] as $action) {
+                                $user->permissions()->create([
+                                    'menu_id' => $perm['menu_id'],
+                                    'action_id' => $action["id"],
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                "status" => "success",
+                "result" => $user
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors ]);
+        }
+        catch (\Illuminate\Database\QueryException $e){
+            return response()->json(['errors' => $e->getMessage() ]);
+        }
+    }
+
+}
