@@ -161,19 +161,19 @@
                                             Sites à superviser *
                                         </label>
                                         <div class="flex gap-2">
-                                            <select v-model="input.site_id" class="mr-1 disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
+                                            <select @change="onChangeSite($event, index)" v-model="input.site_id" class="mr-1 disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
                                                 <option value="" selected hidden>--Sélectionnez un site--</option>
                                                 <option v-for="(data, index) in allSites" :value="data.id">@{{ data.name }}</option>
                                             </select>
 
-                                            <button v-if="index===0" type="button" @click.prevent="addSupField" 
+                                            <button v-if="index===0" type="button" @click.prevent="addSupField"
                                                 data-tw-merge
                                                 class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed border-secondary text-slate-500 dark:border-darkmode-100/40 dark:text-slate-300 [&:hover:not(:disabled)]:bg-secondary/20 [&:hover:not(:disabled)]:dark:bg-darkmode-100/10 hidden sm:flex hidden sm:flex"><i
                                                     data-tw-merge
                                                     data-lucide="plus"
                                                     class="stroke-1.5 text-blue-5000 h-4 w-4"></i>
                                             </button>
-                                            <button v-else type="button" @click.prevent="deleteSupField(input)" 
+                                            <button v-else type="button" @click.prevent="deleteSupField(input)"
                                                 data-tw-merge
                                                 class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed border-secondary text-slate-500 dark:border-darkmode-100/40 dark:text-slate-300 [&:hover:not(:disabled)]:bg-secondary/20 [&:hover:not(:disabled)]:dark:bg-darkmode-100/10 hidden sm:flex hidden sm:flex"><i
                                                     data-tw-merge
@@ -250,11 +250,11 @@
                         <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">
                             SUPERVISEUR
                         </th>
-                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 text-center">
-                            NOTE
+                        <th data-tw-merge="" class="font-medium uppercase px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 text-center">
+                            SITES SUPERVISés
                         </th>
-                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 text-center">
-                            CREER PAR
+                        <th data-tw-merge="" class="font-medium uppercase px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 text-center">
+                            Créer par
                         </th>
                         <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 text-center">
                             STATUS
@@ -278,25 +278,18 @@
                                 @{{ data.title }}
                             </a>
                         </td>
-                       
+
                         <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
                             <a v-if="data.agent" class="whitespace-nowrap font-medium" href="#">
                                 @{{ data.agent.fullname }}
                             </a>
                             <div v-if="data.agent" class="mt-0.5 whitespace-nowrap text-xs text-slate-500">
-                                @{{  data.agent.matricule }}
+                                @{{ data.agent.matricule }}
                             </div>
                         </td>
                         <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
-                             <div class="flex items-center">
-                                <div class="flex items-center">
-                                    <i data-tw-merge="" data-lucide="star" class="stroke-1.5 mr-1 h-4 w-4 fill-pending/30 text-pending"></i>
-                                    <i data-tw-merge="" data-lucide="star" class="stroke-1.5 mr-1 h-4 w-4 fill-pending/30 text-pending"></i>
-                                    <i data-tw-merge="" data-lucide="star" class="stroke-1.5 mr-1 h-4 w-4 fill-pending/30 text-pending"></i>
-                                    <i data-tw-merge="" data-lucide="star" class="stroke-1.5 mr-1 h-4 w-4 fill-pending/30 text-pending"></i>
-                                    <i data-tw-merge="" data-lucide="star" class="stroke-1.5 fill-slate/30 mr-1 h-4 w-4 text-slate-400"></i>
-                                </div>
-                                <div class="ml-1 text-xs text-slate-500">(4.5+)</div>
+                            <div class="flex items-center">
+                                <div class="text-xs text-slate-500">(@{{ data.presences.length }}/@{{ data.sites.length }})</div>
                             </div>
                         </td>
                         <td data-tw-merge="" class="px-2 py-3 border-b dark:border-darkmode-300 box w-40 rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
@@ -306,15 +299,15 @@
                             </div>
                         </td>
                         <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box w-40 rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
-                            <div class="flex items-center justify-center" :class="data.status === 'pending' ? 'text-danger' : 'text-success'">
+                            <div class="flex items-center justify-center font-medium" :class="{'text-danger': status(data) === 'En attente','text-pending': status(data)==='Partielle', 'text-success': status(data)==='Effectuée'}">
                                 <i data-tw-merge="" data-lucide="check-square" class="stroke-1.5 mr-2 h-4 w-4"></i>
-                                @{{ status(data.status) }}
+                                @{{ status(data) }}
                             </div>
                         </td>
                         <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box w-56 rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600 before:absolute before:inset-y-0 before:left-0 before:my-auto before:block before:h-8 before:w-px before:bg-slate-200 before:dark:bg-darkmode-400">
                             <div class="flex items-center justify-center">
-                                <a class="flex items-center whitespace-nowrap text-blue-500 mr-2" href="#">
-                                    <i data-tw-merge="" data-lucide="eye" class="stroke-1.5 mr-1 h-4 w-4"></i>
+                                <a @click="selectSupSchedule(data)" class="flex items-center whitespace-nowrap text-blue-500 mr-2" href="#">
+                                    <i data-tw-merge="" data-tw-toggle="modal" data-tw-target="#schedule-details-modal" data-lucide="eye" class="stroke-1.5 mr-1 h-4 w-4"></i>
                                 </a>
 
                                 <a data-tw-toggle="modal" data-tw-target="#modal-add-schedule" @click="editSupSchedule(data)" class="flex items-center whitespace-nowrap text-primary mr-2" href="#">
@@ -348,6 +341,137 @@
             <div class="ml-4 mr-4">
                 <div class="font-medium">Opération reussi !</div>
                 <div class="text-slate-500 mt-1">La création du planning de patrouille effectuée ! </div>
+            </div>
+        </div>
+
+        <div data-tw-backdrop="" aria-hidden="true" tabindex="-1" id="schedule-details-modal" class="modal group bg-black/60 transition-[visibility,opacity] w-screen h-screen fixed left-0 top-0 [&:not(.show)]:duration-[0s,0.2s] [&:not(.show)]:delay-[0.2s,0s] [&:not(.show)]:invisible [&:not(.show)]:opacity-0 [&.show]:visible [&.show]:opacity-100 [&.show]:duration-[0s,0.4s]">
+            <div data-tw-merge="" class="w-[90%] ml-auto h-screen flex flex-col bg-slate-100 relative shadow-md transition-[margin-right] duration-[0.6s] -mr-[100%] group-[.show]:mr-0 dark:bg-darkmode-600 sm:w-[460px]"><a class="absolute inset-y-0 left-0 right-auto my-auto -ml-[60px] flex h-8 w-8 items-center justify-center rounded-full border border-white/90 bg-white/5 text-white/90 transition-all hover:rotate-180 hover:scale-105 hover:bg-white/10 focus:outline-none sm:-ml-[105px] sm:h-14 sm:w-14" data-tw-dismiss="modal" href="javascript:;">
+                    <i data-tw-merge="" data-lucide="x" class="h-3 w-3 stroke-[1] sm:h-8 sm:w-8"></i>
+                </a>
+                <div data-tw-merge="" class="overflow-y-auto flex-1 p-0" v-if="selectedSchedule">
+                    <div class="flex items-center justify-between border-b">
+                        <div class="px-8 pt-6 pb-8">
+                            <div class="text-base font-bold uppercase">Détails de la supervision</div>
+                            <!-- <div class="mt-0.5 text-slate-500 flex items-center border-b border-slate-200/60 pb-4" v-if="selectedPatrol">
+                                <i data-lucide="map-pin" class="w-3 h-3 mr-1 text-primary"></i>
+                                <span v-if="selectedPatrol.site">@{{ selectedPatrol.site.name }}</span>
+                            </div> -->
+                        </div>
+                        <button v-if="selectedSchedule.presences.length" class="transition duration-200 shadow-sm inline-flex items-center py-2 mr-5 px-3 font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed text-slate-500 dark:border-darkmode-100/40 dark:text-slate-300 [&:hover:not(:disabled)]:bg-primary/20 [&:hover:not(:disabled)]:dark:bg-darkmode-100/10 relative justify-start rounded-full bg-primary text-white"><span class="mr-6">Tirer le rapport</span>
+                            <span class="absolute bottom-0 right-0 top-0 my-auto ml-auto mr-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-white text-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="arrow-right" class="lucide lucide-arrow-right stroke-1.5 h-4 w-4">
+                                    <path d="M5 12h14"></path>
+                                    <path d="m12 5 7 7-7 7"></path>
+                                </svg>
+                            </span>
+                            <div></div>
+                        </button>
+                    </div>
+                    <div class="mt-2 p-5">
+                        <div class="box rounded-md p-5">
+                            <div class="mb-5 flex items-center border-b border-slate-200/60 pb-5 dark:border-darkmode-400">
+                                <div class="truncate text-base font-medium">
+                                    Infos du planning
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold flex items-center uppercase"> <i class="w-3 h-3 mr-1" data-lucide="clipboard"></i>Titre</span>
+                                <a class="ml-1 underline decoration-dotted" href="#">
+                                    @{{ selectedSchedule.title }}
+                                </a>
+                            </div>
+                            <div class="mt-3 flex items-center justify-between">
+                                <span class="font-bold flex items-center uppercase"> <i class="w-3 h-3 mr-1" data-lucide="calendar"></i> Date </span>
+
+                                <a class="ml-1 underline decoration-dotted" href="#">
+                                    @{{ selectedSchedule.date }}
+                                </a>
+                            </div>
+                            <div class="mt-3 flex items-center justify-between">
+                                <span class="font-bold flex items-center uppercase"> <i class="w-3 h-3 mr-1" data-lucide="user"></i>Agent</span>
+
+                                <a class="ml-1 underline decoration-dotted" href="#">
+                                    @{{ selectedSchedule.agent.matricule }} | @{{ selectedSchedule.agent.fullname }}
+                                </a>
+                            </div>
+                        </div>
+                        <div class="box p-5 mt-5">
+                            <div class="mb-5 flex items-center border-b border-slate-200/60 pb-5 dark:border-darkmode-400">
+                                <div class="truncate text-base font-medium">
+                                    Liste des sites à superviser
+                                </div>
+                            </div>
+                            <div v-for="(data, i) in selectedSchedule.sites" class="flex items-center border-b border-slate-300 border-dashed  bg-white p-3 transition duration-300 ease-in-out hover:bg-slate-100 dark:bg-darkmode-600 dark:hover:bg-darkmode-400">
+                                <div class="mr-1 max-w-[50%] truncate">
+                                    @{{ data.site.code }} | @{{ data.site.name }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box p-5 mt-5" v-if="selectedSchedule.presences.length">
+                            <div class="mb-5 flex items-center border-b border-slate-200/60 pb-5 dark:border-darkmode-400">
+                                <div class="truncate text-base font-medium">
+                                    Rapport de supervision
+                                </div>
+                            </div>
+                            <div v-for="(data, i) in selectedSchedule.presences" class="flex items-center border-b pb-2 border-dashed rounded-md bg-white transition duration-300 ease-in-out dark:bg-darkmode-600 dark:hover:bg-darkmode-400">
+                                <div class="w-full flex-1 rounded-md border-2 border-dashed p-2 dark:border-darkmode-400">
+                                    <div class="grid grid-cols-12 gap-5">
+                                        <div class="col-span-6 lg:col-span-4 flex items-center">
+                                            <div class="mx-2 h-12 w-px border border-r border-dashed border-primary dark:border-darkmode-300">
+                                            </div>
+                                            <div>
+                                                <div class="font-medium text-primary">
+                                                    SITE
+                                                </div>
+                                                <div class="mt-0.5 text-slate-500 text-xs">@{{ data.site.code }} | @{{ data.site.name }}</div>
+                                                <small class="mt-1 text-xs flex items-center" :class="data.distance > 300 ? 'text-pending' : 'text-success'"> <i class="w-3 h-3 mr-2" data-lucide="map-pin"></i> @{{ data.distance <= 300 ? 'Dans le site' : 'Hors site' }}</small>
+                                            </div>
+                                        </div>
+                                        <div class="image-fit zoom-in relative col-span-6 lg:col-span-4 h-28 cursor-pointer"  @click="viewPhoto(data.end_photo)">
+                                            <img class="rounded-md w-20 h-20" :src="data.start_photo ?? 'assets/images/loading.gif'" alt="In">
+                                            <span data-placement="top" class="tooltip text-xs absolute right-0 top-0 -mr-2 -mt-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white">
+                                                In
+                                            </span>
+                                        </div>
+                                        <div class="image-fit zoom-in relative col-span-6 lg:col-span-4 h-28 cursor-pointer" @click="viewPhoto(data.end_photo)">
+                                            <img class="rounded-md w-20 h-20" :src="data.end_photo ?? 'assets/images/loading.gif'" alt="Out">
+                                            <span data-placement="top" class="tooltip absolute right-0 top-0 -mr-2 -mt-2 flex h-6 w-6 items-center justify-center rounded-full text-xs bg-danger text-white">
+                                                Out
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="flex relative mt-2 px-4 w-full justify-between">
+                                        <div>
+                                            <div class="font-medium text-primary dark:text-slate-300">
+                                                Date & Heure debut
+                                            </div>
+                                            <div class="mt-0.5 text-slate-500">@{{ data.date }} @{{ data.started_at }}</div>
+                                        </div>
+                                        <div class="mx-2 h-12 w-px border border-r border-dashed border-slate-200 dark:border-darkmode-300">
+                                        </div>
+                                        <div>
+                                            <div class="font-medium text-primary">
+                                                Date & Heure Fin
+                                            </div>
+                                            <div class="mt-0.5 text-slate-500">@{{ data.date }} @{{ data.ended_at }}</div>
+                                        </div>
+                                        <div class="mx-2 h-12 w-px border border-r border-dashed border-slate-200 dark:border-darkmode-300">
+                                        </div>
+                                        <div>
+                                            <div class="font-medium text-primary">
+                                                Durée
+                                            </div>
+                                            <div class="mt-0.5 text-slate-500">@{{ data.duree }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else>
+                            <x-empty-state message="Aucune supervision répertoriée !"></x-empty-state>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- END: Data List -->

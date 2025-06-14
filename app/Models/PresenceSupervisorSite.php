@@ -14,6 +14,7 @@ class PresenceSupervisorSite extends Model
         'date',
         'started_at',
         'ended_at',
+        'duree',
         'start_photo',
         'end_photo',
         'latlng',
@@ -31,8 +32,8 @@ class PresenceSupervisorSite extends Model
      * @var array
      */
     protected $casts = [
-        'created_at'=>'datetime:d/m/Y H:i',
-        'updated_at'=>'datetime:d/m/Y H:i',
+        'created_at'=>'datetime:d/m/Y',
+        'updated_at'=>'datetime:d/m/Y',
         'date'=>'datetime:d/m/Y',
         'started_at'=>'datetime:H:i',
         'ended_at'=>'datetime:H:i',

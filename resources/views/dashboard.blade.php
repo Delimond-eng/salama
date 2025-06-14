@@ -83,12 +83,12 @@
                 <div class="col-span-12 mt-6 xl:col-span-12">
                     <div class="intro-y block h-10 items-center sm:flex">
                         <h2 class="mr-5 truncate text-lg font-medium">Tableau de bord</h2>
-                        <div class="relative mt-3 text-slate-500 sm:ml-auto sm:mt-0">
+                        <!-- <div class="relative mt-3 text-slate-500 sm:ml-auto sm:mt-0">
                             <i data-tw-merge="" data-lucide="map-pin"
                                 class="stroke-1.5 absolute inset-y-0 left-0 z-10 my-auto ml-3 h-4 w-4"></i>
                             <input data-tw-merge="" type="text" placeholder="Filtrer par site..."
                                 class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box pl-10 sm:w-56">
-                        </div>
+                        </div> -->
                     </div>
                     <div class="intro-y box mt-12 p-5 sm:mt-5">
                         <div>

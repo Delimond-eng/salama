@@ -80,7 +80,6 @@
 
 
     <div class="mt-5 grid grid-cols-12 gap-6" id="App" v-cloak>
-
         <div class="intro-y box col-span-12 2xl:col-span-8 lg:col-span-8">
             <div class="flex w-full justify-between items-center border-b border-slate-200/60 px-5 py-5 dark:border-darkmode-400">
                 <h2 class="text-base font-medium">Liste des planning</h2>

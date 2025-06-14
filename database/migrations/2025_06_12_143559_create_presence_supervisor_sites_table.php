@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string("distance")->nullable();
             $table->time("started_at")->nullable();
             $table->time("ended_at")->nullable();
+            $table->string("duree")->nullable();
             $table->string("latlng")->nullable();
             $table->string("start_photo")->nullable();
             $table->string("end_photo")->nullable();

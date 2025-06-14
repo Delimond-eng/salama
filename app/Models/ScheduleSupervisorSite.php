@@ -43,4 +43,5 @@ class ScheduleSupervisorSite extends Model
     {
         return $this->belongsTo(Site::class, 'site_id');
     }
+    
 }

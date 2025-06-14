@@ -889,7 +889,7 @@ class AppManagerController extends Controller
         try {
             $data = $request->validate([
                 'title' => 'required|string',
-                'date' => 'required|date|after:now',
+                'date' => 'required|date|after_or_equal:today',
                 'agent_id' => 'required|exists:agents,id',
                 'sites' => 'required|array|min:1',
                 'sites.*.site_id' => 'required|exists:sites,id',
@@ -936,7 +936,7 @@ class AppManagerController extends Controller
     */
     public function viewSupervisorSchedules()
     {
-        $schedules = ScheduleSupervisor::with('agent', 'user', 'sites.site')->paginate(10);
+        $schedules = ScheduleSupervisor::with(['agent', 'user', 'sites.site', 'presences.agent', 'presences.site', 'presences.schedule'])->paginate(10);
         return response()->json([
             "status"=>"success",
             "schedules"=>$schedules

@@ -1,5 +1,6 @@
 <?php
 
+use Google\Service\AnalyticsData\OrderBy;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AdminController;
@@ -85,7 +86,14 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::view('/schedules', 'schedules')->name('schedules')->middleware('check.permission:planning,view');
-    Route::view('/schedules.report', 'schedules_report')->name('schedules.report')->middleware('check.permission:planning,view');
+    Route::get('/schedules.report', function(){
+        $agents = Agent::whereNot("role", "supervisor")->orderBy("fullname")->get();
+        $supervisors = Agent::where("role", "supervisor")->orderBy("fullname")->get();
+        $sites = Site::OrderBy("name")->get();
+        return view('schedules_report', 
+        ["agents"=>$agents, "sites"=>$sites, "supervisors"=>$supervisors]
+    );
+    })->name('schedules.report')->middleware('check.permission:planning,view');
     Route::get('/schedules.supervisor', function(){
         $supervisors = Agent::where("role", "supervisor")->orderBy("fullname", "asc")->get();
         return view('schedules_sup', ["supervisors"=>$supervisors]);

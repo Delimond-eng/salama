@@ -56,4 +56,8 @@ class ScheduleSupervisor extends Model
     {
         return $this->hasMany(ScheduleSupervisorSite::class, 'schedule_id');
     }
+
+    public function presences(): HasMany{
+        return $this->hasMany(PresenceSupervisorSite::class, 'schedule_id', 'id');
+    }
 }

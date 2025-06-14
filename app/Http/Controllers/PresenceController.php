@@ -293,14 +293,13 @@ class PresenceController extends Controller
             if($presence){
                 $data["ended_at"] = $now->format('H:i');
                 $data["end_photo"] = $photoUrl;
+                $data["duree"] = $this->calculateTime($presence->started_at, $data["ended_at"]);
             }
             else{
                 $data["distance"] = $distance;
                 $data["start_photo"] = $photoUrl;
                 $data["started_at"] = $now->format('H:i');
             }
-
-
             unset($data['matricule']);
             unset($data['photo']);
             $schedule = ScheduleSupervisor::find($data["schedule_id"]);
@@ -321,12 +320,21 @@ class PresenceController extends Controller
                 "status"=>"success",
                 "result"=> $result,
             ]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->validator->errors()->all()]);
         } catch (\Exception $e) {
             return response()->json(['errors' => $e->getMessage()]);
         }
+    }
+
+    private function calculateTime($start, $end){
+        $heure1 = Carbon::createFromTimeString($start);
+        $heure2 = Carbon::createFromTimeString($end);
+        $diff = $heure1->diff($heure2);
+        // Résultat
+        $heures = $diff->h;     // heures
+        $minutes = $diff->i;    // minutes
+        return "{$heures}h{$minutes}m";
     }
 
     public function getPresencesBySiteAndDate(Request $request)

@@ -17,6 +17,7 @@ new Vue({
             delete_id: "",
 
             selectedPlanning: null,
+            selectedSchedule: null,
 
             form: {
                 id: "",
@@ -91,6 +92,17 @@ new Vue({
     },
 
     methods: {
+        viewPhoto(url) {
+            window.open(
+                url,
+                "PhotoPopup",
+                "width=800,height=600,resizable=yes,scrollbars=yes"
+            );
+        },
+        selectSupSchedule(data) {
+            console.log(JSON.stringify(data));
+            this.selectedSchedule = data;
+        },
         addSupField() {
             const lastIndex = this.formSup.sites.length;
             this.formSup.sites.push({
@@ -99,12 +111,33 @@ new Vue({
             });
         },
 
+        onChangeSite(event, index) {
+            const selectedSiteId = event.target.value;
+            const isDuplicate = this.formSup.sites.some((site, i) => {
+                return i !== index && site.site_id == selectedSiteId;
+            });
+            if (isDuplicate) {
+                // Réinitialise la sélection
+                this.formSup.sites[index].site_id = "";
+
+                // Message d'erreur avec Swal
+                alert(
+                    "Ce site est déjà sélectionné. Veuillez en choisir un autre."
+                );
+            } else {
+                // Mise à jour normale
+                this.formSup.sites[index].site_id = selectedSiteId;
+            }
+        },
+
         async deleteSupField(field) {
             const index = this.formSup.sites.indexOf(field);
             if (this.formSup.sites[index].id !== undefined) {
-                await postJson("/table.delete", {
+                postJson("/table.delete", {
                     table: "schedule_supervisor_sites",
                     id: this.formSup.sites[index].id,
+                }).then(() => {
+                    this.viewAllSupervisorSchedules();
                 });
             }
             this.formSup.sites.splice(index, 1);
@@ -366,12 +399,12 @@ new Vue({
 
         status() {
             return (st) => {
-                if (st === "pending") {
+                if (st.presences.length === 0) {
                     return "En attente";
-                } else if (st === "partial") {
-                    return "Non complet";
+                } else if (st.sites.length !== st.presences.length) {
+                    return "Partielle";
                 } else {
-                    return "Effectué";
+                    return "Effectuée";
                 }
             };
         },

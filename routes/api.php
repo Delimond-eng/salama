@@ -55,7 +55,6 @@ Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function
     //ALLOW TO CREATE REQUEST
     Route::post("/request.create", [AppManagerController::class, "createRequest"])->name("request.create");
 
-
     //ALLOW TO CREATE AGENT PHONE LOG
     Route::post("/log.create", [LogController::class, 'createPhoneLog'])->name('log.create');
 
@@ -64,7 +63,7 @@ Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function
 
     Route::post('/horaire.create', [\App\Http\Controllers\PresenceController::class, 'createHoraire'])->name('horaire.create');
     //pour la creation de presence agent
-    Route::post('/presence.create', [\App\Http\Controllers\PresenceController::class, 'createPresenceAgent'])->name('presence.create');
+    Route::post('/presence.create', action: [\App\Http\Controllers\PresenceController::class, 'createPresenceAgent'])->name('presence.create');
     //Enregistre la visit d'un superviseur au site programmé
     Route::post('/supervisor.visit.create', [\App\Http\Controllers\PresenceController::class, 'createSupervisorSiteVisit'])->name('supervisor.visit.create');
     //donnees presence
@@ -89,31 +88,31 @@ Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function
         ]);
     });
 
-     Route::get("/patrols.pending", [AppManagerController::class, "viewPendingPatrols"])->name("patrols.pending");
+    Route::get("/patrols.pending", [AppManagerController::class, "viewPendingPatrols"])->name("patrols.pending");
 
-     Route::post("/send.mail", [EmailController::class, "sendMail"])->name("send.mail");
-     Route::post("/send.notication", [FCMController::class, "sendNotification"])->name("send.notification");
+    Route::post("/send.mail", [EmailController::class, "sendMail"])->name("send.mail");
+    Route::post("/send.notication", [FCMController::class, "sendNotification"])->name("send.notification");
 
-     Route::post("/parse.date", function(Request $req){
-        Carbon::setLocale('fr');
-        $date = Carbon::parse($req->input("date"));
-        $today = Carbon::today();
-        $tomorrow = Carbon::tomorrow();
+    Route::post("/parse.date", function(Request $req){
+    Carbon::setLocale('fr');
+    $date = Carbon::parse($req->input("date"));
+    $today = Carbon::today();
+    $tomorrow = Carbon::tomorrow();
 
-        if ($date->isSameDay($today)) {
-            $formattedDate = "aujourd'hui";
-        } elseif ($date->isSameDay($tomorrow)) {
-            $formattedDate = "demain";
-        } else {
-            // Exemple : Jeudi 10 avril 2025
-            $formattedDate = $date->translatedFormat('l j F Y');
-        }
-        $body = "Vous avez une nouvelle patrouille $formattedDate";
+    if ($date->isSameDay($today)) {
+        $formattedDate = "aujourd'hui";
+    } elseif ($date->isSameDay($tomorrow)) {
+        $formattedDate = "demain";
+    } else {
+        // Exemple : Jeudi 10 avril 2025
+        $formattedDate = $date->translatedFormat('l j F Y');
+    }
+    $body = "Vous avez une nouvelle patrouille $formattedDate";
 
-        return response()->json([
-            "message"=>$body
-        ]);
-     });
+    return response()->json([
+        "message"=>$body
+    ]);
+    });
 });
 
 

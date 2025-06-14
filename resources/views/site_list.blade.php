@@ -76,125 +76,133 @@
     </div>
     <!-- END: Top Bar -->
     <div class="mt-5 grid grid-cols-12 gap-6" id="App" v-cloak>
-        <div class="intro-y box col-span-12 lg:col-span-8">
-            <div class="flex flex-wrap items-center border-b border-slate-200/60 px-5 py-5 dark:border-darkmode-400 sm:py-3">
-                <h2 class="mr-auto text-base font-medium">Liste des sites</h2>
-                <div class="mt-3 flex w-full items-center xl:mt-0 xl:w-auto">
-                    <div class="relative w-56 text-slate-500 mr-2">
-                        <input data-tw-merge="" v-model="search" type="text" placeholder="Recherche..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
-                        <i data-tw-merge="" data-lucide="search" class="stroke-1.5 absolute inset-y-0 right-0 my-auto mr-3 h-4 w-4"></i>
-                    </div>
-                    <button onclick="location.href='/site.create'" class="bg-primary text-white transition duration-200 border border-primary shadow-sm inline-flex items-center justify-center py-2 px-2 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 disabled:opacity-70 disabled:cursor-not-allowed hover:bg-opacity-90 hover:border-opacity-90">
-                        <span class="flex h-5 w-5 items-center justify-center">
-                            <i class="w-4 h-4" data-lucide="plus"></i>
-                        </span>
-                    </button>
-                </div>
-            </div>
-            <div class="space-y-4" v-if="allSites.length > 0">
-                <div v-for="(data, i) in allSites" :key="i" class="border border-slate-200 rounded-bottom overflow-hidden">
-                    <!-- Header -->
-                    <div
-                        class="flex items-center justify-between px-6 py-5 hover:bg-slate-50 transition-colors duration-200 cursor-pointer">
-                        <!-- Site Infos -->
-                        <div class="flex items-center gap-4">
-                            <i data-lucide="home" class="h-6 w-6 text-primary"></i>
-                            <div>
-                                <h3 class="text-lg font-semibold text-slate-800">@{{ data.name }}</h3>
-                                <p class="text-sm text-slate-500">@{{ data.code }}</p>
+        <div class="col-span-12 lg:col-span-8">
+            <div class="relative mt-5 intro-y before:box before:absolute before:inset-x-3 before:mt-3 before:h-full before:bg-slate-50 before:content-['']">
+                <!-- BEGIN: Vertical Form -->
+                <div class="intro-x box">
+                    <div class="flex flex-wrap items-center border-b border-slate-200/60 px-5 py-5 dark:border-darkmode-400 sm:py-3">
+                        <h2 class="mr-auto text-base font-bold uppercase">Liste des sites</h2>
+                        <div class="mt-3 flex w-full items-center xl:mt-0 xl:w-auto">
+                            <div class="relative w-56 text-slate-500 mr-2">
+                                <input data-tw-merge="" v-model="search" type="text" placeholder="Recherche..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
+                                <i data-tw-merge="" data-lucide="search" class="stroke-1.5 absolute inset-y-0 right-0 my-auto mr-3 h-4 w-4"></i>
                             </div>
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="flex items-center space-x-2">
-                            <button
-                                @click.stop="toggleAccordion(i)"
-                                class="bg-primary/10 text-primary border border-primary/30 rounded-lg px-2 py-2 text-sm hover:bg-primary/20 hover:border-primary/50">
-                                <i v-if="openAccordion === i" data-lucide="eye-off" class="w-4 h-4"></i>
-                                <i v-else data-lucide="eye" class="w-4 h-4"></i>
-                            </button>
-                            <button data-tw-toggle="modal" data-tw-target="#header-footer-modal-preview" @click="selectedAreas = data.areas; form.id = data.id; form.name = data.name; error=null" class="bg-blue-100 text-blue-600 border border-blue-300 rounded-lg px-2 py-2 text-sm hover:bg-blue-200 hover:border-blue-400">
-                                <i data-lucide="plus" class="w-4 h-4"></i>
-                            </button>
-                            <button @click="deleteSite(data)" class="bg-red-100 text-danger border border-red-300 rounded-lg px-2 py-2 text-sm hover:bg-red-200 hover:border-red-400">
-                                <span class="h-3 w-3" v-if="data.id === delete_id">
-                                    <svg width="14" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="red">
-                                        <g fill="none" fill-rule="evenodd">
-                                            <g transform="translate(1 1)" stroke-width="4">
-                                                <circle stroke-opacity=".5" cx="18" cy="18" r="18"></circle>
-                                                <path d="M36 18c0-9.94-8.06-18-18-18">
-                                                    <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"></animateTransform>
-                                                </path>
-                                            </g>
-                                        </g>
-                                    </svg>
+                            <button onclick="location.href='/site.create'" class="bg-primary text-white transition duration-200 border border-primary shadow-sm inline-flex items-center justify-center py-2 px-2 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 disabled:opacity-70 disabled:cursor-not-allowed hover:bg-opacity-90 hover:border-opacity-90">
+                                <span class="flex h-5 w-5 items-center justify-center">
+                                    <i class="w-4 h-4" data-lucide="plus"></i>
                                 </span>
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>
                     </div>
-                    <!-- Content -->
-                    <transition name="fade">
-                        <div v-if="openAccordion === i" class="bg-slate-50 border-t border-slate-200 px-6 py-5">
-                            <!-- Areas List -->
-                            <div class="flex flex-wrap gap-3 mb-4">
+                    <div class="p-5">
+                        <div class="space-y-4" v-if="allSites.length > 0">
+                            <div v-for="(data, i) in allSites" :key="i" class="border-b border-dashed border-slate-400  overflow-hidden">
+                                <!-- Header -->
                                 <div
-                                    v-for="(area, j) in data.areas"
-                                    :key="j"
-                                    class="flex items-center bg-white text-sm border border-slate-300 px-3 py-1.5 rounded-full shadow-sm">
-                                    <i data-lucide="map-pin" class="w-3 h-3 mr-1 text-primary"></i>
-                                    <span>@{{ area.libelle }}</span>
-                                    <button @click.stop="deleteArea(area.id)" class="ml-2 text-danger hover:text-red-600">
-                                        <span v-if="load_id === area.id" class="h-3 w-3">
-                                            <svg class="h-full w-full" width="15" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
-                                                <defs>
-                                                    <linearGradient id="a" x1="8.042%" y1="0%" x2="65.682%" y2="23.865%">
-                                                        <stop stop-color="#2d3748" stop-opacity="0" offset="0%" />
-                                                        <stop stop-color="#2d3748" offset="100%" />
-                                                        <stop stop-color="#2d3748" stop-opacity=".631" offset="63.146%" />
-                                                    </linearGradient>
-                                                </defs>
-                                                <g fill="none" fill-rule="evenodd">
-                                                    <g transform="translate(1 1)">
-                                                        <path id="Oval-2" d="M36 18c0-9.94-8.06-18-18-18" stroke="url(#a)" stroke-width="3">
-                                                            <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="0.9s" repeatCount="indefinite" />
-                                                        </path>
-                                                        <circle fill="#2d3748" cx="36" cy="18" r="1">
-                                                            <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="0.9s" repeatCount="indefinite" />
-                                                        </circle>
+                                    class="flex items-center justify-between px-6 py-5 hover:bg-slate-50 transition-colors duration-200 cursor-pointer">
+                                    <!-- Site Infos -->
+                                    <div class="flex items-center gap-4">
+                                        <i data-lucide="home" class="h-6 w-6 text-primary"></i>
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-slate-800">@{{ data.name }}</h3>
+                                            <p class="text-sm text-slate-500">@{{ data.code }}</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Actions -->
+                                    <div class="flex items-center space-x-2">
+                                        <button
+                                            @click.stop="toggleAccordion(i)"
+                                            class="bg-primary/10 text-primary border border-primary/30 rounded-lg px-2 py-2 text-sm hover:bg-primary/20 hover:border-primary/50">
+                                            <i v-if="openAccordion === i" data-lucide="eye-off" class="w-4 h-4"></i>
+                                            <i v-else data-lucide="eye" class="w-4 h-4"></i>
+                                        </button>
+                                        <button data-tw-toggle="modal" data-tw-target="#header-footer-modal-preview" @click="selectedAreas = data.areas; form.id = data.id; form.name = data.name; error=null" class="bg-blue-100 text-blue-600 border border-blue-300 rounded-lg px-2 py-2 text-sm hover:bg-blue-200 hover:border-blue-400">
+                                            <i data-lucide="plus" class="w-4 h-4"></i>
+                                        </button>
+                                        <button @click="deleteSite(data)" class="bg-red-100 text-danger border border-red-300 rounded-lg px-2 py-2 text-sm hover:bg-red-200 hover:border-red-400">
+                                            <span class="h-3 w-3" v-if="data.id === delete_id">
+                                                <svg width="14" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="red">
+                                                    <g fill="none" fill-rule="evenodd">
+                                                        <g transform="translate(1 1)" stroke-width="4">
+                                                            <circle stroke-opacity=".5" cx="18" cy="18" r="18"></circle>
+                                                            <path d="M36 18c0-9.94-8.06-18-18-18">
+                                                                <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"></animateTransform>
+                                                            </path>
+                                                        </g>
                                                     </g>
-                                                </g>
-                                            </svg>
-                                        </span>
-                                        <i v-else class="h-3 w-3" data-lucide="x"></i>
-                                    </button>
+                                                </svg>
+                                            </span>
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
                                 </div>
+                                <!-- Content -->
+                                <transition name="fade">
+                                    <div v-if="openAccordion === i" class="bg-slate-50 border-t border-slate-200 px-6 py-5">
+                                        <!-- Areas List -->
+                                        <div class="flex flex-wrap gap-3 mb-4">
+                                            <div
+                                                v-for="(area, j) in data.areas"
+                                                :key="j"
+                                                class="flex items-center bg-white text-sm border border-slate-300 px-3 py-1.5 rounded-full shadow-sm">
+                                                <i data-lucide="map-pin" class="w-3 h-3 mr-1 text-primary"></i>
+                                                <span>@{{ area.libelle }}</span>
+                                                <button @click.stop="deleteArea(area.id)" class="ml-2 text-danger hover:text-red-600">
+                                                    <span v-if="load_id === area.id" class="h-3 w-3">
+                                                        <svg class="h-full w-full" width="15" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
+                                                            <defs>
+                                                                <linearGradient id="a" x1="8.042%" y1="0%" x2="65.682%" y2="23.865%">
+                                                                    <stop stop-color="#2d3748" stop-opacity="0" offset="0%" />
+                                                                    <stop stop-color="#2d3748" offset="100%" />
+                                                                    <stop stop-color="#2d3748" stop-opacity=".631" offset="63.146%" />
+                                                                </linearGradient>
+                                                            </defs>
+                                                            <g fill="none" fill-rule="evenodd">
+                                                                <g transform="translate(1 1)">
+                                                                    <path id="Oval-2" d="M36 18c0-9.94-8.06-18-18-18" stroke="url(#a)" stroke-width="3">
+                                                                        <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="0.9s" repeatCount="indefinite" />
+                                                                    </path>
+                                                                    <circle fill="#2d3748" cx="36" cy="18" r="1">
+                                                                        <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="0.9s" repeatCount="indefinite" />
+                                                                    </circle>
+                                                                </g>
+                                                            </g>
+                                                        </svg>
+                                                    </span>
+                                                    <i v-else class="h-3 w-3" data-lucide="x"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Hint -->
+                                        <p class="text-xs text-slate-500 mb-4">
+                                            Veuillez cliquer en bas pour imprimer la liste des QR codes pour chaque zone à patrouiller.
+                                        </p>
+
+                                        <!-- Download Button -->
+                                        <button @click.stop="downloadQRCode(data.id)"
+                                            class="group relative inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary text-white font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50">
+                                            <span>Télécharger qrcodes</span>
+                                            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-primary group-hover:bg-slate-100">
+                                                <i class="stroke-1.5 h-4 w-4" data-lucide="arrow-right"></i>
+                                            </span>
+                                        </button>
+                                    </div>
+                                </transition>
                             </div>
-
-                            <!-- Hint -->
-                            <p class="text-xs text-slate-500 mb-4">
-                                Veuillez cliquer en bas pour imprimer la liste des QR codes pour chaque zone à patrouiller.
-                            </p>
-
-                            <!-- Download Button -->
-                            <button @click.stop="downloadQRCode(data.id)"
-                                class="group relative inline-flex items-center gap-2 px-5 py-2 rounded-full bg-primary text-white font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50">
-                                <span>Télécharger qrcodes</span>
-                                <span class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-primary group-hover:bg-slate-100">
-                                    <i class="stroke-1.5 h-4 w-4" data-lucide="arrow-right"></i>
-                                </span>
-                            </button>
                         </div>
-                    </transition>
+                        <div class="space-y-4" v-else>
+                            <div v-if="isDataLoading">
+                                <x-dom-loader></x-dom-loader>
+                            </div>
+                            <div v-else>
+                                <x-empty-state message="Aucune requête disponible pour l'instant." v-else></x-empty-state>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="space-y-4" v-else>
-                <div v-if="isDataLoading">
-                    <x-dom-loader></x-dom-loader>
-                </div>
-                <div v-else>
-                    <x-empty-state message="Aucune requête disponible pour l'instant." v-else></x-empty-state>
-                </div>
+                <!-- END: Vertical Form -->
             </div>
         </div>
 
@@ -324,6 +332,7 @@
         opacity: 0;
         transform: translateY(-5px);
     }
+
     .fade-enter-active,
     .fade-leave-active {
         transition: all 0.3s ease;

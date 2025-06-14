@@ -60,7 +60,7 @@
                         </button>
                     </div>
                     <div class="intro-x mt-10 flex items-center justify-center text-slate-600 dark:text-slate-500 xl:mt-24 xl:text-left">
-                        Salama Plateforme. Tous les droits reservé
+                        Salama Plateforme. Tous droits réservés
                     </div>
                 </div>
             </form>

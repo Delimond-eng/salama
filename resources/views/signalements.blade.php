@@ -175,9 +175,10 @@
             <div v-if="isDataLoading">
                 <x-dom-loader></x-dom-loader>
             </div>
-        
-            <div class="box mt-5" v-else>
-                <x-empty-state message="Aucune signalement disponible." v-else></x-empty-state>
+            <div v-else class="relative mt-5 intro-y before:box before:absolute before:inset-x-3 before:mt-3 before:h-full before:bg-slate-50 before:content-['']">
+                <div class="box">
+                    <x-empty-state message="Aucune signalement disponible."></x-empty-state>
+                </div>
             </div>
         </div>
     </div>
