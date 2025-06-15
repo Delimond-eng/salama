@@ -142,7 +142,7 @@
         </li>
         @endif
 
-        @if (Auth::user()->hasMenu("taches"))
+        <!-- @if (Auth::user()->hasMenu("taches"))
         <li>
              <a href="javascript:;" class="side-menu {{ Route::is("tasks") || Route::is("reports.tasks") ? 'side-menu--active' : '' }}">
                  <div class="side-menu__icon">
@@ -217,7 +217,7 @@
                  </li>
              </ul>
         </li>
-        @endif
+        @endif -->
 
         @if (Auth::user()->hasMenu("presences"))
         <li>
@@ -442,11 +442,11 @@
                              <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
-                             Téléphone agent
+                             Rapport de téléphones
                          </div>
                      </a>
                  </li>
-                 <li>
+                 <!-- <li>
                      <a href="{{ url("/log.activities") }}" class="side-menu">
                          <div class="side-menu__icon">
                              <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
@@ -465,7 +465,7 @@
                             Alertes paniques
                          </div>
                      </a>
-                 </li>
+                 </li> -->
              </ul>
          </li>
         @endif

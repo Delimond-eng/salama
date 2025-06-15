@@ -81,14 +81,17 @@
         <div class="intro-y col-span-12 mt-2 flex flex-wrap items-center xl:flex-nowrap">
             <div class="flex w-full sm:w-auto">
                 <div class="relative w-48 text-slate-500">
-                    <input data-tw-merge="" type="text" placeholder="Search by name..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-48 pr-10">
+                    <input  v-model="search" @input="searchSite=''" type="text" placeholder="Recherche par nom..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-48 pr-10">
                     <i data-tw-merge="" data-lucide="search" class="stroke-1.5 absolute inset-y-0 right-0 my-auto mr-3 h-4 w-4"></i>
                 </div>
-                <select data-tw-merge="" class="disabled:bg-slate-100 disabled:cursor-not-allowed disabled:dark:bg-darkmode-800/50 [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md py-2 px-3 pr-8 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 group-[.form-inline]:flex-1 !box ml-2 w-48 xl:w-auto">
-                    <option>Status</option>
-                    <option>Active</option>
-                    <option>Removed</option>
-                </select>
+                <select v-model="searchStatus" @change="search=''" class="disabled:bg-slate-100 disabled:cursor-not-allowed disabled:dark:bg-darkmode-800/50 [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md py-2 px-3 pr-8 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 group-[.form-inline]:flex-1 !box ml-2 w-48 xl:w-auto">
+                    <option selected hidden value="">Par status</option>
+                    <option value="">Tout</option>
+                    <option value="En attente">En attente</option>
+                    <option value="Effectuée">Effectuée</option>
+                    <option value="Partielle">Partielle</option>
+                    <option value="Non effectuée">Non effectuée</option>
+                </select>   
             </div>
             <div class="mx-auto hidden text-slate-500 xl:block">
                 <div
@@ -232,8 +235,10 @@
             <div v-if="isDataLoading">
                 <x-dom-loader></x-dom-loader>
             </div>
-            <div v-else>
-                <x-empty-state message="Aucun planning disponible." v-else></x-empty-state>
+            <div v-else class="relative w-full mt-5 intro-y before:box before:absolute before:inset-x-3 before:mt-3 before:h-full before:bg-slate-50 before:content-['']">
+                <div class="box intro-y">
+                    <x-empty-state message="Aucun planning de superviseurs répertorié !"></x-empty-state>
+                </div>
             </div>
         </div>
         <!-- BEGIN: Data List -->
@@ -299,7 +304,7 @@
                             </div>
                         </td>
                         <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box w-40 rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
-                            <div class="flex items-center justify-center font-medium" :class="{'text-danger': status(data) === 'En attente','text-pending': status(data)==='Partielle', 'text-success': status(data)==='Effectuée'}">
+                            <div class="flex items-center justify-center font-medium" :class="{'text-blue-500': status(data) === 'En attente', 'text-pending': status(data)==='Partielle', 'text-danger': status(data)==='Non effectuée', 'text-success': status(data)==='Effectuée'}">
                                 <i data-tw-merge="" data-lucide="check-square" class="stroke-1.5 mr-2 h-4 w-4"></i>
                                 @{{ status(data) }}
                             </div>

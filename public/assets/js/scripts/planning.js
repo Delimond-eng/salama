@@ -15,9 +15,9 @@ new Vue({
             tom: null,
             schedules: [],
             delete_id: "",
-
             selectedPlanning: null,
             selectedSchedule: null,
+            today: new Date(),
 
             form: {
                 id: "",
@@ -46,6 +46,8 @@ new Vue({
             },
             sites: [],
             search: "",
+            searchSite: "",
+            searchStatus: "",
             filter_date: "",
         };
     },
@@ -89,6 +91,7 @@ new Vue({
             this.viewAllSchedules();
         }
         this.viewAllSites();
+        console.log(this.today);
     },
 
     methods: {
@@ -100,7 +103,6 @@ new Vue({
             );
         },
         selectSupSchedule(data) {
-            console.log(JSON.stringify(data));
             this.selectedSchedule = data;
         },
         addSupField() {
@@ -380,6 +382,11 @@ new Vue({
                 this.viewAllSchedules();
             }
         },
+
+        parseDateFR(str) {
+            const [day, month, year] = str.split("/");
+            return new Date(`${year}-${month}-${day}`);
+        },
     },
 
     computed: {
@@ -388,18 +395,30 @@ new Vue({
         },
 
         allSchedules() {
+            if (this.searchStatus) {
+                return this.schedules.filter((el) => {
+                    return this.status(el) === this.searchStatus;
+                });
+            }
             if (this.search) {
                 return this.schedules.filter((el) => {
-                    return el.site_id === this.search;
+                    return el.agent.fullname
+                        .toLowerCase()
+                        .includes(this.search.toLowerCase());
                 });
-            } else {
-                return this.schedules;
             }
+            return this.schedules;
         },
 
         status() {
             return (st) => {
-                if (st.presences.length === 0) {
+                const scheduleDate = this.parseDateFR(st.date); // st.date au format "DD/MM/YYYY"
+                if (scheduleDate > this.today && st.presences.length === 0) {
+                    return "Non effectuée";
+                } else if (
+                    st.presences.length === 0 &&
+                    scheduleDate <= this.today
+                ) {
                     return "En attente";
                 } else if (st.sites.length !== st.presences.length) {
                     return "Partielle";
