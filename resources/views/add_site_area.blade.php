@@ -27,7 +27,7 @@
 
     <div class="mt-5 grid grid-cols-12 gap-6" id="App" v-cloak>
         <div class="intro-y col-span-12 lg:col-span-6">
-            <div class="relative mt-5 intro-y before:box before:absolute before:inset-x-3 before:mt-3 before:h-full before:bg-slate-50 before:content-['']">
+            <div class="relative intro-y before:box before:absolute before:inset-x-3 before:mt-3 before:h-full before:bg-slate-50 before:content-['']">
                 <!-- BEGIN: Vertical Form -->
                 <div class="intro-x box">
                     <div class="flex flex-col items-center border-b border-slate-200/60 p-5 dark:border-darkmode-400 sm:flex-row">

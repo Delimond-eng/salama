@@ -17,6 +17,13 @@ class PresenceHoraire extends Model
     protected $primaryKey = 'id';
 
 
+
+    protected $casts = [
+        "started_at"=>"datetime:H:i",
+        "ended_at"=>"datetime:H:i"
+    ];
+
+
     /**
      * Attributes that should be mass-assignable.
      *

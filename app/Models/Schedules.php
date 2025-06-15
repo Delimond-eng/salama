@@ -25,6 +25,7 @@ class Schedules extends Model
      */
     protected $primaryKey = 'id';
 
+
     /**
      * Attributes that should be mass-assignable.
      *
@@ -58,6 +59,8 @@ class Schedules extends Model
         'created_at'=>'datetime:d/m/Y H:i',
         'updated_at'=>'datetime:d/m/Y H:i',
         'date'=>'date:d/m/Y',
+        "start_time"=>"datetime:H:i",
+        "end_time"=>"datetime:H:i",
     ];
 
     /**
