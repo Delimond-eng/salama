@@ -3,6 +3,7 @@ namespace App\Services;
 
 use Google\Client;
 use GuzzleHttp\Client as HttpClient;
+use Illuminate\Support\Facades\Log;
 
 class FcmService
 {
@@ -20,6 +21,7 @@ class FcmService
         $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
 
         $this->accessToken = $client->fetchAccessTokenWithAssertion()['access_token'];
+        Log::info($this->accessToken);
         $this->projectId = json_decode(file_get_contents(storage_path('app/firebase/credentials.json')), true)['project_id'];
     }
 

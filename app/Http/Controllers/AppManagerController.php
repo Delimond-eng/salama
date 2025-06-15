@@ -113,15 +113,20 @@ class AppManagerController extends Controller
                 $site->save();
                 $agent = Agent::find($patrol->agent_id);
 
-                if($site->emails){
-                    (new EmailController())->sendMail([
-                        "emails" => $site->emails,
-                        "title" => "Patrouille en cours",
-                        "photo" => $data["photo"],
-                        "agent" => $agent->matricule . ' - ' . $agent->fullname,
-                        "site" => $site->code . ' - ' . $site->name,
-                        "date" => $now->format("d/m/y H:i")
-                    ]);
+                try{
+                    if($site->emails){
+                        (new EmailController())->sendMail([
+                            "emails" => $site->emails,
+                            "title" => "Patrouille en cours",
+                            "photo" => $data["photo"],
+                            "agent" => $agent->matricule . ' - ' . $agent->fullname,
+                            "site" => $site->code . ' - ' . $site->name,
+                            "date" => $now->format("d/m/y H:i")
+                        ]);
+                    }
+                }
+                catch(\Exception $e){
+                    Log::info($e->getMessage());
                 }
                 return response()->json([
                     "status" => "success",
@@ -519,23 +524,6 @@ class AppManagerController extends Controller
 
 
 
-    /* public function viewPatrolReports():JsonResponse{
-        $agencyId = Auth::user()->agency_id ?? 1;
-        $patrols = Patrol::with("agent")
-            ->with("site")
-            ->with("scans.agent")
-            ->with("scans.area")
-            ->where("agency_id", $agencyId)
-            ->orderByDesc("id")
-            ->paginate(10);
-        return response()->json([
-            "status"=>"success",
-            "patrols"=>$patrols
-        ]);
-    } */
-
-
-
     /**
      * Close Patrol Tag
      * @param Request $request
@@ -582,14 +570,19 @@ class AppManagerController extends Controller
             $this->updateScheduleStatusFromPatrol($patrol);
 
             if ($site->emails) {
-                (new EmailController())->sendMail([
-                    "emails" => $site->emails,
-                    "title" => "Patrouille en cours",
-                    "photo" => $data["photo"],
-                    "agent" => $agent->matricule . ' - ' . $agent->fullname,
-                    "site" => $site->code . ' - ' . $site->name,
-                    "date" => $now->format("d/m/y H:i")
-                ]);
+                try{
+                    (new EmailController())->sendMail([
+                        "emails" => $site->emails,
+                        "title" => "Patrouille en cours",
+                        "photo" => $data["photo"],
+                        "agent" => $agent->matricule . ' - ' . $agent->fullname,
+                        "site" => $site->code . ' - ' . $site->name,
+                        "date" => $now->format("d/m/y H:i")
+                    ]);
+                }
+                catch(\Exception $e){
+                    Log::info($e->getMessage());
+                }
             }
 
             return response()->json([
@@ -607,7 +600,7 @@ class AppManagerController extends Controller
     private function updateScheduleStatusFromPatrol(Patrol $patrol)
     {
         $patrolStart = Carbon::parse($patrol->started_at)->setTimezone('Africa/Kinshasa');
-        $toleranceMinutes = 5;
+        $toleranceMinutes = 15;
 
         $schedule = Schedules::where('site_id', $patrol->site_id)
             ->whereDate('date', $patrolStart->toDateString())
@@ -620,7 +613,7 @@ class AppManagerController extends Controller
 
         // Ne pas recalculer si planning déjà marqué comme 'fail'
         if (in_array($schedule->status, ['success', 'fail', 'partial'])) {
-            Log::info("⏭️ Planning #{$schedule->id} déjà traité avec statut '{$schedule->status}'.");
+            Log::info("⏭️ Planning #{$schedule->id} déjà traité avec statut {$schedule->status}.");
             return;
         }
 
@@ -832,39 +825,33 @@ class AppManagerController extends Controller
                 "id"=>$request->id
             ], $schedule);
 
-            // Envoyer une notification FCM
-            /* if ($site->fcm_token) {
-                $fcm = new FcmService();
-                $title = "Nouvelle Patrouille programmée";
-                $date = $schedule['date'];
-                $start = $schedule['start_time'];
-                $end = $schedule['end_time'];
-                $body = "Vous avez une nouvelle patrouille le $date de $start à $end.";
-                $fcm->sendNotification($site->fcm_token, $title, $body);
-            } */
-           
-            if ($site->fcm_token) {
-                $fcm = new FcmService();
-                $title = "Nouvelle Patrouille programmée";
-                Carbon::setLocale('fr');
-                $date = Carbon::parse($schedule['date']);
-                $start = $schedule['start_time'];
-                $end = $schedule['end_time'];
+            try{
+                if ($site->fcm_token) {
+                    $fcm = new FcmService();
+                    $title = "Nouvelle Patrouille programmée";
+                    Carbon::setLocale('fr');
+                    $date = Carbon::parse($schedule['date']);
+                    $start = $schedule['start_time'];
+                    $end = $schedule['end_time'];
 
-                $today = Carbon::today();
-                $tomorrow = Carbon::tomorrow();
+                    $today = Carbon::today();
+                    $tomorrow = Carbon::tomorrow();
 
-                if ($date->isSameDay($today)) {
-                    $formattedDate = "aujourd'hui";
-                } elseif ($date->isSameDay($tomorrow)) {
-                    $formattedDate = "demain";
-                } else {
-                    // Exemple : Jeudi 10 avril 2025
-                    $formattedDate = $date->translatedFormat('l j F Y');
+                    if ($date->isSameDay($today)) {
+                        $formattedDate = "aujourd'hui";
+                    } elseif ($date->isSameDay($tomorrow)) {
+                        $formattedDate = "demain";
+                    } else {
+                        // Exemple : Jeudi 10 avril 2025
+                        $formattedDate = $date->translatedFormat('l j F Y');
+                    }
+
+                    $body = "Vous avez une nouvelle patrouille $formattedDate de $start à $end.";
+                    $fcm->sendNotification($site->fcm_token, $title, $body);
                 }
-
-                $body = "Vous avez une nouvelle patrouille $formattedDate de $start à $end.";
-                $fcm->sendNotification($site->fcm_token, $title, $body);
+            }
+            catch(\Exception $exception){
+                Log::info($exception->getMessage());
             }
             
             return response()->json([
@@ -997,7 +984,7 @@ class AppManagerController extends Controller
             ]);
 
             $agent = Agent::with("site")->where("matricule", $data["matricule"])
-                ->where("password", $data["password"])->where("status", "actif")->first();
+                ->where("password", $data["password"])->first();
             if($agent){
                 return response()->json([
                     "status"=>"success",

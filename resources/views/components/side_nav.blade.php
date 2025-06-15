@@ -24,7 +24,7 @@
                      <a href="/"
                          class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                              Monitoring
@@ -35,7 +35,7 @@
                  <li>
                      <a href="{{ url('/reports.patrols') }}" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                              Rapport des patrouilles
@@ -65,7 +65,7 @@
                  <li>
                      <a href="/site.create" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                              Création site
@@ -77,7 +77,7 @@
                  <li>
                      <a href="{{ url("/sites.list") }}" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                              Liste des sites
@@ -107,7 +107,7 @@
                  <li>
                      <a href="/agent.create" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                              Création agent
@@ -120,7 +120,7 @@
                 <li>
                      <a href="/agents.list" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                              Liste des agents
@@ -130,7 +130,7 @@
                 <li>
                      <a href="/agents.history" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                             Historique des agents
@@ -160,7 +160,7 @@
                  <li>
                      <a href="{{ url("/tasks") }}" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                              Gestion tâches
@@ -170,7 +170,7 @@
                  <li>
                      <a href="{{ url("/reports.tasks") }}" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                              Rapport des tâches
@@ -198,7 +198,7 @@
                  <li>
                      <a href="ezuyezueze" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                              Nouvelle visite
@@ -208,7 +208,7 @@
                  <li>
                      <a href="euzeiuzie" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                              Rapport des visites
@@ -237,7 +237,7 @@
                  <li>
                      <a href="{{ url("/presence.horaires") }}" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                             Horaires
@@ -247,7 +247,7 @@
                  <li>
                      <a href="{{ url("agent.groupe") }}" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                             Groupes
@@ -259,7 +259,7 @@
                 <li>
                     <a href="{{ url("/reports.presences") }}" class="side-menu">
                         <div class="side-menu__icon">
-                            <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                            <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                         </div>
                         <div class="side-menu__title">
                             Rapport des présences
@@ -270,7 +270,7 @@
                 <li>
                     <a href="{{ url("/reports.presences.filter") }}" class="side-menu">
                         <div class="side-menu__icon">
-                            <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                            <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                         </div>
                         <div class="side-menu__title">
                             Rapport filtré
@@ -311,7 +311,7 @@
                  <li>
                      <a href="{{ url("/schedules") }}" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                             Planning agents
@@ -321,7 +321,7 @@
                  <li>
                      <a href="{{ url("/schedules.supervisor") }}" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                              Planning superviseurs
@@ -331,7 +331,7 @@
                  <li>
                      <a href="{{ url("/schedules.report") }}" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                             Rapport de planning
@@ -369,6 +369,33 @@
         @endif
     
         <div class="my-4 side-nav__divider"></div>
+        @if (Auth::user()->hasMenu("configurations"))
+        <li>
+             <a href="javascript:;" class="side-menu">
+                 <div class="side-menu__icon">
+                     <i data-tw-merge="" data-lucide="settings" class="stroke-1.5 w-5 h-5"></i>
+                 </div>
+                 <div class="side-menu__title">
+                     Configurations
+                     <div class="side-menu__sub-icon ">
+                         <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-3 h-3"></i>
+                     </div>
+                 </div>
+             </a>
+             <ul class="">
+                 <li>
+                     <a href="#" class="side-menu">
+                         <div class="side-menu__icon">
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
+                         </div>
+                         <div class="side-menu__title">
+                            Secteurs
+                         </div>
+                     </a>
+                 </li>
+             </ul>
+        </li>
+        @endif
         @if (Auth::user()->hasMenu("utilisateurs"))
          <li>
              <a href="javascript:;" class="side-menu {{ Route::is("user.add") || Route::is("user.list") ? 'side-menu--active' : '' }}">
@@ -387,7 +414,7 @@
                  <li>
                      <a href="{{ url("/user.add") }}" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                             Création utilisateur
@@ -399,7 +426,7 @@
                  <li>
                      <a href="{{ url("/user.list") }}" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                              Liste des utilisateurs
@@ -411,7 +438,7 @@
                 <!-- <li>
                     <a href="azzezeezee" class="side-menu">
                         <div class="side-menu__icon">
-                            <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                            <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                         </div>
                         <div class="side-menu__title">
                             Attribution accès
@@ -439,7 +466,7 @@
                  <li>
                      <a href="{{ url("/log.phones") }}" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                              Rapport de téléphones
@@ -449,7 +476,7 @@
                  <!-- <li>
                      <a href="{{ url("/log.activities") }}" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                              Travailleur isolé
@@ -459,7 +486,7 @@
                  <li>
                      <a href="{{ url("/log.panics") }}" class="side-menu">
                          <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="navigation" class="stroke-1.5 w-2 h-2"></i>
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
                             Alertes paniques

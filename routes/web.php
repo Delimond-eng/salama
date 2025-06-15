@@ -12,6 +12,7 @@ use App\Models\Action;
 use App\Models\Agent;
 use App\Models\Announce;
 use App\Models\Menu;
+use App\Models\Secteur;
 use App\Models\Site;
 use App\Models\User;
 
@@ -52,7 +53,10 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     | SITES & ZONES
     |--------------------------------------------------------------------------
     */
-    Route::view('/site.create', 'add_site_area')->name('site.create.view')->middleware('check.permission:sites,create');
+    Route::get('/site.create', function(){
+        $secteurs = Secteur::orderBy("libelle")->get();
+        return view('add_site_area', ["secteurs"=>$secteurs]);
+    })->name('site.create.view')->middleware('check.permission:sites,create');
     Route::post('site.create', [AdminController::class, 'createAgencieSite'])->name('site.create')->middleware('check.permission:sites,create');
 
     Route::get('/sites.list', fn () => view('site_list'))->name('sites.list')->middleware('check.permission:sites,view');
@@ -60,7 +64,7 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     Route::get('/sites', function () {
         $agencyId = Auth::user()->agency_id;
         $sites = Site::where('agency_id', $agencyId)
-            ->with(['areas' => fn ($query) => $query->where('status', 'actif')])
+            ->with(['areas' => fn ($query) => $query->where('status', 'actif')])->with("secteur")
             ->get();
         return response()->json(['sites' => $sites]);
     })->middleware('check.permission:sites,view');

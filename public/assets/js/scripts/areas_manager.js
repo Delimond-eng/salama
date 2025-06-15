@@ -34,6 +34,7 @@ new Vue({
                 adresse: "",
                 phone: "",
                 emails: "",
+                secteur_id: "",
 
                 areas: [
                     {
@@ -114,6 +115,7 @@ new Vue({
                 code: "",
                 adresse: "",
                 phone: "",
+                secteur_id: "",
                 areas: [
                     {
                         libelle: "",

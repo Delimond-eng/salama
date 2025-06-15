@@ -101,6 +101,7 @@ class AdminController extends Controller
                 $data = $request->validate([
                     "name"=>"required|string",
                     "code"=>"required|string|unique:sites,code",
+                    "secteur_id"=>"required|int|exists:secteurs,id",
                     "latlng"=>"nullable|string",
                     "adresse"=>"required|string",
                     "phone"=>"nullable|string",

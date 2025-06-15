@@ -39,6 +39,7 @@ class Site extends Model
         "phone",
         "emails",
         "fcm_token",
+        "secteur_id",
         "agency_id",
     ];
 
@@ -68,6 +69,15 @@ class Site extends Model
     */
     public function agencie() : BelongsTo{
         return $this->belongsTo(Agencie::class, foreignKey:"agency_id");
+    }
+
+
+    /**
+     * Belongs to Secteur
+     * @return BelongsTo
+    */
+    public function secteur() : BelongsTo{
+        return $this->belongsTo(Secteur::class, foreignKey:"secteur_id");
     }
 
     /**

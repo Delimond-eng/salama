@@ -20,59 +20,7 @@
         </nav>
         <!-- END: Breadcrumb -->
         <!-- BEGIN: Account Menu -->
-        <div data-tw-merge="" data-tw-placement="bottom-end" class="dropdown relative">
-            <button
-                data-tw-toggle="dropdown" aria-expanded="false"
-                class="cursor-pointer zoom-in intro-x block h-9 w-9 bg-success text-white overflow-hidden rounded-full shadow-lg">
-                <h1 style="font-weight: 900;">{{ substr(Auth::user()->name, 0, 1) }}</h1>
-            </button>
-            <div data-transition="" data-selector=".show"
-                data-enter="transition-all ease-linear duration-150"
-                data-enter-from="absolute !mt-5 invisible opacity-0 translate-y-1"
-                data-enter-to="!mt-1 visible opacity-100 translate-y-0"
-                data-leave="transition-all ease-linear duration-150"
-                data-leave-from="!mt-1 visible opacity-100 translate-y-0"
-                data-leave-to="absolute !mt-5 invisible opacity-0 translate-y-1"
-                class="dropdown-menu absolute z-[9999] hidden">
-                <div data-tw-merge=""
-                    class="dropdown-content rounded-md border-transparent p-2 shadow-[0px_3px_10px_#00000017] dark:border-transparent dark:bg-darkmode-600 mt-px w-56 bg-theme-1 text-white">
-                    <div class="p-2 font-medium font-normal">
-                        <div class="font-medium">{{ Auth::user()->name }}</div>
-                        <div class="mt-0.5 text-xs text-white/70 dark:text-slate-500">
-                            {{ Auth::user()->email }}
-                        </div>
-                    </div>
-                    <div class="h-px my-2 -mx-2 bg-slate-200/60 dark:bg-darkmode-400 bg-white/[0.08]">
-                    </div>
-                    <a
-                        class="cursor-pointer flex items-center p-2 transition duration-300 ease-in-out rounded-md hover:bg-slate-200/60 dark:bg-darkmode-600 dark:hover:bg-darkmode-400 dropdown-item hover:bg-white/5"><i
-                            data-tw-merge="" data-lucide="user" class="stroke-1.5 mr-2 h-4 w-4"></i>
-                        Profile</a>
-                    <a
-                        class="cursor-pointer flex items-center p-2 transition duration-300 ease-in-out rounded-md hover:bg-slate-200/60 dark:bg-darkmode-600 dark:hover:bg-darkmode-400 dropdown-item hover:bg-white/5"><i
-                            data-tw-merge="" data-lucide="edit" class="stroke-1.5 mr-2 h-4 w-4"></i>
-                        Add Account</a>
-                    <a
-                        class="cursor-pointer flex items-center p-2 transition duration-300 ease-in-out rounded-md hover:bg-slate-200/60 dark:bg-darkmode-600 dark:hover:bg-darkmode-400 dropdown-item hover:bg-white/5"><i
-                            data-tw-merge="" data-lucide="lock" class="stroke-1.5 mr-2 h-4 w-4"></i>
-                        Reset Password</a>
-                    <a
-                        class="cursor-pointer flex items-center p-2 transition duration-300 ease-in-out rounded-md hover:bg-slate-200/60 dark:bg-darkmode-600 dark:hover:bg-darkmode-400 dropdown-item hover:bg-white/5"><i
-                            data-tw-merge="" data-lucide="help-circle" class="stroke-1.5 mr-2 h-4 w-4"></i>
-                        Help</a>
-                    <div class="h-px my-2 -mx-2 bg-slate-200/60 dark:bg-darkmode-400 bg-white/[0.08]">
-                    </div>
-                    <form id="logout-form" hidden action="{{ route('logout') }}" method="POST">
-                        @csrf
-                    </form>
-                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                        class="cursor-pointer flex items-center p-2 transition duration-300 ease-in-out rounded-md hover:bg-slate-200/60 dark:bg-darkmode-600 dark:hover:bg-darkmode-400 dropdown-item hover:bg-white/5"><i
-                            data-tw-merge="" data-lucide="toggle-right" class="stroke-1.5 mr-2 h-4 w-4"></i>
-                        Logout</a>
-
-                </div>
-            </div>
-        </div>
+        <x-user-session></x-user-session>
         <!-- END: Account Menu -->
     </div>
     <!-- END: Top Bar -->
@@ -103,10 +51,9 @@
                                                 <img v-else class="rounded-md" src="{{ asset('assets/images/profil-2.png') }}" alt="Photo par défaut">
 
                                                 <div v-if="preview"
-                                                    data-placement="top" 
+                                                    data-placement="top"
                                                     class="tooltip cursor-pointer absolute right-0 top-0 -mr-2 -mt-2 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-white"
-                                                    @click="removePhoto"
-                                                >
+                                                    @click="removePhoto">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="lucide lucide-x stroke-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path d="M18 6 6 18" />
                                                         <path d="m6 6 12 12" />
@@ -118,13 +65,12 @@
                                                 <button type="button" class="bg-primary border-primary text-white w-full rounded-md py-2 px-3 font-medium">
                                                     Charger photo
                                                 </button>
-                                                <input 
+                                                <input
                                                     type="file"
                                                     ref="photoInput"
                                                     @change="onFileChange"
                                                     class="absolute left-0 top-0 h-full w-full opacity-0 cursor-pointer"
-                                                    accept="image/*"
-                                                >
+                                                    accept="image/*">
                                             </div>
                                         </div>
                                     </div>
@@ -167,7 +113,7 @@
                                 <label for="vertical-form-2" class="inline-block mb-2 group-[.form-inline]:mb-2 group-[.form-inline]:sm:mb-0 group-[.form-inline]:sm:mr-5 group-[.form-inline]:sm:text-right">
                                     Site affecté *
                                 </label>
-                                <select  v-model="form.site_id" class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
+                                <select v-model="form.site_id" class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
                                     <option value="" selected hidden>--Sélectionnez un site--</option>
                                     @foreach ($sites as $site)
                                     <option value="{{ $site->id }}">{{ $site->name }}</option>
@@ -182,7 +128,7 @@
                                     <select v-model="form.groupe_id" class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10">
                                         <option value="" selected hidden>--Sélectionnez un groupe--</option>
                                         <option v-for="(data, index) in allGroups" :key="index" :value="data.id">
-                                            @{{ data.libelle }} 
+                                            @{{ data.libelle }}
                                         </option>
                                     </select>
                                 </div>
@@ -196,7 +142,7 @@
                                     </select>
                                 </div>
                             </div>
-                            
+
                             <button type="submit" class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-primary border-primary text-white dark:border-primary mt-5">Enregister
                                 <span class="ml-2 h-4 w-4" v-if="isLoading">
                                     <svg class="h-full w-full" width="25" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="white">
@@ -212,7 +158,7 @@
                                 </span>
                             </button>
                             <button type="reset" @click.stop="reset" data-tw-merge="" class="transition border border-slate-300  duration-200 inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-white text-slate-800 dark:border-darkmode-100 mr-2 shadow-md">
-                            Annuler</button>
+                                Annuler</button>
                         </form>
 
                     </div>

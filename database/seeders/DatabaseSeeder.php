@@ -6,6 +6,8 @@ namespace Database\Seeders;
 
 use App\Models\Menu;
 use App\Models\PresenceHoraire;
+use App\Models\Secteur;
+use App\Models\SupervisionControlElement;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -34,18 +36,8 @@ class DatabaseSeeder extends Seeder
              'agency_id'=> 1
          ]);
 
-         PresenceHoraire::updateOrCreate(
-                [
-                    "libelle"=>"Normale",
-                ],
-                [
-                    "libelle"=>"Normale",
-                    "started_at"=>"07:00",
-                    "ended_at"=>"16:30",
-                ],
-            );
 
-            $menus = [
+        $menus = [
             'Gestion Patrouilles',
             'Gestion Sites',
             'Gestion Agents',
@@ -67,6 +59,32 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+        }
+
+
+         $elements = [
+            ['libelle' => 'TENUE', 'description' => 'Uniforme conforme et bien porté'],
+            ['libelle' => 'ATTITUDE', 'description' => 'Comportement et politesse'],
+            ['libelle' => 'PROPRETE DU POSTE', 'description' => 'Hygiène et ordre du poste de garde'],
+            ['libelle' => 'MOYEN DE LIASON', 'description' => 'Téléphone, radio, talkie-walkie...'],
+            ['libelle' => 'EPLS', 'description' => 'Équipements de protection et de sécurité'],
+            ['libelle' => 'REGISTRE', 'description' => 'Présence et remplissage du registre'],
+            ['libelle' => 'FICHE DES CONSIGNES', 'description' => 'Affichage visible des consignes'],
+            ['libelle' => 'CONNAISSANCE DES CONSIGNES', 'description' => 'Agent connaît les consignes de son poste'],
+        ];
+
+        foreach ($elements as $element) {
+            SupervisionControlElement::updateOrCreate(['libelle' => $element['libelle']], $element);
+        }
+
+        $secteurs = [
+            ["libelle"=>"KIN EST"],
+            ["libelle"=>"KIN NORD",],
+            ["libelle"=>"KIN SUD",],
+        ];
+
+        foreach($secteurs as $s){
+            Secteur::updateOrCreate(["libelle"=>$s["libelle"]], $s);
         }
     }
 }

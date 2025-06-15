@@ -339,7 +339,7 @@ new Vue({
                 const [lat, lng] = patrol.site.latlng
                     .split(",")
                     .map(parseFloat);
-                this.map = L.map(mapContainer).setView([lat, lng], 18);
+                this.map = L.map(mapContainer).setView([lat, lng], 17);
                 mapContainer._leaflet_map = this.map;
 
                 L.tileLayer(

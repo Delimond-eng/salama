@@ -22,7 +22,7 @@
         <!-- BEGIN: Account Menu -->
         <div data-tw-merge="" data-tw-placement="bottom-end" class="dropdown relative"><button
                 data-tw-toggle="dropdown" aria-expanded="false"
-                class="cursor-pointer zoom-in intro-x block h-9 w-9 bg-success text-white overflow-hidden rounded-full shadow-lg">
+                class="cursor-pointer zoom-in intro-x block h-9 w-9 bg-primary text-white overflow-hidden rounded-full shadow-lg">
                 <h1 style="font-weight: 900;">{{ substr(Auth::user()->name, 0, 1) }}</h1>
             </button>
             <div data-transition="" data-selector=".show"
@@ -43,22 +43,11 @@
                     </div>
                     <div class="h-px my-2 -mx-2 bg-slate-200/60 dark:bg-darkmode-400 bg-white/[0.08]">
                     </div>
-                    <a
-                        class="cursor-pointer flex items-center p-2 transition duration-300 ease-in-out rounded-md hover:bg-slate-200/60 dark:bg-darkmode-600 dark:hover:bg-darkmode-400 dropdown-item hover:bg-white/5"><i
-                            data-tw-merge="" data-lucide="user" class="stroke-1.5 mr-2 h-4 w-4"></i>
-                        Profile</a>
-                    <a
-                        class="cursor-pointer flex items-center p-2 transition duration-300 ease-in-out rounded-md hover:bg-slate-200/60 dark:bg-darkmode-600 dark:hover:bg-darkmode-400 dropdown-item hover:bg-white/5"><i
-                            data-tw-merge="" data-lucide="edit" class="stroke-1.5 mr-2 h-4 w-4"></i>
-                        Add Account</a>
-                    <a
-                        class="cursor-pointer flex items-center p-2 transition duration-300 ease-in-out rounded-md hover:bg-slate-200/60 dark:bg-darkmode-600 dark:hover:bg-darkmode-400 dropdown-item hover:bg-white/5"><i
-                            data-tw-merge="" data-lucide="lock" class="stroke-1.5 mr-2 h-4 w-4"></i>
-                        Reset Password</a>
+
                     <a
                         class="cursor-pointer flex items-center p-2 transition duration-300 ease-in-out rounded-md hover:bg-slate-200/60 dark:bg-darkmode-600 dark:hover:bg-darkmode-400 dropdown-item hover:bg-white/5"><i
                             data-tw-merge="" data-lucide="help-circle" class="stroke-1.5 mr-2 h-4 w-4"></i>
-                        Help</a>
+                        Aide</a>
                     <div class="h-px my-2 -mx-2 bg-slate-200/60 dark:bg-darkmode-400 bg-white/[0.08]">
                     </div>
                     <form id="logout-form" hidden action="{{ route('logout') }}" method="POST">
@@ -68,7 +57,6 @@
                         class="cursor-pointer flex items-center p-2 transition duration-300 ease-in-out rounded-md hover:bg-slate-200/60 dark:bg-darkmode-600 dark:hover:bg-darkmode-400 dropdown-item hover:bg-white/5"><i
                             data-tw-merge="" data-lucide="toggle-right" class="stroke-1.5 mr-2 h-4 w-4"></i>
                         Logout</a>
-
                 </div>
             </div>
         </div>
@@ -105,7 +93,7 @@
                                         <i data-lucide="home" class="h-6 w-6 text-primary"></i>
                                         <div>
                                             <h3 class="text-lg font-semibold text-slate-800">@{{ data.name }}</h3>
-                                            <p class="text-sm text-slate-500">@{{ data.code }}</p>
+                                            <p class="text-sm text-slate-500">CODE : @{{ data.code }} | SECTEUR : @{{ data.secteur.libelle }}</p>
                                         </div>
                                     </div>
 
