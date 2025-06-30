@@ -1,0 +1,43 @@
+(() => {
+    (function () {
+        "use stirct";
+        if ($("#report-donut-chart").length) {
+            let t = () => [
+                    getColor("pending", 0.9),
+                    getColor("warning", 0.9),
+                    getColor("primary", 0.9),
+                ],
+                o = $("#report-donut-chart")[0].getContext("2d"),
+                r = new Chart(o, {
+                    type: "doughnut",
+                    data: {
+                        labels: [
+                            "31 - 50 Years old",
+                            ">= 50 Years old",
+                            "17 - 30 Years old",
+                        ],
+                        datasets: [
+                            {
+                                data: [15, 10, 65],
+                                backgroundColor: t,
+                                hoverBackgroundColor: t,
+                                borderWidth: 5,
+                                borderColor: () =>
+                                    $("html").hasClass("dark")
+                                        ? getColor("darkmode.700")
+                                        : getColor("white"),
+                            },
+                        ],
+                    },
+                    options: {
+                        maintainAspectRatio: !1,
+                        plugins: { legend: { display: !1 } },
+                        cutout: "80%",
+                    },
+                });
+            helper.watchClassNameChanges($("html")[0], (e) => {
+                r.update();
+            });
+        }
+    })();
+})();
