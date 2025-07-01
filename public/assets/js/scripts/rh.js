@@ -105,7 +105,6 @@ new Vue({
                             }).showToast();
                         }, 100);
                     }
-
                     if (data.result) {
                         this.error = null;
                         this.result = data.result;

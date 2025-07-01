@@ -287,8 +287,7 @@
             :per-page="pagination.per_page"
             @page-changed="changePage"
             @per-page-changed="onPerPageChange"
-        />
-
+        ></Pagination>
         <!-- END: Pagination -->
     </div>
     <x-dom-loader></x-dom-loader>

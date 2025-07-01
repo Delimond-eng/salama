@@ -33,7 +33,7 @@
                     <div class="sm:mr-auto xl:flex">
                         <div class="items-center sm:mr-4 sm:flex">
                             <select data-tw-merge="" @change="loadPresenceReports" v-model="currentMonth" id="tabulator-html-filter-field" class="disabled:bg-slate-100 disabled:cursor-not-allowed disabled:dark:bg-darkmode-800/50 [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md py-2 px-3 pr-8 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 group-[.form-inline]:flex-1 mt-2 sm:mt-0 sm:w-auto 2xl:w-full">
-                                <option v-for="month in months" :value="month">Mois @{{ month }}</option>
+                                <option v-for="month in months" :value="month.id">@{{ month.libelle }}</option>
                             </select>
                         </div>
                         <div class="items-center sm:mr-4 sm:flex">
@@ -72,8 +72,9 @@
                     </div>
                     <div class="mt-5 flex sm:mt-0 ml-2">
                         <div data-tw-merge="" data-tw-placement="bottom-end" class="dropdown relative w-1/2 sm:w-auto">
-                            <button @click="exportToExcel" data-tw-merge="" class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed border-secondary text-slate-500 dark:border-darkmode-100/40 dark:text-slate-300 [&:hover:not(:disabled)]:bg-secondary/20 [&:hover:not(:disabled)]:dark:bg-darkmode-100/10 w-full sm:w-auto"><i data-tw-merge="" data-lucide="file-text" class="stroke-1.5 mr-2 h-4 w-4"></i>
-                                Export to excel
+                            <button @click="exportToExcel" data-tw-merge="" class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed border-secondary text-slate-500 dark:border-darkmode-100/40 dark:text-slate-300 [&:hover:not(:disabled)]:bg-secondary/20 [&:hover:not(:disabled)]:dark:bg-darkmode-100/10 w-full sm:w-auto">
+                                <i data-tw-merge="" data-lucide="download" class="stroke-1.5 mr-2 h-4 w-4"></i>
+                                Excel
                             </button>
                         </div>
                     </div>

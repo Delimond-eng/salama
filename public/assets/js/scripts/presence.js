@@ -26,7 +26,6 @@ new Vue({
             searchName: "",
             filterStatus: "",
             filterRetards: "",
-            months: [...Array(12).keys()].map((m) => m + 1),
             years: [2023, 2024, 2025],
             activeRowIndex: null,
 
@@ -557,6 +556,19 @@ new Vue({
     },
 
     computed: {
+        months() {
+            return Array.from({ length: 12 }, (v, i) => {
+                const date = new Date(this.currentYear, i, 1); // Une année quelconque
+                const monthName = date.toLocaleString("fr-FR", {
+                    month: "long",
+                }); // Nom du mois en français
+                return {
+                    id: i + 1,
+                    libelle:
+                        monthName.charAt(0).toUpperCase() + monthName.slice(1), // Majuscule initiale
+                };
+            });
+        },
         allSites() {
             return this.sites;
         },
