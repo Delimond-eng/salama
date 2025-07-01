@@ -24,6 +24,7 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
 
     // Tableau de bord
     Route::get('/', [HomeController::class, 'index'])->name('dashboard');
+    Route::view('/global.view', 'tbd')->name('global.view');
 
     /*
     |--------------------------------------------------------------------------

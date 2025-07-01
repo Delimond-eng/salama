@@ -79,7 +79,7 @@
                                 <div class="image-fit zoom-in h-9 w-9">
                                     <img data-placement="top" data-action="zoom" :src="data.photo ?? 'assets/images/loading.gif'" alt="photo" class="tooltip cursor-pointer rounded-lg border-white shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]">
                                 </div>
-                                <div class="ml-4">
+                                <div class="ml-4" v-if="data.agent">
                                     <a class="whitespace-nowrap font-medium" href="#">
                                         @{{ data.agent.fullname }}
                                     </a>
@@ -90,7 +90,7 @@
                             </div>
                         </td>
                         <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
-                            <div class="flex">
+                            <div class="flex" v-if="data.site">
                                 <div class="ml-4">
                                     <a class="whitespace-nowrap font-medium" href="#">
                                         @{{ data.site.name }}
@@ -100,6 +100,7 @@
                                     </div>
                                 </div>
                             </div>
+
                         </td>
                         <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
                             @{{data.started_at}}
@@ -118,10 +119,16 @@
                             </div>
                         </td>
                         <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box w-56 rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600 before:absolute before:inset-y-0 before:left-0 before:my-auto before:block before:h-8 before:w-px before:bg-slate-200 before:dark:bg-darkmode-400">
-                            <button @click="loadChart(data)" data-tw-toggle="modal" data-tw-target="#patrol-info-details"
-                                class="bg-[#4ab3f4] flex border-0 rounded-lg px-2 py-1.5 text-xs hover:bg-[#4ab3f4]/20 text-white shadow-lg">
-                                Voir détails
-                            </button>
+                            <div class="flex items-center">
+                                <button @click="loadChart(data)" data-tw-toggle="modal" data-tw-target="#patrol-info-details"
+                                    class="bg-[#4ab3f4] flex border-0 rounded-md px-2 py-1.5 text-xs hover:bg-[#4ab3f4]/20 text-white shadow-lg mr-2">
+                                    Voir détails
+                                </button>
+                                <button v-if="data.ended_at === null"
+                                    class="bg-pending flex border-0 rounded-md px-2 py-1.5 text-xs hover:bg-pending/20 text-white shadow-lg">
+                                    Clotûrer
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 </tbody>

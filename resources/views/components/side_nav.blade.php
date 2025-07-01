@@ -8,7 +8,7 @@
      <ul>
          @if (Auth::user()->hasMenu("patrouilles"))
          <li>
-             <a href="javascript:;" class="side-menu @active(['dashboard','reports.patrols'])">
+             <a href="javascript:;" class="side-menu @active(['dashboard','reports.patrols', 'global.view'])">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="monitor" class="stroke-1.5 w-5 h-5"></i>
                  </div>
@@ -28,6 +28,17 @@
                          </div>
                          <div class="side-menu__title">
                              Monitoring
+                         </div>
+                     </a>
+                 </li>
+                 <li>
+                     <a href="{{ url("/global.view") }}"
+                         class="side-menu">
+                         <div class="side-menu__icon">
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
+                         </div>
+                         <div class="side-menu__title">
+                            Vue globale
                          </div>
                      </a>
                  </li>
