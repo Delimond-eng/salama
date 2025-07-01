@@ -342,7 +342,7 @@
                      </a>
                      <ul class="">
                          <li>
-                             <a href="{{ url("/schedules.report") }}" class="side-menu">
+                             <a href="#" class="side-menu">
                                  <div class="side-menu__icon">
                                      <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-2 h-2"></i>
                                  </div>
@@ -352,7 +352,7 @@
                              </a>
                          </li>
                          <li>
-                             <a href="rubick-side-menu-invoice-layout-1-page.html" class="side-menu">
+                             <a href="{{ url("/schedules.report") }}" class="side-menu">
                                  <div class="side-menu__icon">
                                      <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-2 h-2"></i>
                                  </div>
@@ -378,7 +378,7 @@
          @endif
 
          <li>
-             <a href="javascript:;" class="side-menu  @active(['conges.management', 'ldd.management'])">
+             <a href="javascript:;" class="side-menu  @active(['conges.management', 'ldd.management', 'pointages.agents'])">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="users" class="stroke-1.5 w-5 h-5"></i>
                  </div>
@@ -391,7 +391,7 @@
              </a>
              <ul class="side-menu__sub">
                 <li>
-                     <a href="#" class="side-menu">
+                     <a href="{{ url("/pointages.agents") }}" class="side-menu">
                          <div class="side-menu__icon">
                              <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>

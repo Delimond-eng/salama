@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Conge;
 use App\Models\PresenceHoraire;
 use App\Models\PresenceAgents;
 use Illuminate\Http\Request;
@@ -9,6 +10,7 @@ use Carbon\Carbon;
 use App\Models\Site;
 use App\Models\Agent;
 use App\Models\AgentGroup;
+use App\Models\Cessation;
 use App\Models\PresenceSupervisorControl;
 use App\Models\PresenceSupervisorSite;
 use App\Models\ScheduleSupervisor;
@@ -81,6 +83,11 @@ class PresenceController extends Controller
     *Creation de la presence des agents
     *16:10/15-05-2025
     */
+     /*
+     *Lionnel nawej
+     *Creation de la presence des agents
+     *16:10/15-05-2025
+     */
     public function createPresenceAgent(Request $request)
     {
         try {
@@ -88,7 +95,7 @@ class PresenceController extends Controller
                 "matricule" => "required|string|exists:agents,matricule",
                 "heure" => "required|string",
                 "status_photo" => "nullable|string",
-                "coordonnees" => "required|string",
+                "coordonnees" => "required|string"
             ]);
 
             $agent = Agent::with("groupe.horaire")->where('matricule', $data['matricule'])->firstOrFail();
@@ -115,7 +122,8 @@ class PresenceController extends Controller
                 $siteProche = null;
                 $minDistance = PHP_INT_MAX;
                 foreach ($sites as $s) {
-                    if (!$s->latlng) continue;
+                    if (!$s->latlng)
+                        continue;
                     list($lat2, $lng2) = explode(',', $s->latlng);
                     $d = (new AppManagerController())->calculateDistance($lat1, $lng1, $lat2, $lng2);
                     if ($d < $minDistance) {
@@ -139,8 +147,8 @@ class PresenceController extends Controller
                 $distance = app(AppManagerController::class)->calculateDistance($lat1, $lng1, $lat2, $lng2);
                 $proximite = $distance <= 100 ? "dans le site" : "hors du site";
                 $commentaire_proximite = request('is_sortie') ?
-                    ($distance <= 400 ? "sorti du site" : "pas dans le site à la sortie") :
-                    ($distance <= 400 ? "arrivé dans le site" : "pas arrivé dans le site");
+                ($distance <= 400 ? "sorti du site" : "pas dans le site à la sortie") :
+                ($distance <= 400 ? "arrivé dans le site" : "pas arrivé dans le site");
                 $commentaire_distance = "$commentaire_proximite - " . round($distance) . " mètres du site";
             }
 
@@ -177,10 +185,10 @@ class PresenceController extends Controller
                     'status_photo_debut' => $data['status_photo'] ?? null,
                     'retard' => $retard,
                     'commentaires' => $commentaire_distance,
-                    'status' => 'debut'
+                    'status' => 'debut',
                 ]);
 
-                if($site->emails){
+                if ($site->emails) {
                     (new EmailController())->sendMail([
                         "emails" => $site->emails,
                         "title" => "Présence signalée",
@@ -199,7 +207,8 @@ class PresenceController extends Controller
             } else {
                 $start = new \DateTime($presence->started_at);
                 $end = new \DateTime($data['heure']);
-                if ($end < $start) $end->modify('+1 day');
+                if ($end < $start)
+                    $end->modify('+1 day');
                 $interval = $start->diff($end);
                 $duree_formattee = $interval->h + ($interval->days * 24) . 'h' . $interval->i . 'min';
 
@@ -207,7 +216,8 @@ class PresenceController extends Controller
                 if ($horaire) {
                     $expected_end = new \DateTime($horaire->ended_at);
                     $expected_start = new \DateTime($horaire->started_at);
-                    if ($expected_end < $expected_start) $expected_end->modify('+1 day');
+                    if ($expected_end < $expected_start)
+                        $expected_end->modify('+1 day');
                     $extra_comment = ($end < $expected_end) ? " | Parti tôt." : " | Parti à l'heure.";
                 } else {
                     $extra_comment = " | Sans horaire précis.";
@@ -222,7 +232,7 @@ class PresenceController extends Controller
                     'commentaires' => $presence->commentaires . ' - ' . $commentaire_distance . $extra_comment,
                 ]);
 
-                if($site->emails){
+                if ($site->emails) {
                     (new EmailController())->sendMail([
                         "emails" => $site->emails,
                         "title" => "Départ signalée",
@@ -245,7 +255,120 @@ class PresenceController extends Controller
             return response()->json(['errors' => $e->getMessage()]);
         }
     }
+    public function getPresenceReport(Request $request)
+    {
+        $month = $request->input('month', Carbon::now()->month);
+        $year = $request->input('year', Carbon::now()->year);
 
+        $startDate = Carbon::createFromDate($year, $month, 1);
+        $daysInMonth = $startDate->daysInMonth;
+
+        // Récupère tous les agents actifs avec leur site
+        $agents = Agent::whereIn('status', ['permenant', 'actif', 'dispo'])->with('site')->get();
+
+        $results = [];
+
+        foreach ($agents as $agent) {
+            $presenceByDay = [];
+            $pp = $a = $m = $c = $mp = $au = $c1 = $a1 = $ca1 = $l = $d = $dm = $ds = 0;
+            $absencesSuccessives = 0;
+
+            for ($day = 1; $day <= $daysInMonth; $day++) {
+                $date = Carbon::createFromDate($year, $month, $day)->toDateString();
+                $presence = PresenceAgents::where('agent_id', $agent->id)
+                    ->whereDate('created_at', $date)
+                    ->first();
+
+                $code = '';
+
+                if ($presence) {
+                    if ($presence->retard === 'oui') {
+                        $c1++;
+                        $code = '1-C1';
+                    } else {
+                        $code = '1';
+                    }
+                    $pp++;
+                    $absencesSuccessives = 0;
+                } else {
+                    // Vérifier les congés
+                    $conge = Conge::where('agent_id', $agent->id)
+                        ->where('status', 'actif')
+                        ->whereDate('date_debut', '<=', $date)
+                        ->whereDate('date_fin', '>=', $date)
+                        ->first();
+
+                    if ($conge) {
+                        $type = strtolower($conge->type);
+                        if ($type === 'conge maladie') {
+                            $m++;
+                            $code = 'M';
+                        } elseif ($type === 'conge annuel') {
+                            $c++;
+                            $code = 'C';
+                        } elseif ($type === 'mise a pied') {
+                            $mp++;
+                            $code = 'MP';
+                        } elseif ($type === 'absence autorisee') {
+                            $au++;
+                            $code = 'AU';
+                        }
+                        $absencesSuccessives = 0;
+                    } else {
+                        // Vérifier les cessations
+                        $cessation = Cessation::where('agent_id', $agent->id)
+                            ->where('status', 'actif')
+                            ->whereDate('date', '<=', $date)
+                            ->first();
+
+                        if ($cessation) {
+                            $type = strtoupper($cessation->type);
+                            if ($type === 'LICENCIEMENT') {
+                                $l++;
+                                $code = 'L';
+                            } elseif ($type === 'DECES') {
+                                $d++;
+                                $code = 'D';
+                            } elseif ($type === 'DEMISSION') {
+                                $dm++;
+                                $code = 'DM';
+                            }
+                            $absencesSuccessives = 0;
+                        } else {
+                            // Absence non justifiée
+                            $a++;
+                            $absencesSuccessives++;
+                            $code = 'A';
+
+                            if ($absencesSuccessives == 3) {
+                                $ds++;
+                                $code = 'DS';
+                                $absencesSuccessives = 0; // Réinitialiser après désertion
+                            }
+                        }
+                    }
+                }
+
+                $presenceByDay[$day] = $code;
+            }
+
+            $results[] = [
+                'matricule' => $agent->matricule,
+                'fullname' => $agent->fullname,
+                'poste' => $agent->site->name ?? 'Non attribué',
+                'days' => $presenceByDay,
+                'stats' => compact('pp', 'a', 'm', 'c', 'mp', 'au', 'c1', 'a1', 'ca1', 'l', 'd', 'dm', 'ds')
+            ];
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'month' => $month,
+            'year' => $year,
+            'daysInMonth' => $daysInMonth,
+            'data' => $results
+        ]);
+    }
 
     /**
      * Creation de la presence visite du superviseur dans les sites

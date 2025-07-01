@@ -8,6 +8,7 @@ use App\Http\Controllers\ApiController;
 use App\Http\Controllers\AppManagerController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LogController;
+use App\Http\Controllers\PresenceController;
 use App\Models\Action;
 use App\Models\Agent;
 use App\Models\Announce;
@@ -125,14 +126,42 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     | RH ROUTES
     |--------------------------------------------------------------------------
     */
-    Route::get("/conges.management", function(){
+     Route::get("/conges.management", function(){
         $agents = Agent::all();
         return view("conges_management", ["agents"=>$agents]);
     })->name("conges.management");
+
+    Route::get("/pointages.agents", function(){
+        $agents = Agent::all();
+        return view("pointages_agents", ["agents"=>$agents]);
+    })->name("pointages.agents");
+
+
     Route::get("/ldd.management", function(){
         $agents = Agent::all();
         return view("ldd_management", ["agents"=>$agents]);
     })->name("ldd.management");
+
+
+
+     /*
+    |--------------------------------------------------------------------------
+    | CONGES AGENTS
+    |--------------------------------------------------------------------------
+    */
+    Route::post('/conge.create', [AppManagerController::class, 'createCongeAgent'])->name('conge.create');
+
+    Route::get('/conges', [AppManagerController::class, 'getCongesByAgent'])->name('conges');
+      /*
+    |--------------------------------------------------------------------------
+    | CESSATION AGENTS
+    |--------------------------------------------------------------------------
+    */
+    Route::post('/cessation.create', [AppManagerController::class, 'createCessationAgent'])->name('cessation.create');
+
+    Route::get('/cessations', [AppManagerController::class, 'getCessationsByAgent'])->name('cessations');
+    //reporpresence
+    Route::get('/presences.report', [PresenceController::class, 'getPresenceReport'])->name('presences.report');
     
     
     

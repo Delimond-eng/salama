@@ -6,6 +6,8 @@ use App\Models\Agent;
 use App\Models\AgentRequest;
 use App\Models\Announce;
 use App\Models\Area;
+use App\Models\Cessation;
+use App\Models\Conge;
 use App\Models\Patrol;
 use App\Models\PatrolScan;
 use App\Models\Schedules;
@@ -1222,15 +1224,181 @@ class AppManagerController extends Controller
     }
 
 
+       /**
+     * Gestion des congés
+     * Lionnel nawej
+     * @param Request $request
+     * @return JsonResponse
+    */
+     public function createCongeAgent(Request $request): JsonResponse{
+        try {
+            // Validation des données reçues
+            $data = $request->validate([
+                'agent_id'   => 'required|exists:agents,id',
+                'type'       => 'required|string',
+                'date_debut' => 'required|date',
+                'date_fin'   => 'required|date|after_or_equal:date_debut',
+                'motif'      => 'nullable|string'
+            ]);
 
+            $agentId = $data['agent_id'];
+            $debut = Carbon::parse($data['date_debut']);
+            $fin = Carbon::parse($data['date_fin']);
 
+            // 1. Vérifie si une cessation existe déjà
+            $cessation = DB::table('cessations')
+                ->where('agent_id', $agentId)
+                ->first();
 
+            if ($cessation) {
+                return response()->json([
+                    'errors' => ["L'agent est en cessation d'activités depuis le " . Carbon::parse($cessation->date)->format('d/m/Y')]
+                ]);
+            }
 
+            // 2. Vérifie s’il y a un congé qui chevauche la période
+            $conflitConge = DB::table('conges')
+                ->where('agent_id', $agentId)
+                ->where(function ($query) use ($debut, $fin) {
+                    $query->whereBetween('date_debut', [$debut, $fin])
+                        ->orWhereBetween('date_fin', [$debut, $fin])
+                        ->orWhere(function ($query) use ($debut, $fin) {
+                            $query->where('date_debut', '<=', $debut)
+                                    ->where('date_fin', '>=', $fin);
+                        });
+                })
+                ->first();
 
+            if ($conflitConge) {
+                return response()->json([
+                    'errors' => ["L'agent a déjà un congé du " .
+                        Carbon::parse($conflitConge->date_debut)->format('d/m/Y') .
+                        " au " .
+                        Carbon::parse($conflitConge->date_fin)->format('d/m/Y')]
+                ]);
+            }
 
+            // Enregistrement
+            $record = Conge::updateOrCreate(
+                ['id' => $request->id],
+                $data
+            );
 
+            return response()->json([
+                'status' => 'success',
+                'result' => $record
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->validator->errors()->all()]);
+        } catch (\Exception $e) {
+            return response()->json(['errors' => 'Une erreur est survenue.']);
+        }
+    }
+    /**
+     * Gestion des congés
+     * Lionnel nawej
+     * @param Request $request
+     * @return JsonResponse
+    */
+    public function createCessationAgent(Request $request): JsonResponse{
+        try {
+            $data = $request->validate([
+                'agent_id' => 'required|exists:agents,id',
+                'type'     => 'required|string',
+                'date'     => 'required|date',
+                'cause'    => 'nullable|string'
+            ]);
 
+            $agentId = $data['agent_id'];
+            $date = Carbon::parse($data['date']);
 
+            // 1. Vérifie si une cessation existe déjà
+            $existing = DB::table('cessations')
+                ->where('agent_id', $agentId)
+                ->first();
 
+            if ($existing) {
+                return response()->json([
+                    'errors' => ["L'agent est déjà en cessation depuis le " . Carbon::parse($existing->date)->format('d/m/Y')]
+                ]);
+            }
+
+            // 2. Vérifie si un congé couvre cette date
+            $conge = DB::table('conges')
+                ->where('agent_id', $agentId)
+                ->where('date_debut', '<=', $date)
+                ->where('date_fin', '>=', $date)
+                ->first();
+
+           /* if ($conge) {
+                return response()->json([
+                    'errors' => ["Impossible d'enregistrer la cessation pendant un congé actif (du " .
+                        Carbon::parse($conge->date_debut)->format('d/m/Y') . " au " .
+                        Carbon::parse($conge->date_fin)->format('d/m/Y') . ")"]
+                ]);
+            }
+            */
+            $record = Cessation::updateOrCreate(
+                ['id' => $request->id],
+                $data
+            );
+
+            return response()->json([
+                'status' => 'success',
+                'result' => $record
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->validator->errors()->all()]);
+        } catch (\Exception $e) {
+            return response()->json(['errors' => 'Une erreur est survenue.']);
+        }
+    }
+
+    public function getCongesByAgent(Request $request){
+        $agentId = $request->query('id'); // récupération de l'ID en paramètre GET
+
+        $congesQuery = Conge::with("agent");
+
+        if ($agentId) {
+            $congesQuery->where('agent_id', $agentId);
+        }
+
+        $conges = $congesQuery->paginate(10);
+
+        // Ajouter le nom complet à chaque congé
+        /* $conges->transform(function ($conge) {
+            $agent = $conge->agent;
+            $conge->fullname = " {$agent->fullname}";
+            return $conge;
+        }); */
+
+        return response()->json([
+            'status' => 'success',
+            'conges' => $conges
+        ]);
+    }
+    public function getCessationsByAgent(Request $request){
+        $agentId = $request->query('id'); // récupération de l'ID en paramètre GET
+
+        $cessationsQuery = Cessation::with("agent");
+
+        if ($agentId) {
+            $cessationsQuery->where('agent_id', $agentId);
+        }
+
+        $cessations = $cessationsQuery->paginate(10);
+
+        // Ajouter le nom complet à chaque congé
+        /* $cessations->transform(function ($cessation) {
+            $agent = $cessation->agent;
+            $cessation->fullname = "{$agent->matricule} {$agent->fullname}";
+            return $cessation;
+        }); */
+
+        return response()->json([
+            'status' => 'success',
+            'cessations' => $cessations
+        ]);
+    }
 
 }

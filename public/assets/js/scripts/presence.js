@@ -12,10 +12,24 @@ new Vue({
             isLoading: false,
             isDataLoading: false,
             pristine: null,
+            presenceReports: [],
+            daysInMonth: 30,
+            currentMonth: new Date().getMonth() + 1,
+            currentYear: new Date().getFullYear(),
             horaires: [],
             sites: [],
             groups: [],
             delete_id: "",
+            agentsData: [],
+            filteredAgents: [],
+            searchMatricule: "",
+            searchName: "",
+            filterStatus: "",
+            filterRetards: "",
+            months: [...Array(12).keys()].map((m) => m + 1),
+            years: [2023, 2024, 2025],
+            activeRowIndex: null,
+
             form: {
                 id: "",
                 libelle: "",
@@ -72,9 +86,18 @@ new Vue({
                 console.log("Agent selected : ", value);
             });
         }
-
-        this.viewAllHoraires();
-        this.viewAllGroups();
+        if (location.pathname === "/presence.horaires") {
+            this.viewAllHoraires();
+        } else if (location.pathname === "/agent.groupe") {
+            this.viewAllGroups();
+        }
+        this.loadPresenceReports();
+    },
+    watch: {
+        searchMatricule: "applyFilters",
+        searchName: "applyFilters",
+        filterStatus: "applyFilters",
+        filterRetards: "applyFilters",
     },
     methods: {
         viewAllHoraires() {
@@ -286,11 +309,276 @@ new Vue({
                 }
             });
         },
+        loadPresenceReports() {
+            this.isDataLoading = true;
+
+            get(
+                `/presences.report?month=${this.currentMonth}&year=${this.currentYear}`
+            )
+                .then((res) => {
+                    this.isDataLoading = false;
+                    this.agentsData = res.data.data;
+                    this.daysInMonth = res.data.daysInMonth;
+                    this.applyFilters();
+                })
+                .catch(console.error);
+        },
+        applyFilters() {
+            this.filteredAgents = this.agentsData.filter((agent) => {
+                const matchMatricule = agent.matricule
+                    .toLowerCase()
+                    .includes(this.searchMatricule.toLowerCase());
+                const matchName = agent.fullname
+                    .toLowerCase()
+                    .includes(this.searchName.toLowerCase());
+
+                let matchStatus = true;
+                switch (this.filterStatus) {
+                    case "deces":
+                        matchStatus = agent.stats.d > 0;
+                        break;
+                    case "demission":
+                        matchStatus = agent.stats.dm > 0;
+                        break;
+                    case "licenciement":
+                        matchStatus = agent.stats.l > 0;
+                        break;
+                    case "conge":
+                        matchStatus = agent.stats.c > 0 || agent.stats.m > 0;
+                        break;
+                    case "mise_a_pied":
+                        matchStatus = agent.stats.mp > 0;
+                        break;
+                    case "absence_autorisee":
+                        matchStatus = agent.stats.au > 0;
+                        break;
+                    case "deserteur":
+                        matchStatus = agent.stats.ds > 0;
+                        break;
+                    case "absences":
+                        matchStatus = agent.stats.a > 0;
+                        break;
+                }
+
+                let matchRetards = true;
+                if (this.filterRetards === "moins3") {
+                    matchRetards = agent.stats.c1 < 3;
+                } else if (this.filterRetards === "plus3") {
+                    matchRetards = agent.stats.c1 >= 3;
+                }
+
+                return (
+                    matchMatricule && matchName && matchStatus && matchRetards
+                );
+            });
+        },
+        exportToExcel() {
+            const moisNom = this.currentMonthName || this.currentMonth;
+            const titre = `POINTAGES MENSUELS DES AGENTS - ${moisNom} ${this.currentYear}`;
+            const legende1 = [
+                "PP = Présences",
+                "A = Absences",
+                "M = Maladies",
+                "C = Congés",
+                "MP = Mises à pied",
+                "AU = Absences autorisées",
+            ];
+            const legende2 = [
+                "C1 = Retards",
+                "A1/A2/A3 = Appels",
+                "CA1/2/3 = Retards + Appels",
+                "L = Licencié",
+                "D = Décédé",
+                "DM = Démission",
+                "DS = Déserteur",
+            ];
+
+            const headers = ["#", "Matricule", "Nom", "Poste"];
+            for (let day = 1; day <= this.daysInMonth; day++)
+                headers.push(day.toString());
+            headers.push(
+                "PP",
+                "A",
+                "M",
+                "C",
+                "MP",
+                "AU",
+                "C1",
+                "A1",
+                "CA1",
+                "L",
+                "D",
+                "DM",
+                "DS"
+            );
+
+            const data = [];
+
+            // Ajout du contenu des agents
+            this.filteredAgents.forEach((agent, index) => {
+                const row = [
+                    index + 1,
+                    agent.matricule,
+                    agent.fullname,
+                    agent.poste,
+                ];
+
+                for (let day = 1; day <= this.daysInMonth; day++) {
+                    row.push(agent.days[day] || "");
+                }
+
+                const stats = agent.stats;
+                const keys = [
+                    "pp",
+                    "a",
+                    "m",
+                    "c",
+                    "mp",
+                    "au",
+                    "c1",
+                    "a1",
+                    "ca1",
+                    "l",
+                    "d",
+                    "dm",
+                    "ds",
+                ];
+                keys.forEach((k) => row.push(stats[k]));
+                data.push(row);
+            });
+
+            // Structure complète de la feuille
+            const sheetData = [
+                [titre],
+                [], // Ligne vide
+                legende1,
+                legende2,
+                [], // Ligne vide
+                headers,
+                ...data,
+            ];
+
+            const ws = XLSX.utils.aoa_to_sheet(sheetData);
+
+            // Définir la largeur des colonnes
+            const colWidths = headers.map((h, i) => {
+                if (i <= 3) return { wch: 20 };
+                if (i > 3 && i <= 3 + this.daysInMonth) return { wpx: 34 }; // Colonnes jour très fines
+                return { wch: 10 };
+            });
+            ws["!cols"] = colWidths;
+
+            // Fusionner la cellule de titre sur toute la largeur
+            const totalCols = headers.length;
+            ws["!merges"] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: totalCols - 1 } },
+            ];
+
+            // Appliquer des styles basiques (nécessite SheetJS Pro pour les styles avancés)
+            const headerRowIdx = 5;
+            headers.forEach((_, i) => {
+                const cell =
+                    ws[XLSX.utils.encode_cell({ r: headerRowIdx, c: i })];
+                if (cell) {
+                    cell.s = {
+                        fill: { fgColor: { rgb: "8E1926" } }, // Rouge bordeaux
+                        font: { bold: true, color: { rgb: "FFFFFF" } },
+                        alignment: { horizontal: "center" },
+                    };
+                }
+            });
+
+            // Création du fichier
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Pointages");
+            XLSX.writeFile(wb, `Pointages_${moisNom}_${this.currentYear}.xlsx`);
+        },
+
+        onRowClick(index) {
+            this.activeRowIndex = index;
+        },
+        changeMonthYear(month, year) {
+            this.currentMonth = month;
+            this.currentYear = year;
+            this.loadPresenceReports();
+        },
+        renderTable() {
+            const tbody = document.querySelector("table tbody");
+            tbody.innerHTML = "";
+
+            this.presenceReports.forEach((agent, index) => {
+                const tr = document.createElement("tr");
+
+                // Colonnes fixes
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${agent.matricule}</td>
+                    <td>${agent.fullname}</td>
+                    <td>${agent.poste}</td>
+                `;
+
+                // Colonnes jour par jour
+                for (let day = 1; day <= this.daysInMonth; day++) {
+                    const code = agent.days[day] || "";
+                    tr.innerHTML += `<td>${code}</td>`;
+                }
+
+                // Colonnes totaux
+                const stats = agent.stats;
+                const keys = [
+                    "pp",
+                    "a",
+                    "m",
+                    "c",
+                    "mp",
+                    "au",
+                    "c1",
+                    "a1",
+                    "ca1",
+                    "l",
+                    "d",
+                    "dm",
+                    "ds",
+                ];
+                keys.forEach((key) => {
+                    tr.innerHTML += `<td>${stats[key]}</td>`;
+                });
+
+                tbody.appendChild(tr);
+            });
+        },
+
+        // Pour usage futur : filtrer par mois/année via input ou sélecteur
+        setMonthYear(mois, annee) {
+            this.currentMonth = mois;
+            this.currentYear = annee;
+            this.loadPresenceReports();
+        },
     },
 
     computed: {
         allSites() {
             return this.sites;
+        },
+        displayAgents() {
+            return this.filteredAgents;
+        },
+        currentMonthName() {
+            const months = [
+                "Janvier",
+                "Février",
+                "Mars",
+                "Avril",
+                "Mai",
+                "Juin",
+                "Juillet",
+                "Août",
+                "Septembre",
+                "Octobre",
+                "Novembre",
+                "Décembre",
+            ];
+            return months[this.currentMonth - 1];
         },
 
         allHoraires() {
