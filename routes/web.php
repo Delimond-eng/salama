@@ -25,6 +25,8 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     // Tableau de bord
     Route::get('/', [HomeController::class, 'index'])->name('dashboard');
     Route::view('/global.view', 'tbd')->name('global.view');
+    Route::get("/global.view.req", [AdminController::class, "getDashboardData"])->name("global.view.req");
+    Route::get("/global.view.export", [AdminController::class, "exportPresenceReport"])->name("global.view.export");
 
     /*
     |--------------------------------------------------------------------------

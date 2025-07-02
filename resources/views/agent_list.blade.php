@@ -145,8 +145,19 @@
                     </tr>
                 </tbody>
             </table>
+
+            <!-- BEGIN: Pagination -->
+        <Pagination
+            :current-page="pagination.current_page"
+            :last-page="pagination.last_page"
+            :total-items="pagination.total"
+            :per-page="pagination.per_page"
+            @page-changed="changePage"
+            @per-page-changed="onPerPageChange"></Pagination>
+        <!-- END: Pagination -->
         </div>
         <!-- END: Data List -->
+        
 
         <div class="col-span-12" v-else>
             <div v-if="isDataLoading">
@@ -319,15 +330,7 @@
             </form>
         </div>
         <!-- END: Modal Content -->
-        <!-- BEGIN: Pagination -->
-        <Pagination
-            :current-page="pagination.current_page"
-            :last-page="pagination.last_page"
-            :total-items="pagination.total"
-            :per-page="pagination.per_page"
-            @page-changed="changePage"
-            @per-page-changed="onPerPageChange" />
-        <!-- END: Pagination -->
+       
 
 
     </div>

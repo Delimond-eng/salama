@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AppManagerController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\EmailController;
@@ -133,7 +134,7 @@ Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function
     //VIEW CLIENT AGENTS PRESENT
     Route::get("/client.agents.presence", [ClientController::class, "getAgentPresences"])->name("client.agents.presence");
 
-    Route::get("/sup.reports", [AppManagerController::class, "getSupervisorSchedulesReport"])->name("sup.reports");
+    Route::get("/sup.reports", [AdminController::class, "getDashboardData"])->name("sup.reports");
     //UPDATE CLIENT TOKEN 
     Route::post("/client.token", [ClientController::class, "updateFcmToken"])->name("client.token");
 });

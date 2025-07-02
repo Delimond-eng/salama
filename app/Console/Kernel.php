@@ -25,6 +25,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('backup:send')->dailyAt('00:00')
         ->timezone("Africa/Kinshasa")
         ->withoutOverlapping();
+
+        $schedule->command('presence:send-daily-report')->dailyAt('10:00');
     }
 
     /**

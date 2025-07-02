@@ -7,12 +7,13 @@ use App\Models\Agencie;
 use App\Models\Agent;
 use App\Models\AgentHistory;
 use App\Models\Area;
+use App\Models\Conge;
 use App\Models\Menu;
 use App\Models\Patrol;
-use App\Models\PatrolScan;
 use App\Models\Schedules;
 use App\Models\Site;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -581,6 +582,133 @@ class AdminController extends Controller
         catch (\Illuminate\Database\QueryException $e){
             return response()->json(['errors' => $e->getMessage() ]);
         }
+    }
+
+
+    /**
+     * GET DASHBOARD DATAS
+     * @param Request $request
+     * @return JsonResponse
+    */
+    public function getDashboardData(Request $request)
+    {
+        // Date passée ou aujourd’hui
+        $targetDate = $request->input('date') 
+            ? Carbon::parse($request->input('date'))->startOfDay()
+            : Carbon::today();
+
+        $yesterday = $targetDate->copy()->subDay();
+
+        // Charger les sites avec présences (filtrées sur created_at) et les horaires liés
+        $presenceBySites = Site::with([
+            'presences' => function ($query) use ($targetDate, $yesterday) {
+                $query->whereDate('created_at', $targetDate)
+                    ->orWhereDate('created_at', $yesterday); // pour gérer les horaires 24h
+            },
+            'presences.horaire',
+            'agents',
+            'secteur'
+        ])->paginate(10);
+
+        $totalPresences = 0;
+        $totalAgents =0;
+
+        // Filtrer les présences selon leur horaire
+        foreach ($presenceBySites->items() as $site) {
+            $agentsCount = $site->agents->count();
+            $presencesCount = $site->presences->count();
+            $totalPresences += $presencesCount;
+            $totalAgents += $agentsCount;
+            $site->presences = $site->presences->filter(function ($presence) use ($targetDate) {
+                $horaire = $presence->horaire;
+                if (!$horaire) return false;
+
+                $presenceDate = Carbon::parse($presence->created_at)->startOfDay();
+                $heureDebut = Carbon::createFromFormat('H:i', $horaire->started_at);
+                $heureFin = Carbon::createFromFormat('H:i', $horaire->ended_at);
+
+                $isHoraire24h = $heureDebut->equalTo($heureFin); // Ex: 08:00 → 08:00 le lendemain
+
+                if ($isHoraire24h) {
+                    // Présence créée hier mais couvre le jour courant
+                    return $presenceDate->equalTo($targetDate->copy()->subDay());
+                } else {
+                    // Présence normale, doit correspondre au jour ciblé
+                    return $presenceDate->equalTo($targetDate);
+                }
+            })->values(); // réindexer
+        }
+
+        $siteCount = Site::count();
+        $pendingPatrolCount = Patrol::where("status","pending")->count();
+        $holidayAgentsCount = Conge::whereDate("date_fin", "<=", Carbon::today())->count();
+
+        return response()->json([
+            'status' => 'success',
+            'date' => $targetDate->toDateString(),
+            'dash_presences' => $presenceBySites,
+            'count'=>[
+                'sites'=>$siteCount,
+                'presences'=>$totalPresences,
+                'agents'=>$totalAgents,
+                'holidays'=>$holidayAgentsCount,
+                'patrols'=>$pendingPatrolCount
+            ]
+        ]);
+    }
+
+
+    public function exportPresenceReport(Request $request)
+    {
+        $targetDate = $request->input('date') 
+            ? Carbon::parse($request->input('date'))->startOfDay()
+            : Carbon::today();
+
+        $yesterday = $targetDate->copy()->subDay();
+
+        $sites = Site::with([
+            'presences' => function ($query) use ($targetDate, $yesterday) {
+                $query->whereDate('created_at', $targetDate)
+                    ->orWhereDate('created_at', $yesterday);
+            },
+            'presences.horaire',
+            'agents',
+            'secteur'
+        ])->get();
+
+        $totalPresences = 0;
+        $totalAgents = 0;
+
+        foreach ($sites as $site) {
+            $site->presences = $site->presences->filter(function ($presence) use ($targetDate) {
+                $horaire = $presence->horaire;
+                if (!$horaire) return false;
+
+                $presenceDate = Carbon::parse($presence->created_at)->startOfDay();
+                $heureDebut = Carbon::createFromFormat('H:i', $horaire->started_at);
+                $heureFin = Carbon::createFromFormat('H:i', $horaire->ended_at);
+
+                $isHoraire24h = $heureDebut->equalTo($heureFin);
+                return $isHoraire24h
+                    ? $presenceDate->equalTo($targetDate->copy()->subDay())
+                    : $presenceDate->equalTo($targetDate);
+            })->values();
+
+            $site->presences_count = $site->presences->count();
+            $site->agents_count = $site->agents->count();
+
+            $totalPresences += $site->presences_count;
+            $totalAgents += $site->agents_count;
+        }
+
+        // Générer PDF simplifié
+        $pdf = Pdf::loadView('pdf.reports.presence_simple_report', [
+            'sites' => $sites,
+            'totalPresences' => $totalPresences,
+            'totalAgents' => $totalAgents,
+            'date' => $targetDate->toDateString(),
+        ]);
+        return $pdf->download("rapport-presence-{$targetDate->format('Y-m-d')}.pdf");
     }
 
 }

@@ -15,7 +15,7 @@
                 </li>
                 <li
                     class="relative ml-5 pl-0.5 before:content-[''] before:w-[14px] before:h-[14px] before:bg-chevron-black before:transform before:rotate-[-90deg] before:bg-[length:100%] before:-ml-[1.125rem] before:absolute before:my-auto before:inset-y-0 dark:before:bg-chevron-white text-slate-800 cursor-text dark:text-slate-400">
-                    <a href="#">Alertes panique</a>
+                    <a href="#">Pointages des agents</a>
                 </li>
             </ol>
         </nav>

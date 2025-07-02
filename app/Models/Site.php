@@ -91,4 +91,22 @@ class Site extends Model
         return $this->hasMany(Area::class, foreignKey: 'site_id', localKey: "id");
     }
 
+
+    /**
+     * has manu presences
+     * @return HasMany
+     * */
+    public function presences() : HasMany{
+        return $this->hasMany(PresenceAgents::class, foreignKey: 'site_id', localKey: "id");
+    }
+
+    
+    /**
+     * has manu agents
+     * @return HasMany
+     * */
+    public function agents() : HasMany{
+        return $this->hasMany(Agent::class, foreignKey: 'site_id', localKey: "id");
+    }
+
 }

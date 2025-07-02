@@ -1,4 +1,5 @@
 import { get, postJson } from "../modules/http.js"; // Assuming postJson might be used elsewhere
+import Pagination from "../components/pagination.js";
 
 // Assuming getColor is a globally available function or defined elsewhere in the project
 // function getColor(name, opacity = 1) { /* ... implementation ... */ }
@@ -10,6 +11,7 @@ new Vue({
             error: null,
             result: null,
             isLoading: false,
+            isDataLoading: false,
             patrolPendings: [],
             previousPatrolCount: 0,
             selectedPatrol: null,
@@ -20,8 +22,27 @@ new Vue({
             sites: [], // This will be watched
             hasInitialized: false,
             audio: new Audio("/assets/audios/audio-1.wav"),
-            // mapInstance: null, // Alternative to storing on DOM element, but per-element is better for multiple maps
+            presences: [],
+            pagination: {
+                current_page: 1,
+                last_page: 1,
+                total: 0,
+                per_page: 10,
+            },
+            filter_date: "",
+            search: "",
+            count: {
+                sites: 0,
+                presences: 0,
+                agents: 0,
+                holidays: 0,
+                patrols: 0,
+            },
         };
+    },
+
+    components: {
+        Pagination,
     },
 
     watch: {
@@ -51,13 +72,14 @@ new Vue({
             document.getElementById("loader").style.display = "none";
         }
 
-        this.viewAllSites();
-
-        setInterval(() => {
+        if (location.pathname === "/") {
             this.viewAllSites();
-        }, 5000);
-
-        this.viewAllPendingScans(); // Starts fetching pending patrols
+            setInterval(() => {
+                this.viewAllSites();
+            }, 5000);
+            this.viewAllPendingScans();
+        } // Starts fetching pending patrols
+        this.loadPresencesData();
     },
 
     beforeDestroy() {
@@ -74,6 +96,43 @@ new Vue({
     },
 
     methods: {
+        loadPresencesData() {
+            if (location.pathname === "/global.view") {
+                this.isDataLoading = true;
+                get(
+                    `/global.view.req?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}`
+                ).then((res) => {
+                    this.isDataLoading = false;
+                    this.presences = res.data.dash_presences.data;
+                    this.count = res.data.count;
+                    this.pagination = {
+                        current_page: res.data.dash_presences.current_page,
+                        last_page: res.data.dash_presences.last_page,
+                        total: res.data.dash_presences.total,
+                        per_page: res.data.dash_presences.per_page,
+                    };
+                });
+            }
+        },
+
+        exportToPdf() {
+            window.open(
+                "/global.view.export",
+                "_blank",
+                "width=500,height=500"
+            );
+        },
+        changePage(page) {
+            this.pagination.current_page = page;
+            this.loadPresencesData();
+        },
+
+        onPerPageChange(perPage) {
+            this.pagination.per_page = perPage;
+            this.pagination.current_page = 1;
+            this.loadPresencesData();
+        },
+
         refreshMap() {
             this.$nextTick(() => {
                 // Ensures DOM is updated before map operations
@@ -498,6 +557,16 @@ new Vue({
         },
         allSites() {
             return this.sites;
+        },
+
+        allPresences() {
+            if (this.search) {
+                return this.presences.filter((el) =>
+                    el.name.toLowerCase().includes(this.search.toLowerCase())
+                );
+            } else {
+                return this.presences;
+            }
         },
     },
 });
