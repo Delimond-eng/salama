@@ -16,7 +16,7 @@ use App\Models\Menu;
 use App\Models\Secteur;
 use App\Models\Site;
 use App\Models\User;
-
+use Illuminate\Support\Facades\Artisan;
 
 Auth::routes();
 
@@ -222,21 +222,19 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get('/loadpdf/{siteId}', [AppManagerController::class, 'generatePdfWithQRCodes'])->name('loadpdf')->middleware('check.permission:sites,export');
-
-
     /*
     |--------------------------------------------------------------------------
     | PRESENCES HORAIRES
     |--------------------------------------------------------------------------
     */
 
-    Route::post('/horaire.create', [\App\Http\Controllers\PresenceController::class, 'createHoraire'])->name('horaire.create')->middleware('check.permission:presences,create');
+    Route::post('/horaire.create', [PresenceController::class, 'createHoraire'])->name('horaire.create')->middleware('check.permission:presences,create');
     
-    Route::post('/group.create', [\App\Http\Controllers\PresenceController::class, 'createGroup'])->name('group.create')->middleware('check.permission:presences,create');
+    Route::post('/group.create', [PresenceController::class, 'createGroup'])->name('group.create')->middleware('check.permission:presences,create');
 
-    Route::get('/horaires', [\App\Http\Controllers\PresenceController::class, 'getAllHoraires'])->name('horaires');
+    Route::get('/horaires', [PresenceController::class, 'getAllHoraires'])->name('horaires');
     
-    Route::get('/groups', [\App\Http\Controllers\PresenceController::class, 'getAllGroups'])->name('groups');
+    Route::get('/groups', [PresenceController::class, 'getAllGroups'])->name('groups');
 
      /*
     |--------------------------------------------------------------------------
@@ -253,7 +251,6 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     })->name("user.add")->middleware('check.permission:utilisateurs,create');
 
     Route::post("/user.create", [AdminController::class, "createUser"])->name("user.create")->middleware('check.permission:utilisateurs,create');
-
     Route::view("/user.list", 'user_list')->name("user.list")->middleware('check.permission:utilisateurs,view');
 
     Route::get("/users.all", function(){
@@ -269,9 +266,8 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     | PRESENCES DES AGENTS
     |--------------------------------------------------------------------------
     */
-    Route::post('/presence.create', [\App\Http\Controllers\PresenceController::class, 'createPresenceAgent'])->name('presence.create')->middleware('check.permission:presences,create');
-
-    Route::get('/presences', [\App\Http\Controllers\PresenceController::class, 'getPresencesBySiteAndDate'])->name('presences')->middleware('check.permission:presences,view');
+    Route::post('/presence.create', [PresenceController::class, 'createPresenceAgent'])->name('presence.create')->middleware('check.permission:presences,create');
+    Route::get('/presences', [PresenceController::class, 'getPresencesBySiteAndDate'])->name('presences')->middleware('check.permission:presences,view');
 
      /*
     |--------------------------------------------------------------------------

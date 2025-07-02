@@ -6,6 +6,7 @@ use App\Models\Site;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\HtmlString;
 
@@ -33,7 +34,7 @@ class SendDailyPresenceReport extends Command
         $sites = Site::with([
             'presences' => function ($query) use ($date, $yesterday) {
                 $query->whereDate('created_at', $date)
-                      ->orWhereDate('created_at', $yesterday);
+                    ->orWhereDate('created_at', $yesterday);
             },
             'presences.horaire',
             'agents',
@@ -48,9 +49,14 @@ class SendDailyPresenceReport extends Command
                 $horaire = $presence->horaire;
                 if (!$horaire) return false;
 
-                $presenceDate = Carbon::parse($presence->created_at)->startOfDay();
-                $heureDebut = Carbon::createFromFormat('H:i', $horaire->started_at);
-                $heureFin = Carbon::createFromFormat('H:i', $horaire->ended_at);
+                try {
+                    $presenceDate = Carbon::parse($presence->created_at)->startOfDay();
+                    $heureDebut = Carbon::parse($horaire->started_at);
+                    $heureFin = Carbon::parse($horaire->ended_at);
+                } catch (\Exception $e) {
+                    Log::error("⛔ Erreur parsing horaire présence : " . $e->getMessage());
+                    return false;
+                }
 
                 $isHoraire24h = $heureDebut->equalTo($heureFin);
 
@@ -66,7 +72,7 @@ class SendDailyPresenceReport extends Command
             $totalAgents += $site->agents_count;
         }
 
-        // Générer le PDF
+        // Génération du PDF
         $pdf = Pdf::loadView('pdf.reports.presence_simple_report', [
             'sites' => $sites,
             'totalPresences' => $totalPresences,
@@ -83,7 +89,6 @@ class SendDailyPresenceReport extends Command
             'gradi.ikundomonsaba@suptech.tn'
         ];
 
-        // Envoi à chaque destinataire
         foreach ($emails as $email) {
             Mail::raw("Veuillez trouver ci-joint le rapport de présence du {$date->format('Y/m/d')}.", function ($message) use ($email, $pdf, $filename, $date) {
                 $message->to($email)
@@ -93,8 +98,8 @@ class SendDailyPresenceReport extends Command
                         ]);
             });
         }
-
         $this->info("✅ Rapport envoyé aux destinataires avec succès.");
         return 1;
     }
+
 }

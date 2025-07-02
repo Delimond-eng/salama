@@ -45,7 +45,7 @@
     <h2>Rapport de présence du {{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}</h2>
 
     <p>Total Global : {{ $totalPresences }} / {{ $totalAgents }} agents</p>
-
+    
     <table>
         <thead>
             <tr>

@@ -6,6 +6,8 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\FCMController;
 use App\Http\Controllers\LogController;
+use App\Http\Controllers\PresenceController;
+use App\Http\Controllers\TalkieWalkieController;
 use App\Models\Site;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -25,16 +27,16 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function(){
     //ALLOW TO CREATE AGENCY
-    Route::post("/agency.create", [\App\Http\Controllers\AdminController::class, "createAgencie"])->name("agency.create");
+    Route::post("/agency.create", [AdminController::class, "createAgencie"])->name("agency.create");
 
     //ALLOW TO COMPLETE AREA WITH GPS DATA LATLNG
-    Route::post("area.complete", [\App\Http\Controllers\AdminController::class, "completeArea"])->name("area.complete");
+    Route::post("area.complete", [AdminController::class, "completeArea"])->name("area.complete");
 
     //Insert site token
-    Route::post("site.token", [\App\Http\Controllers\AdminController::class, "completeToken"])->name("site.token");
+    Route::post("site.token", [AdminController::class, "completeToken"])->name("site.token");
 
     // AGENT ENROLL PHOTO
-    Route::post("agent.enroll", [\App\Http\Controllers\AdminController::class, "enrollAgent"])->name("area.complete");
+    Route::post("agent.enroll", [AdminController::class, "enrollAgent"])->name("area.complete");
 
     //ALLOW TO MAKE PATROL SCAN RECORD
     Route::post("patrol.scan", [AppManagerController::class, "startPatrol"])->name("patrol.scan");
@@ -63,19 +65,19 @@ Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function
     //ALLOW TO GET ALL SCHEDULES
     Route::get("/schedules.all", [AppManagerController::class, "viewAllSchedulesByApp"])->name("schedules.all");
 
-    Route::post('/horaire.create', [\App\Http\Controllers\PresenceController::class, 'createHoraire'])->name('horaire.create');
+    Route::post('/horaire.create', [PresenceController::class, 'createHoraire'])->name('horaire.create');
     //pour la creation de presence agent
-    Route::post('/presence.create', action: [\App\Http\Controllers\PresenceController::class, 'createPresenceAgent'])->name('presence.create');
+    Route::post('/presence.create', action: [PresenceController::class, 'createPresenceAgent'])->name('presence.create');
     //Enregistre la visit d'un superviseur au site programmé
-    Route::post('/supervisor.visit.create', [\App\Http\Controllers\PresenceController::class, 'createSupervisorSiteVisit'])->name('supervisor.visit.create');
+    Route::post('/supervisor.visit.create', [PresenceController::class, 'createSupervisorSiteVisit'])->name('supervisor.visit.create');
     //donnees presence
-    Route::get('/presences', [\App\Http\Controllers\PresenceController::class, 'getPresencesBySiteAndDate'])->name('presences');
+    Route::get('/presences', [PresenceController::class, 'getPresencesBySiteAndDate'])->name('presences');
     //Emettre sur un canal de talkie walkie
-    Route::post('/send.talk', [\App\Http\Controllers\TalkieWalkieController::class, 'sendTalkAudio']);
+    Route::post('/send.talk', [TalkieWalkieController::class, 'sendTalkAudio']);
 
     Route::get("/patrols.reports", [AppManagerController::class, "viewPatrolReports"])->name("patrols.reports");
     //horaires
-    Route::get('/horaires', [\App\Http\Controllers\PresenceController::class, 'getAllHoraires'])->name('horaires');
+    Route::get('/horaires', [PresenceController::class, 'getAllHoraires'])->name('horaires');
 
     Route::get("/sites", function () {
         $agencyId = Auth::user()->agency_id ?? 1;
