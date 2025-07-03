@@ -185,6 +185,7 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
 
     Route::get('/patrols.pending', [AppManagerController::class, 'viewPendingPatrols'])->name('patrols.pending')->middleware('check.permission:patrouilles,view');
     Route::get('/patrols.reports', [AppManagerController::class, 'viewPatrolReports'])->name('patrols.reports')->middleware('check.permission:patrouilles,view');
+    Route::post('/patrol.close', [AppManagerController::class, 'closePatrolTag'])->name('patrol.close')->middleware('check.permission:patrouilles,create');
 
     /*
     |--------------------------------------------------------------------------

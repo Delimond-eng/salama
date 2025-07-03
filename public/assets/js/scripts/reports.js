@@ -17,6 +17,7 @@ new Vue({
             reports: [],
             filter_site: "",
             filter_date: "",
+            closed_id: "",
             selectedPatrol: null,
             pagination: {
                 current_page: 1,
@@ -37,6 +38,28 @@ new Vue({
     },
 
     methods: {
+        closePatrol(data) {
+            const self = this;
+            new Swal({
+                text: `Etes-vous sûr de vouloir clôturer cette patrouille ??`,
+                icon: "question",
+                showConfirmButton: 1,
+                showCancelButton: 1,
+                confirmButtonText: "Confirmer",
+                denyButtonText: `Annuler`,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    self.closed_id = data.id;
+                    postJson("/patrol.close", {
+                        patrol_id: data.id,
+                    }).then(() => {
+                        self.closed_id = "";
+                        self.viewAllReports();
+                    });
+                }
+            });
+        },
+
         viewAllSites() {
             get("/sites")
                 .then((res) => {
@@ -69,10 +92,12 @@ new Vue({
                     this.isDataLoading = false;
                 });
         },
+
         changePage(page) {
             this.pagination.current_page = page;
             this.viewAllReports();
         },
+
         onPerPageChange(perPage) {
             this.pagination.per_page = perPage;
             this.pagination.current_page = 1;

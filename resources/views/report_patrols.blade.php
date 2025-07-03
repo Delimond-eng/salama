@@ -124,10 +124,27 @@
                                     class="bg-[#4ab3f4] flex border-0 rounded-md px-2 py-1.5 text-xs hover:bg-[#4ab3f4]/20 text-white shadow-lg mr-2">
                                     Voir détails
                                 </button>
-                                <button v-if="data.ended_at === null"
+                                <button :disabled="closed_id === data.id" v-if="data.ended_at === null"  @click="closePatrol(data)" 
                                     class="bg-pending flex border-0 rounded-md px-2 py-1.5 text-xs hover:bg-pending/20 text-white shadow-lg">
                                     Clotûrer
+                                    <span v-if="closed_id === data.id" class="ml-2 h-4 w-4">
+                                        <svg class="h-full w-full" width="25" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg" fill="#FFFFFF">
+                                            <circle cx="15" cy="15" r="15">
+                                                <animate values="15;9;15" attributeName="r" from="15" to="15" begin="0s" dur="0.8s" calcMode="linear" repeatCount="indefinite"></animate>
+                                                <animate values="1;.5;1" attributeName="fill-opacity" from="1" to="1" begin="0s" dur="0.8s" calcMode="linear" repeatCount="indefinite"></animate>
+                                            </circle>
+                                            <circle cx="60" cy="15" r="9" fill-opacity="0.3">
+                                                <animate values="9;15;9" attributeName="r" from="9" to="9" begin="0s" dur="0.8s" calcMode="linear" repeatCount="indefinite"></animate>
+                                                <animate values=".5;1;.5" attributeName="fill-opacity" from="0.5" to="0.5" begin="0s" dur="0.8s" calcMode="linear" repeatCount="indefinite"></animate>
+                                            </circle>
+                                            <circle cx="105" cy="15" r="15">
+                                                <animate values="15;9;15" attributeName="r" from="15" to="15" begin="0s" dur="0.8s" calcMode="linear" repeatCount="indefinite"></animate>
+                                                <animate values="1;.5;1" attributeName="fill-opacity" from="1" to="1" begin="0s" dur="0.8s" calcMode="linear" repeatCount="indefinite"></animate>
+                                            </circle>
+                                        </svg>
+                                    </span>
                                 </button>
+                                
                             </div>
                         </td>
                     </tr>
@@ -144,6 +161,20 @@
         </div>
         <!-- END: Data List -->
         
+
+        
+        <!-- END: Pagination -->
+
+        <!-- BEGIN: Pagination -->
+        <Pagination
+            :current-page="pagination.current_page"
+            :last-page="pagination.last_page"
+            :total-items="pagination.total"
+            :per-page="pagination.per_page"
+            @page-changed="changePage"
+            @per-page-changed="onPerPageChange"
+        ></Pagination>
+
 
         <div data-tw-backdrop="" aria-hidden="true" tabindex="-1" id="patrol-info-details" class="modal group bg-black/60 transition-[visibility,opacity] w-screen h-screen fixed left-0 top-0 [&:not(.show)]:duration-[0s,0.2s] [&:not(.show)]:delay-[0.2s,0s] [&:not(.show)]:invisible [&:not(.show)]:opacity-0 [&.show]:visible [&.show]:opacity-100 [&.show]:duration-[0s,0.4s]">
             <div data-tw-merge="" class="w-[90%] ml-auto h-screen flex flex-col bg-white relative shadow-md transition-[margin-right] duration-[0.6s] -mr-[100%] group-[.show]:mr-0 dark:bg-darkmode-600 sm:w-[460px]"><a class="absolute inset-y-0 left-0 right-auto my-auto -ml-[60px] flex h-8 w-8 items-center justify-center rounded-full border border-white/90 bg-white/5 text-white/90 transition-all hover:rotate-180 hover:scale-105 hover:bg-white/10 focus:outline-none sm:-ml-[105px] sm:h-14 sm:w-14" data-tw-dismiss="modal" href="javascript:;">
@@ -207,9 +238,10 @@
 
                                 <div class="col-span-12"  v-if="selectedPatrol">
                                     <div class="flex">
-                                        <div class="mr-auto flex align-items-center">Efficacité <div class="rounded-lg ml-2 bg-dark py-[3px] px-2 text-xs font-normal text-white">
-                                                                 @{{ selectedPatrol.efficiency_label }}
-                                                            </div>
+                                        <div class="mr-auto flex align-items-center">Efficacité 
+                                            <div class="rounded-lg ml-2 bg-dark py-[3px] px-2 text-xs font-normal text-white">
+                                                @{{ selectedPatrol.efficiency_label }}
+                                            </div>
                                         </div>
                                         <div>@{{ selectedPatrol.efficiency_score.toFixed(1) }}%</div>
                                     </div>
@@ -256,15 +288,15 @@
                                                     </div>
                                                     <div>
                                                         <div class="ml-auto mt-1">
-                                                            <div :class="data.distance_meters <= 100 ? 'bg-success' : 'bg-pending'" class="rounded py-[2px] px-2 text-xs font-medium text-white">
-                                                                @{{ data.distance_meters <= 100 ? 'succès' : 'éloigné' }}
+                                                            <div :class="data.distance_meters <= 150 ? 'bg-success' : 'bg-pending'" class="rounded py-[2px] px-2 text-xs font-medium text-white">
+                                                                @{{ data.distance_meters <= 150 ? 'succès' : 'éloigné' }}
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="flex justify-between mt-1">
                                                     <div class="text-blue-500 text-xs">Temps depuis le précédent @{{ data.duration_since_previous_seconds }} s</div>
-                                                    <div class="ml-auto text-xs text-slate-500">Distance <span :class="data.distance_meters <=1 ? 'text-success' : ''">@{{ data.distance_meters <= 100 ? 0 : data.distance_meters }}m</span></div>
+                                                    <div class="ml-auto text-xs text-slate-500">Distance <span :class="data.distance_meters <=1 ? 'text-success' : ''">@{{ data.distance_meters <= 150 ? 0 : data.distance_meters }}m</span></div>
                                                 </div>
                                             </div>
                                         </div>
@@ -277,17 +309,6 @@
                 </div>
             </div>
         </div>
-        <!-- END: Pagination -->
-
-        <!-- BEGIN: Pagination -->
-        <Pagination
-            :current-page="pagination.current_page"
-            :last-page="pagination.last_page"
-            :total-items="pagination.total"
-            :per-page="pagination.per_page"
-            @page-changed="changePage"
-            @per-page-changed="onPerPageChange"
-        ></Pagination>
         <!-- END: Pagination -->
     </div>
     <x-dom-loader></x-dom-loader>

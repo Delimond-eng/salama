@@ -35,7 +35,7 @@
                 <div v-if="!isDataLoading" class="col-span-12">
                     <div class="intro-y flex h-10 items-center">
                         <h2 class="mr-5 truncate text-lg font-medium">Rapport général</h2>
-                        <a class="ml-auto flex items-center text-primary" href="#">
+                        <a class="ml-auto flex items-center text-primary" @click="loadPresencesData" href="#">
                             <i data-tw-merge="" data-lucide="refresh-ccw"
                                 class="stroke-1.5 mr-3 h-4 w-4"></i>
                             Actualiser les données
@@ -64,7 +64,7 @@
                                             class="stroke-1.5 h-[28px] w-[28px] text-success"></i>
                                     </div>
                                     <div class="mt-6 text-3xl font-medium leading-8">@{{ count.presences }} / @{{ count.agents }}</div>
-                                    <div class="mt-1 text-base text-slate-500">Agents présents/agents totaux</div>
+                                    <div class="mt-1 text-base text-slate-500">Présences/absences</div>
                                 </div>
                             </div>
                         </div>
@@ -189,9 +189,9 @@
                                             data-tw-merge
                                             class="px-5 py-3 border-b dark:border-darkmode-300">
                                             <div class="flex items-center justify-center">
-                                                <a href="#" class="mr-3 flex items-center text-blue-500">
-                                                    <i data-tw-merge="" data-lucide="edit" class="stroke-1.5 mr-1 h-4 w-4"></i>
-                                                </a>
+                                                <button @click="onSelectedPresence(data)" data-tw-toggle="modal" data-tw-target="#presence-details" class="mr-3 flex items-center text-blue-500">
+                                                    <i data-tw-merge="" data-lucide="eye" class="stroke-1.5 mr-1 h-4 w-4"></i>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -200,7 +200,7 @@
                         </div>
                     </div>
                     <!-- Pagination -->
-                     <!-- BEGIN: Pagination -->
+                    <!-- BEGIN: Pagination -->
                     <Pagination
                         :current-page="pagination.current_page"
                         :last-page="pagination.last_page"
@@ -218,10 +218,148 @@
                 </div>
             </div>
         </div>
+
+        <div data-tw-backdrop="" aria-hidden="true" tabindex="-1" id="presence-details" class="modal group bg-black/60 transition-[visibility,opacity] w-screen h-screen fixed left-0 top-0 [&:not(.show)]:duration-[0s,0.2s] [&:not(.show)]:delay-[0.2s,0s] [&:not(.show)]:invisible [&:not(.show)]:opacity-0 [&.show]:visible [&.show]:opacity-100 [&.show]:duration-[0s,0.4s]">
+            <div data-tw-merge="" class="w-[90%] ml-auto h-screen flex flex-col bg-white relative shadow-md transition-[margin-right] duration-[0.6s] -mr-[100%] group-[.show]:mr-0 dark:bg-darkmode-600 sm:w-[460px] lg:w-[480px]"><a class="absolute inset-y-0 left-0 right-auto my-auto -ml-[60px] flex h-8 w-8 items-center justify-center rounded-full border border-white/90 bg-white/5 text-white/90 transition-all hover:rotate-180 hover:scale-105 hover:bg-white/10 focus:outline-none sm:-ml-[105px] sm:h-14 sm:w-14" data-tw-dismiss="modal" href="javascript:;">
+                    <i data-tw-merge="" data-lucide="x" class="h-3 w-3 stroke-[1] sm:h-8 sm:w-8"></i>
+                </a>
+                <div data-tw-merge="" class="overflow-y-auto flex-1 p-0">
+                    <div class="flex flex-col">
+                        <div class="px-5 pt-6 pb-8">
+                            <div class="text-base font-extrabold uppercase text-blue-500">Listes des agents présents & absents</div>
+                            <div class="mt-0.5 text-slate-500 flex items-center border-b border-slate-200/60 pb-4"></div>
+                            <div class="mt-5 grid grid-cols-2 gap-4">
+                                <div class="col-span-12">
+                                    <h2 class="text-base uppercase font-bold mb-3 uppercase">Les agents présents</h2>
+                                    <div class="overflow-x-auto" v-if="selectedPresence">
+                                        <table v-if="selectedPresence.presences.length"
+                                            data-tw-merge
+                                            class="w-full text-left">
+                                            <thead
+                                                data-tw-merge
+                                                class="">
+                                                <tr
+                                                    data-tw-merge
+                                                    class="">
+                                                    <th
+                                                        data-tw-merge
+                                                        class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 px-4 py-2 whitespace-nowrap">
+                                                        #
+                                                    </th>
+                                                    <th
+                                                        data-tw-merge
+                                                        class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 px-4 py-2 whitespace-nowrap">
+                                                        MATRICULE
+                                                    </th>
+                                                    <th
+                                                        data-tw-merge
+                                                        class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 px-4 py-2 whitespace-nowrap">
+                                                        NOM COMPLET
+                                                    </th>
+                                                    <th
+                                                        data-tw-merge
+                                                        class="uppercase font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 px-4 py-2 whitespace-nowrap">
+                                                        HEURE D'ARRIVée
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(data, index) in selectedPresence.presences"
+                                                    data-tw-merge
+                                                    class="">
+                                                    <td
+                                                        data-tw-merge
+                                                        class="px-5 py-3 border-b dark:border-darkmode-300 px-4 py-2">
+                                                        @{{ index + 1 }}
+                                                    </td>
+                                                    <td
+                                                        data-tw-merge
+                                                        class="px-5 py-3 font-bold border-b dark:border-darkmode-300 px-4 py-2">
+                                                        @{{ data.agent.matricule }}
+                                                    </td>
+                                                    <td
+                                                        data-tw-merge
+                                                        class="px-5 py-3 border-b dark:border-darkmode-300 px-4 py-2">
+                                                        @{{ data.agent.fullname }}
+                                                    </td>
+                                                    <td
+                                                        data-tw-merge
+                                                        class="px-5 py-3 border-b dark:border-darkmode-300 px-4 py-2">
+                                                        @{{ data.started_at}}
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <div v-else>
+                                            <x-empty-state message="Aucun agent présent pour l'instant."></x-empty-state>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-span-12">
+                                    <h2 class="text-base uppercase font-bold mb-3">Les agents absents</h2>
+                                    <div class="overflow-x-auto" v-if="agentsAbsents.length">
+                                        <table
+                                            data-tw-merge
+                                            class="w-full text-left">
+                                            <thead
+                                                data-tw-merge
+                                                class="">
+                                                <tr
+                                                    data-tw-merge
+                                                    class="">
+                                                    <th
+                                                        data-tw-merge
+                                                        class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 px-4 py-2 whitespace-nowrap">
+                                                        #
+                                                    </th>
+                                                    <th
+                                                        data-tw-merge
+                                                        class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 px-4 py-2 whitespace-nowrap">
+                                                        MATRICULE
+                                                    </th>
+                                                    <th
+                                                        data-tw-merge
+                                                        class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 px-4 py-2 whitespace-nowrap">
+                                                        NOM COMPLET
+                                                    </th>
+                                                    
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(data, index) in agentsAbsents">
+                                                    <td
+                                                        data-tw-merge
+                                                        class="px-5 py-3 border-b dark:border-darkmode-300 px-4 py-2">
+                                                        @{{ index + 1 }}
+                                                    </td>
+                                                    <td
+                                                        data-tw-merge
+                                                        class="px-5 py-3 font-bold border-b dark:border-darkmode-300 px-4 py-2">
+                                                        @{{data.matricule}}
+                                                    </td>
+                                                    <td
+                                                        data-tw-merge
+                                                        class="px-5 py-3 border-b dark:border-darkmode-300 px-4 py-2">
+                                                        @{{data.fullname}}
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div v-else>
+                                        <x-empty-state message="Pas d'agents absents dans le site."></x-empty-state>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <x-dom-loader></x-dom-loader>
-
 </div>
 <!-- END: Content -->
 @endsection

@@ -46,6 +46,9 @@ Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function
 
     //ALLOW TO VIEW PENDING PATROLS
     Route::get("/patrols.pending", [AppManagerController::class, "viewPendingPatrols"])->name("patrols.pending");
+    
+    //VIEW PENDING PATROLS BY SITE
+    Route::get("/site.patrol.pending", [AppManagerController::class, "getPendingPatrol"])->name("site.patrol.pending");
 
     //ALLOW TO LOAD ALL ANNOUNCES FROM MOBILE APP
     Route::get("/announces.load", [AppManagerController::class, "loadAnnouncesFromMobile"])->name("announces.load");

@@ -23,6 +23,7 @@ new Vue({
             hasInitialized: false,
             audio: new Audio("/assets/audios/audio-1.wav"),
             presences: [],
+            selectedPresence: null,
             pagination: {
                 current_page: 1,
                 last_page: 1,
@@ -96,6 +97,11 @@ new Vue({
     },
 
     methods: {
+        onSelectedPresence(presence) {
+            this.selectedPresence = presence;
+            console.log(JSON.stringify(presence));
+        },
+
         loadPresencesData() {
             if (location.pathname === "/global.view") {
                 this.isDataLoading = true;
@@ -122,6 +128,7 @@ new Vue({
                 "width=500,height=500"
             );
         },
+
         changePage(page) {
             this.pagination.current_page = page;
             this.loadPresencesData();
@@ -142,7 +149,6 @@ new Vue({
 
         getMap() {
             let sitesData = this.allSites;
-
             // Filtrer les sites pour s'assurer qu'ils ont des coordonnées valides
             sitesData = sitesData.filter((site) => {
                 if (!site.latlng) return false;
@@ -566,6 +572,22 @@ new Vue({
                 );
             } else {
                 return this.presences;
+            }
+        },
+
+        agentsAbsents() {
+            if (this.selectedPresence) {
+                const agents = this.selectedPresence.agents || [];
+                const presences = this.selectedPresence.presences || [];
+
+                // Liste des ID d'agents qui ont une présence enregistrée
+                const agentsPresentsIds = presences.map((p) => p.agent_id);
+                // On filtre les agents dont l'ID ne figure pas dans les présences
+                return agents.filter(
+                    (agent) => !agentsPresentsIds.includes(agent.id)
+                );
+            } else {
+                return [];
             }
         },
     },

@@ -607,6 +607,7 @@ class AdminController extends Controller
                     ->orWhereDate('created_at', $yesterday);
             },
             'presences.horaire',
+            'presences.agent',
             'agents',
             'secteur'
         ])->paginate(10);

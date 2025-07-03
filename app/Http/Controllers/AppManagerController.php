@@ -625,6 +625,20 @@ class AppManagerController extends Controller
         }
     }
 
+    /**
+     * GET PENDING STATUS PATROL BY SITE
+     * @return JsonResponse
+    */
+    public function getPendingPatrol(Request $request){
+        $id = $request->query("id") ?? "";
+        $patrol = Patrol::where("site_id", $id)->whereNull("ended_at")->get();
+
+        return response()->json([
+            "status"=>"success",
+            "patrol"=>$patrol
+        ]);
+    }
+
 
     private function updateScheduleStatusFromPatrol(Patrol $patrol)
     {
