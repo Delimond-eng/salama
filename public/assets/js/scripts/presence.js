@@ -85,12 +85,9 @@ new Vue({
                 console.log("Agent selected : ", value);
             });
         }
-        if (location.pathname === "/presence.horaires") {
-            this.viewAllHoraires();
-        } else if (location.pathname === "/agent.groupe") {
-            this.viewAllGroups();
-        }
+
         this.loadPresenceReports();
+        this.refreshDatas();
     },
     watch: {
         searchMatricule: "applyFilters",
@@ -143,6 +140,11 @@ new Vue({
                     }
                 })
                 .catch((err) => console.log("error"));
+        },
+
+        refreshDatas() {
+            this.viewAllHoraires();
+            this.viewAllGroups();
         },
 
         changePage(page) {

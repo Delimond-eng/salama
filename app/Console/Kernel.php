@@ -17,16 +17,16 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('schedules:verify')
-        ->everyMinute() // ou ->everyMinute(), ->hourly(), etc.
+        ->everyFiveMinutes()// ou ->everyMinute(), ->hourly(), etc.
         ->timezone('Africa/Kinshasa')
         ->withoutOverlapping(); 
 
+        $schedule->command('presence:send-daily-report')->dailyAt('10:00')->timezone("Africa/Kinshasa");
+        $schedule->command('presence:send-daily-report')->dailyAt('20:00')->timezone("Africa/Kinshasa");
 
         $schedule->command('backup:send')->dailyAt('00:00')
         ->timezone("Africa/Kinshasa")
         ->withoutOverlapping();
-
-        $schedule->command('presence:send-daily-report')->dailyAt('10:00');
     }
 
     /**

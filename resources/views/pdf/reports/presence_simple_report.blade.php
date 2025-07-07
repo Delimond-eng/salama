@@ -33,7 +33,7 @@
             text-align: center;
         }
         tbody tr:nth-child(odd) {
-            background-color: #f2f2f2; /* effet zébré */
+            background-color: #f2f2f2;
         }
         tbody tr:nth-child(even) {
             background-color: #ffffff;
@@ -44,7 +44,7 @@
 
     <h2>Rapport de présence du {{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}</h2>
 
-    <p>Total Global : {{ $totalPresences }} / {{ $totalAgents }} agents</p>
+    <p>Total Global : {{ $totalPresences }} / {{ $totalAgents }} agents attendus</p>
     
     <table>
         <thead>
@@ -52,18 +52,26 @@
                 <th>#</th>
                 <th>Code Site</th>
                 <th>Nom du Site</th>
-                <th>Présences / Agents</th>
-                <th>Absences</th>
+                <th>Présences / Attendus</th>
+                <th>Absents</th>
+                <th>Taux (%)</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($sites as $index => $site)
+                @php
+                    $expected = $site->presence_expected ?? $site->agents_count;
+                    $present = $site->presences_count ?? 0;
+                    $absents = $expected - $present;
+                    $rate = $expected > 0 ? round(($present / $expected) * 100, 1) : 0;
+                @endphp
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $site->code }}</td>
                     <td>{{ $site->name }}</td>
-                    <td>{{ $site->presences_count }} / {{ $site->agents_count }}</td>
-                    <td>{{ $site->agents_count - $site->presences_count }}</td>
+                    <td>{{ $present }} / {{ $expected }}</td>
+                    <td>{{ $absents }}</td>
+                    <td>{{ $rate }}%</td>
                 </tr>
             @endforeach
         </tbody>

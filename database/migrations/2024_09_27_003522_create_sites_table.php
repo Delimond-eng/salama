@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string("latlng")->nullable();
             $table->string("phone")->nullable();
             $table->string("client_email")->nullable();
+            $table->integer("presence")->nullable();
             $table->string("client_fcm_token")->nullable();
             $table->string("otp")->nullable();
             $table->text("emails")->nullable();

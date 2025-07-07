@@ -260,9 +260,9 @@
                                     </tr>
                                 </thead>
                                 <tbody v-if="selectedReport.presences.length">
-                                    <template v-for="(presence, pIndex) in selectedReport.presences" :key="'p'+pIndex">
+                                    <template v-for="(presence, pIndex) in selectedReport.presences">
                                         <template v-if="presence.elements.length">
-                                            <tr v-for="(element, eIndex) in presence.elements" :key="'e'+eIndex">
+                                            <tr v-for="(element, eIndex) in presence.elements" :key="eIndex">
                                                 <!-- Infos générales (1 fois seulement) -->
                                                 <td v-if="pIndex === 0 && eIndex === 0"
                                                     :rowspan="totalElements"

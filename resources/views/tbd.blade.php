@@ -63,7 +63,7 @@
                                         <i data-tw-merge="" data-lucide="users"
                                             class="stroke-1.5 h-[28px] w-[28px] text-success"></i>
                                     </div>
-                                    <div class="mt-6 text-3xl font-medium leading-8">@{{ count.presences }} / @{{ count.agents }}</div>
+                                    <div class="mt-6 text-3xl font-medium leading-8">@{{ count.presences }} / @{{ count.agents_attendus }}</div>
                                     <div class="mt-1 text-base text-slate-500">Présences/absences</div>
                                 </div>
                             </div>
@@ -122,77 +122,71 @@
                     </div>
                     <div class="box intro-y mt-5 overflow-auto lg:overflow-visible">
                         <div class="overflow-x-auto">
-                            <table
-                                data-tw-merge
-                                class="w-full text-left">
-                                <thead
-                                    data-tw-merge
-                                    class="">
-                                    <tr
-                                        data-tw-merge
-                                        class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
-                                        <th
-                                            data-tw-merge
-                                            class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
+                            <table class="w-full text-left">
+                                <thead>
+                                    <tr>
+                                        <th class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
                                             SITE
                                         </th>
-                                        <th
-                                            data-tw-merge
-                                            class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
+                                        <th class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
                                             SECTEUR
                                         </th>
-                                        <th
-                                            data-tw-merge
-                                            class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap text-center">
-                                            PRESENCES/AGENTS
+                                        <th class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap text-center">
+                                            PRÉSENCES / AGENTS
                                         </th>
-                                        <th
-                                            data-tw-merge
-                                            class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
+                                        <th class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap text-center">
+                                            POURCENTAGE
+                                        </th>
+                                        <th class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
                                             STATUT
                                         </th>
-                                        <th
-                                            data-tw-merge
-                                            class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
-
+                                        <th class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
+                                            ACTION
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr v-for="(data, index) in allPresences" :key="index"
-                                        data-tw-merge
-                                        class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
-                                        <td
-                                            data-tw-merge
-                                            class="px-5 py-3 border-b dark:border-darkmode-300">
+                                        :class="index % 2 === 0 ? 'bg-white' : 'bg-slate-100 dark:bg-darkmode-300 dark:bg-opacity-50'">
+                                        <!-- Site -->
+                                        <td class="px-5 py-3 border-b dark:border-darkmode-300">
                                             <span class="font-extrabold text-blue-500 mr-2">@{{ data.code }}</span>
                                             @{{ data.name }}
                                         </td>
-                                        <td
-                                            data-tw-merge
-                                            class="px-5 py-3 border-b dark:border-darkmode-300" :class="{'text-pending': data.reason === 'shutdown', 'text-blue-500': data.reason === 'shutdown'}">
+
+                                        <!-- Secteur -->
+                                        <td class="px-5 py-3 border-b dark:border-darkmode-300">
                                             <span v-if="data.secteur">@{{ data.secteur.libelle }}</span>
                                         </td>
-                                        <td
-                                            data-tw-merge
-                                            class="px-5 py-3 border-b dark:border-darkmode-300">
-                                            <div class="flex justify-center items-center">
-                                                @{{ data.presences.length }}/@{{ data.agents.length }}
-                                            </div>
+
+                                        <!-- Présences / Agents -->
+                                        <td class="px-5 py-3 border-b dark:border-darkmode-300 text-center">
+                                            @{{ data.presence_effective }}/@{{ data.presence ?? data.agents.length }}
                                         </td>
-                                        <td
-                                            data-tw-merge
-                                            class="px-5 py-3 border-b dark:border-darkmode-300 font-medium" :class="data.presences.length !== data.agents.length ? 'text-pending' : data.agents.length === 0 ? 'text-blue-500' : 'text-success'">
-                                            @{{ data.presences.length !== data.agents.length ? 'Non complet' : data.agents.length === 0 ? 'Pas d\'agents affectés' : 'Complet' }}
+
+                                        <!-- Pourcentage -->
+                                        <td class="px-5 py-3 border-b dark:border-darkmode-300 text-center">
+                                            @{{ data.presence_rate ? data.presence_rate + '%' : '—' }}
                                         </td>
-                                        <td
-                                            data-tw-merge
-                                            class="px-5 py-3 border-b dark:border-darkmode-300">
-                                            <div class="flex items-center justify-center">
-                                                <button @click="onSelectedPresence(data)" data-tw-toggle="modal" data-tw-target="#presence-details" class="mr-3 flex items-center text-blue-500">
-                                                    <i data-tw-merge="" data-lucide="eye" class="stroke-1.5 mr-1 h-4 w-4"></i>
-                                                </button>
-                                            </div>
+
+                                        <!-- Statut -->
+                                        <td class="px-5 py-3 border-b dark:border-darkmode-300 font-medium"
+                                            :class="{
+                                                'text-success': data.presence_effective >= (data.presence ?? data.agents.length) && data.presence_effective > 0,
+                                                'text-pending': data.presence_effective < (data.presence ?? data.agents.length) && data.presence_effective > 0,
+                                                'text-blue-500': data.presence_effective === 0
+                                            }">
+                                            <span v-if="data.presence_effective === 0">Pas d'agents affectés</span>
+                                            <span v-else-if="data.presence_effective < (data.presence ?? data.agents.length)">Non complet</span>
+                                            <span v-else>Complet</span>
+                                        </td>
+
+                                        <!-- Action -->
+                                        <td class="px-5 py-3 border-b dark:border-darkmode-300 text-center">
+                                            <button @click="onSelectedPresence(data)" data-tw-toggle="modal" data-tw-target="#presence-details"
+                                                class="flex items-center text-blue-500">
+                                                <i data-lucide="eye" class="stroke-1.5 mr-1 h-4 w-4"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -296,61 +290,6 @@
                                     </div>
                                 </div>
 
-                                <div class="col-span-12">
-                                    <h2 class="text-base uppercase font-bold mb-3">Les agents absents</h2>
-                                    <div class="overflow-x-auto" v-if="agentsAbsents.length">
-                                        <table
-                                            data-tw-merge
-                                            class="w-full text-left">
-                                            <thead
-                                                data-tw-merge
-                                                class="">
-                                                <tr
-                                                    data-tw-merge
-                                                    class="">
-                                                    <th
-                                                        data-tw-merge
-                                                        class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 px-4 py-2 whitespace-nowrap">
-                                                        #
-                                                    </th>
-                                                    <th
-                                                        data-tw-merge
-                                                        class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 px-4 py-2 whitespace-nowrap">
-                                                        MATRICULE
-                                                    </th>
-                                                    <th
-                                                        data-tw-merge
-                                                        class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 px-4 py-2 whitespace-nowrap">
-                                                        NOM COMPLET
-                                                    </th>
-                                                    
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr v-for="(data, index) in agentsAbsents">
-                                                    <td
-                                                        data-tw-merge
-                                                        class="px-5 py-3 border-b dark:border-darkmode-300 px-4 py-2">
-                                                        @{{ index + 1 }}
-                                                    </td>
-                                                    <td
-                                                        data-tw-merge
-                                                        class="px-5 py-3 font-bold border-b dark:border-darkmode-300 px-4 py-2">
-                                                        @{{data.matricule}}
-                                                    </td>
-                                                    <td
-                                                        data-tw-merge
-                                                        class="px-5 py-3 border-b dark:border-darkmode-300 px-4 py-2">
-                                                        @{{data.fullname}}
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div v-else>
-                                        <x-empty-state message="Pas d'agents absents dans le site."></x-empty-state>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>

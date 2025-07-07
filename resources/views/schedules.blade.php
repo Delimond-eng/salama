@@ -58,11 +58,11 @@
                         <div style="top: -2px; left: -15px;"
                             class="absolute px-2 py-1 text-xs font-normal rounded text-white"
                             :class="{
-                                'bg-success': data.status === 'success',
-                                'bg-danger': data.status === 'fail',
-                                'bg-pending': data.status === 'partial',
-                                'bg-pending': data.status === 'early',
-                                'bg-primary': data.status === 'actif'
+                                'bg-success': data.status == 'success',
+                                'bg-danger': data.status == 'fail',
+                                'bg-pending': data.status == 'partial',
+                                'bg-pending': data.status == 'early',
+                                'bg-primary': data.status == 'actif'
                             }">
                             @{{ data.status }}
                         </div>

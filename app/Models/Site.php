@@ -41,6 +41,7 @@ class Site extends Model
         "fcm_token",
         "client_email",
         "otp",
+        "presence",
         "client_fcm_token",
         "secteur_id",
         "agency_id",

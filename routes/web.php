@@ -114,7 +114,6 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     Route::get('/schedules.supervisor', function(){
         $supervisors = Agent::where("role", "supervisor")->orderBy("fullname", "asc")->get();
         return view('schedules_sup', ["supervisors"=>$supervisors]);
-        
     })->name('schedules.supervisor')->middleware('check.permission:planning,view');
     Route::post('schedules.create', [AppManagerController::class, 'createPlanning'])->name('schedules.create')->middleware('check.permission:planning,create');
     Route::post('schedules.supervisor.create', [AppManagerController::class, 'createSupervisorPlanning'])->name('schedules.supervisor.create')->middleware('check.permission:planning,create');

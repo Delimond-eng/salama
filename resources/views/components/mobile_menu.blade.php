@@ -18,10 +18,10 @@
             <i data-tw-merge="" data-lucide="x-circle"
                 class="stroke-1.5 mobile-menu-toggler h-8 w-8 -rotate-90 transform text-white"></i>
         </a>
-        <ul class="py-2">
+       <ul>
          @if (Auth::user()->hasMenu("patrouilles"))
          <li>
-             <a href="javascript:;" class="menu @active(['dashboard','reports.patrols'])">
+             <a href="javascript:;" class="menu @active(['dashboard','reports.patrols', 'global.view'])">
                  <div class="menu__icon">
                      <i data-tw-merge="" data-lucide="monitor" class="stroke-1.5 w-5 h-5"></i>
                  </div>
@@ -32,7 +32,7 @@
                      </div>
                  </div>
              </a>
-             <ul class="">
+             <ul class="py-2">
                  <li>
                      <a href="/"
                          class="menu">
@@ -41,6 +41,17 @@
                          </div>
                          <div class="menu__title">
                              Monitoring
+                         </div>
+                     </a>
+                 </li>
+                 <li>
+                     <a href="{{ url("/global.view") }}"
+                         class="menu">
+                         <div class="menu__icon">
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
+                         </div>
+                         <div class="menu__title">
+                            Vue globale
                          </div>
                      </a>
                  </li>

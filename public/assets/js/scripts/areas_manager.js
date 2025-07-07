@@ -33,6 +33,7 @@ new Vue({
                 code: "",
                 adresse: "",
                 phone: "",
+                presence: "",
                 emails: "",
                 secteur_id: "",
                 client_email: "",

@@ -109,6 +109,7 @@ class AdminController extends Controller
                     "phone"=>"nullable|string",
                     "client_email"=>"nullable|string",
                     "areas.*.libelle"=>"required|string",
+                    "presence"=>"nullable|int",
                     "emails"=>"nullable|string",
                 ]);
                 $data["agency_id"] = Auth::user()->agency_id;
@@ -151,7 +152,6 @@ class AdminController extends Controller
             return response()->json(['errors' => $e->getMessage() ]);
         }
     }
-
 
     /**
      * complete existing area with GPS DATA
@@ -593,14 +593,14 @@ class AdminController extends Controller
     */
     public function getDashboardData(Request $request)
     {
-        // Date passée ou aujourd’hui
+        // Date cible : soit celle fournie, soit aujourd'hui
         $targetDate = $request->input('date') 
             ? Carbon::parse($request->input('date'))->startOfDay()
-            : Carbon::today();
+            : Carbon::today()->setTimezone("Africa/Kinshasa");
 
         $yesterday = $targetDate->copy()->subDay();
 
-        // Charger les sites avec présences (créées aujourd’hui ou hier) et les horaires liés
+        // Charger les sites avec les présences créées aujourd’hui ou hier
         $presenceBySites = Site::with([
             'presences' => function ($query) use ($targetDate, $yesterday) {
                 $query->whereDate('created_at', $targetDate)
@@ -613,14 +613,14 @@ class AdminController extends Controller
         ])->paginate(10);
 
         $totalPresences = 0;
-        $totalAgents = 0;
+        $totalAgentsAttendus = 0;
 
-        // Filtrer les présences par site selon les horaires
         foreach ($presenceBySites->items() as $site) {
-            $agentsCount = $site->agents->count();
-            $totalAgents += $agentsCount;
+            // Nombre d'agents attendus selon la planification du site (champ personnalisé)
+            $agentsAttendus = $site->presence ?? 0;
+            $totalAgentsAttendus += $agentsAttendus;
 
-            // Filtrage des présences en fonction des horaires
+            // Filtrer les présences selon l'horaire
             $filteredPresences = $site->presences->filter(function ($presence) use ($targetDate) {
                 $horaire = $presence->horaire;
                 if (!$horaire) return false;
@@ -630,30 +630,38 @@ class AdminController extends Controller
                     $heureDebut = Carbon::parse($horaire->started_at);
                     $heureFin = Carbon::parse($horaire->ended_at);
                 } catch (\Exception $e) {
-                    // En cas d’erreur de parsing
-                    Log::error("Erreur lors du parsing horaire : " . $e->getMessage());
+                    Log::error("Erreur parsing horaire : " . $e->getMessage());
                     return false;
                 }
 
-                $isHoraire24h = $heureDebut->equalTo($heureFin); // Ex : 08:00 → 08:00 le lendemain
+                $isHoraire24h = $heureDebut->equalTo($heureFin);
 
                 if ($isHoraire24h) {
-                    // Présence créée hier pour une garde qui couvre aujourd’hui
                     return $presenceDate->equalTo($targetDate->copy()->subDay());
                 } else {
-                    // Présence normale créée aujourd’hui
                     return $presenceDate->equalTo($targetDate);
                 }
             })->values();
 
+            // Sauvegarder les présences filtrées
             $site->presences = $filteredPresences;
-            $totalPresences += $filteredPresences->count();
+
+            // Compter le nombre de présences effectives pour ce site
+            $site->presence_effective = $filteredPresences->count();
+            $totalPresences += $site->presence_effective;
+
+            // Calculer le taux de couverture
+            if ($agentsAttendus > 0) {
+                $site->presence_rate = round(($site->presence_effective / $agentsAttendus) * 100, 2); // en %
+            } else {
+                $site->presence_rate = null; // ou 0 selon logique métier
+            }
         }
 
         $siteCount = Site::count();
         $pendingPatrolCount = Patrol::where("status", "pending")->count();
         $holidayAgentsCount = Conge::whereDate("date_fin", "<=", Carbon::today())->count();
-
+        
         return response()->json([
             'status' => 'success',
             'date' => $targetDate->toDateString(),
@@ -661,7 +669,7 @@ class AdminController extends Controller
             'count' => [
                 'sites' => $siteCount,
                 'presences' => $totalPresences,
-                'agents' => $totalAgents,
+                'agents_attendus' => $totalAgentsAttendus,
                 'holidays' => $holidayAgentsCount,
                 'patrols' => $pendingPatrolCount
             ]
@@ -672,16 +680,21 @@ class AdminController extends Controller
 
     public function exportPresenceReport(Request $request)
     {
+        // Date cible (transmise ou aujourd’hui)
         $targetDate = $request->input('date') 
             ? Carbon::parse($request->input('date'))->startOfDay()
-            : Carbon::today();
+            : Carbon::today()->setTimezone("Africa/Kinshasa");
 
         $yesterday = $targetDate->copy()->subDay();
 
+        // Récupérer les sites avec présences (d’hier ou d’aujourd’hui), les horaires et les agents
         $sites = Site::with([
             'presences' => function ($query) use ($targetDate, $yesterday) {
-                $query->whereDate('created_at', $targetDate)
-                    ->orWhereDate('created_at', $yesterday);
+                $query->whereNull("ended_at")
+                    ->where(function ($q) use ($targetDate, $yesterday) {
+                        $q->whereDate('created_at', $targetDate)
+                        ->orWhereDate('created_at', $yesterday);
+                    });
             },
             'presences.horaire',
             'agents',
@@ -692,11 +705,12 @@ class AdminController extends Controller
         $totalAgents = 0;
 
         foreach ($sites as $site) {
-            // Filtrer les présences selon les horaires
-            $site->presences = $site->presences->filter(function ($presence) use ($targetDate) {
+            $presenceAttendue = $site->presence ?? 0; // Agents par shift (défini ou fallback)
+            $totalAgents += $presenceAttendue;
+            // Filtrage selon horaires et type (24h, normal)
+            $filteredPresences = $site->presences->filter(function ($presence) use ($targetDate) {
                 $horaire = $presence->horaire;
                 if (!$horaire) return false;
-
                 try {
                     $presenceDate = Carbon::parse($presence->created_at)->startOfDay();
                     $heureDebut = Carbon::parse($horaire->started_at);
@@ -713,23 +727,24 @@ class AdminController extends Controller
                     : $presenceDate->equalTo($targetDate);
             })->values();
 
-            // Compter les présences et agents
-            $site->presences_count = $site->presences->count();
-            $site->agents_count = $site->agents->count();
+            // Affectation des résultats au site
+            $site->presences = $filteredPresences;
+            $site->presences_count = $filteredPresences->count();
+            $site->presence_expected = $presenceAttendue;
+            $site->presence_rate = $presenceAttendue > 0 
+                ? round(($filteredPresences->count() / $presenceAttendue) * 100, 1)
+                : 0;
 
             $totalPresences += $site->presences_count;
-            $totalAgents += $site->agents_count;
         }
 
-        // Générer le PDF
+        // Générer le PDF depuis la vue Blade
         $pdf = Pdf::loadView('pdf.reports.presence_simple_report', [
             'sites' => $sites,
             'totalPresences' => $totalPresences,
             'totalAgents' => $totalAgents,
             'date' => $targetDate->toDateString(),
         ]);
-
         return $pdf->download("rapport-presence-{$targetDate->format('Y-m-d')}.pdf");
     }
-
 }

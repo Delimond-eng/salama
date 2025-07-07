@@ -1060,7 +1060,6 @@ class AppManagerController extends Controller
         }
     }
 
-
     /**
      * Login agent
      * @param Request $request
@@ -1094,7 +1093,6 @@ class AppManagerController extends Controller
             return response()->json(['errors' => $e->getMessage()], );
         }
     }
-
 
     public function generatePatrolPdfReport()
     {
@@ -1199,22 +1197,20 @@ class AppManagerController extends Controller
             $siteList = [];
 
             foreach ($plannings as $planning) {
-                if(count($planning->presences) === 0){
-                    foreach ($planning->sites as $site) {
-                        $siteList[] = [
-                            "site_id"       => $site->site_id,
-                            "site_code"       => $site->site->code,
-                            "site_liblle"       => $site->site->name,
-                            "site_planning_id" => $site->id,
-                            "planning_id"   => $planning->id,
-                            "planning_title"=> $planning->title,
-                            "planning_date" => $planning->date->format("d/m/Y"),
-                            "status"        => $site->status,
-                            "order"         => $site->order,
-                            "agent_id"      => $planning->agent_id,
-                            "agents" => $this->getSiteAgent($site->site_id)
-                        ];
-                    }
+                foreach ($planning->sites as $site) {
+                    $siteList[] = [
+                        "site_id"       => $site->site_id,
+                        "site_code"       => $site->site->code,
+                        "site_liblle"       => $site->site->name,
+                        "site_planning_id" => $site->id,
+                        "planning_id"   => $planning->id,
+                        "planning_title"=> $planning->title,
+                        "planning_date" => $planning->date->format("d/m/Y"),
+                        "status"        => $site->status,
+                        "order"         => $site->order,
+                        "agent_id"      => $planning->agent_id,
+                        "agents" => $this->getSiteAgent($site->site_id)
+                    ];
                 }
             }
 
@@ -1231,20 +1227,19 @@ class AppManagerController extends Controller
         ]);
     }
 
-
     private function getSiteAgent($siteId){
         $agents = Agent::orderBy("fullname")->where("site_id", $siteId)->get();
         return $agents;
     }
 
 
-       /**
+    /**
      * Gestion des congés
      * Lionnel nawej
      * @param Request $request
      * @return JsonResponse
     */
-     public function createCongeAgent(Request $request): JsonResponse{
+    public function createCongeAgent(Request $request): JsonResponse{
         try {
             // Validation des données reçues
             $data = $request->validate([
@@ -1308,6 +1303,8 @@ class AppManagerController extends Controller
             return response()->json(['errors' => 'Une erreur est survenue.']);
         }
     }
+
+
     /**
      * Gestion des congés
      * Lionnel nawej
@@ -1367,7 +1364,6 @@ class AppManagerController extends Controller
             return response()->json(['errors' => 'Une erreur est survenue.']);
         }
     }
-
     public function getCongesByAgent(Request $request){
         $agentId = $request->query('id'); // récupération de l'ID en paramètre GET
 
@@ -1414,5 +1410,4 @@ class AppManagerController extends Controller
             'cessations' => $cessations
         ]);
     }
-
 }

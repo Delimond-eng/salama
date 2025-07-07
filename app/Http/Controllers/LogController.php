@@ -54,7 +54,7 @@ class LogController extends Controller
             $q->whereDate("date_and_time", $date);
         }
 
-        $response = $q->paginate(10);
+        $response = $q->orderByDesc("id")->paginate(10);
         
         return response()->json([
             "status"=>"success",

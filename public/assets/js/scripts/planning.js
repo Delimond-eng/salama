@@ -408,12 +408,19 @@ new Vue({
         },
 
         refreshData() {
-            if (location.pathname === "/schedules.supervisor") {
-                this.viewAllSupervisorSchedules();
-            } else if ("/schedules.report") {
-                this.getSupervisorReports();
-            } else {
-                this.viewAllSchedules();
+            let path = location.pathname;
+            switch (path) {
+                case "/schedules":
+                    this.viewAllSchedules();
+                    break;
+                case "/schedules.supervisor":
+                    this.viewAllSupervisorSchedules();
+                    break;
+                case "/schedules.supervisor":
+                    this.getSupervisorReports();
+                    break;
+                default:
+                    break;
             }
         },
 
