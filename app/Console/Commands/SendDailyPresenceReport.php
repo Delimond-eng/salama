@@ -39,7 +39,7 @@ class SendDailyPresenceReport extends Command
                         ->orWhereDate('created_at', $yesterday);
                     });
             },
-            'presences.horaire',
+            'presences.agent.groupe.horaire', // ici le groupe de l'agent
             'agents',
             'secteur'
         ])->get();
@@ -48,9 +48,8 @@ class SendDailyPresenceReport extends Command
         $totalAgents = 0;
 
         foreach ($sites as $site) {
-            // Filtrage logique des présences selon le type d'horaire
             $site->presences = $site->presences->filter(function ($presence) use ($date) {
-                $horaire = $presence->horaire;
+                $horaire = optional($presence->agent->groupe)->horaire;
                 if (!$horaire) return false;
 
                 try {
@@ -58,18 +57,20 @@ class SendDailyPresenceReport extends Command
                     $heureDebut = Carbon::parse($horaire->started_at);
                     $heureFin = Carbon::parse($horaire->ended_at);
                 } catch (\Exception $e) {
-                    Log::error("⛔ Erreur parsing horaire présence : " . $e->getMessage());
+                    Log::error("⛔ Erreur parsing horaire groupe agent : " . $e->getMessage());
                     return false;
                 }
 
                 $isHoraire24h = $heureDebut->equalTo($heureFin);
+                $shiftDeNuit  = $heureFin->lessThan($heureDebut);
 
-                return $isHoraire24h
-                    ? $presenceDate->equalTo($date->copy()->subDay()) // présence démarrée hier
-                    : $presenceDate->equalTo($date); // présence normale
+                if ($isHoraire24h || $shiftDeNuit) {
+                    return $presenceDate->equalTo($date->copy()->subDay());
+                }
+
+                return $presenceDate->equalTo($date);
             })->values();
 
-            // Nombre d'agents attendus = site->presence ou fallback sur total agents affectés
             $expectedAgents = $site->presence ?? 0;
 
             $site->presences_count = $site->presences->count();
@@ -79,7 +80,6 @@ class SendDailyPresenceReport extends Command
             $totalAgents += $expectedAgents;
         }
 
-        // Générer le PDF une seule fois
         $pdf = Pdf::loadView('pdf.reports.presence_simple_report', [
             'sites' => $sites,
             'totalPresences' => $totalPresences,
@@ -90,7 +90,6 @@ class SendDailyPresenceReport extends Command
         $filename = 'rapport-presence-' . $date->format('Y-m-d') . '.pdf';
         $pdfContent = $pdf->output();
 
-        // Liste des destinataires
         $emails = [
             'gradi.ikundomonsaba@suptech.tn',
             'gastondelimond@gmail.com',
@@ -110,6 +109,8 @@ class SendDailyPresenceReport extends Command
         $this->info("✅ Rapport envoyé aux destinataires avec succès.");
         return 1;
     }
+
+
 
 
 }

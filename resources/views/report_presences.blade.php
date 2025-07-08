@@ -161,7 +161,7 @@
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.horaire.libelle }}</td>
+                                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.agent.groupe.horaire.libelle }}</td>
                                                 <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.started_at }}</td>
                                                 <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.ended_at || '-' }}</td>
                                                 <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.duree || '-' }}</td>
@@ -177,7 +177,7 @@
                                                 </td>
                                                 <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.created_at }}</td>
                                                 <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
-                                                    <button data-tw-toggle="modal" data-tw-target="#presence-details-modal" @click="selectedPresence = presence" class="text-blue-500 underline hover:text-blue-800 tooltip" :title="presence.commentaires">
+                                                    <button class="text-blue-500 underline hover:text-blue-800 tooltip" :title="presence.commentaires">
                                                         Lire details
                                                     </button>
                                                 </td>
@@ -258,9 +258,9 @@
                         </div>
                         <div class="mt-4 flex">
                             <div class="mr-auto">Horaire</div>
-                            <div class="font-medium flex flex-col" v-if="selectedPresence.horaire">
-                                <span class="text-blue-500 fw-bold">@{{ selectedPresence.horaire.libelle }}</span>
-                                <small>@{{ selectedPresence.horaire.started_at }} -- @{{ selectedPresence.horaire.ended_at }}</small>
+                            <div class="font-medium flex flex-col" v-if="selectedPresence.agent">
+                                <span class="text-blue-500 fw-bold">@{{ selectedPresence.agent.groupe.horaire.libelle }}</span>
+                                <small>@{{ selectedPresence.agent.groupe.started_at }} -- @{{ selectedPresence.agent.groupe.ended_at }}</small>
                             </div>
                         </div>
                         <div class="mt-4 flex">

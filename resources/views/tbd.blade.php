@@ -102,7 +102,7 @@
                 </div>
                 <!-- END: General Report -->
                 <div v-if="!isDataLoading" class="col-span-12">
-                    <div class="intro-y block h-10 items-center sm:flex items-center">
+                    <div class="intro-y block h-10 items-center flex-wrap xl:flex-nowrap sm:flex items-center">
                         <h2 class="mr-5 uppercase font-extrabold truncate text-lg text-blue-500">
                             Situation globale des présences par sites
                         </h2>
@@ -258,7 +258,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr v-for="(data, index) in selectedPresence.presences"
+                                                <tr v-for="(data, index) in selectedPresence.filteredPresences"
                                                     data-tw-merge
                                                     class="">
                                                     <td

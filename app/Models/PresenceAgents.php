@@ -23,7 +23,9 @@ class PresenceAgents extends Model
     ];
 
     protected $casts =[
-        "created_at"=>"date:d/m/y"
+        "created_at"=>"date:d/m/y",
+        "started_at"=>"datetime:H:i",
+        "ended_at"=>"datetime:H:i"
     ];
     public function agent()
     {

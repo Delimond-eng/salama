@@ -99,7 +99,6 @@ new Vue({
     methods: {
         onSelectedPresence(presence) {
             this.selectedPresence = presence;
-            console.log(JSON.stringify(presence));
         },
 
         loadPresencesData() {
