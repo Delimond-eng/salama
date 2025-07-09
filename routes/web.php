@@ -73,10 +73,6 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
         return response()->json(['sites' => $sites]);
     })->middleware('check.permission:sites,view');
 
-
-
-
-
     /*
     |--------------------------------------------------------------------------
     | ANNONCES
@@ -164,11 +160,6 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     Route::get('/cessations', [AppManagerController::class, 'getCessationsByAgent'])->name('cessations');
     //reporpresence
     Route::get('/presences.report', [PresenceController::class, 'getPresenceReport'])->name('presences.report');
-    
-    
-    
-    
-    
     /*
     |--------------------------------------------------------------------------
     | RAPPORTS

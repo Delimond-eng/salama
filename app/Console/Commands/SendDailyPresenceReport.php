@@ -57,7 +57,7 @@ class SendDailyPresenceReport extends Command
                     $heureDebut = Carbon::parse($horaire->started_at);
                     $heureFin = Carbon::parse($horaire->ended_at);
                 } catch (\Exception $e) {
-                    Log::error("⛔ Erreur parsing horaire groupe agent : " . $e->getMessage());
+                    Log::error("Erreur parsing horaire groupe agent : " . $e->getMessage());
                     return false;
                 }
 

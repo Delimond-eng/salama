@@ -694,8 +694,6 @@ class PresenceController extends Controller
         }
     }
 
-
-
     //Renvoie la liste de l'horaire complet
     public function getAllHoraires(Request $request)
     {
