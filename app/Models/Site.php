@@ -110,4 +110,9 @@ class Site extends Model
         return $this->hasMany(Agent::class, foreignKey: 'site_id', localKey: "id");
     }
 
+
+    public function tokens(){
+        return $this->hasMany(Site::class, foreignKey:"site_id", localKey:"id");
+    }
+
 }

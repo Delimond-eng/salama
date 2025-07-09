@@ -133,12 +133,13 @@ class AppManagerController extends Controller
                 }
                 //Send notification to client
                 try{
-                    if ($site->client_fcm_token) {
+                    if ($site->tokens) {
                         $fcm = new FcmService();
+                        $tokens = $site->tokens;
                         $title = "Patrouille en cours";
                         $heure = Carbon::now()->format("H:i");
                         $body = "Patrouille en cours dans votre concession. Heure de début : $heure.";
-                        $fcm->sendNotification($site->client_fcm_token, $title, $body);
+                        $fcm->sendNotificationToManyTokens($tokens, $title, $body);
                     }
                 }
                 catch(\Exception $exception){
@@ -600,20 +601,21 @@ class AppManagerController extends Controller
                     Log::info($e->getMessage());
                 }
             }
+
             try{
-                if ($site->client_fcm_token) {
+                if ($site->tokens) {
+                    $tokens = $site->tokens;
                     $fcm = new FcmService();
                     $title = "Fin de la patrouille";
-                    $heure = Carbon::now()->format("H:i");
+                    $heure = $patrol->ended_at->format("H:i");
                     $heureFin = $patrol->ended_at->format("H:i");
                     $body = "Fin de la patrouille dans votre concession. Début : $heure - Fin : $heureFin.";
-                    $fcm->sendNotification($site->client_fcm_token, $title, $body);
+                    $fcm->sendNotificationToManyTokens($tokens, $title, $body);
                 }
             }
             catch(\Exception $exception){
                 Log::info($exception->getMessage());
             }
-
             return response()->json([
                 "status" => "success",
                 "result" => $patrol

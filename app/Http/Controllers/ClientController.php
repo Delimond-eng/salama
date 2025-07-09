@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Patrol;
 use App\Models\PresenceAgents;
 use App\Models\Site;
+use App\Models\Token;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -114,16 +115,14 @@ class ClientController extends Controller
                 "token" => "required|string",
                 "id" => "required|int|exists:sites,id",
             ]);
-            $site = Site::find($data["id"]);
-            if($site){
-                $site->client_fcm_token = $data["token"];
-                $site->save();
-                return response()->json([
-                    "status"=>"success",
-                    "result"=>$site,
-                ]);
-            }
-            return response()->json(['errors' => "unknown"], );
+            $token = Token::updateOrCreate(["token"=>$data["token"]],[
+                "site_id"=>$data["id"],
+                "token"=>$data["token"]
+            ]);
+            return response()->json([
+                "status"=>"success",
+                "result"=>$token,
+            ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             $errors = $e->validator->errors()->all();
             return response()->json(['errors' => $errors], );
