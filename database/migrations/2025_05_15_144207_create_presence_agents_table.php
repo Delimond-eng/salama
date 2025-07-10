@@ -28,6 +28,7 @@ return new class extends Migration
             $table->string("status_photo_fin")->nullable();
             $table->string("commentaires")->nullable();
             $table->string("status")->default("arrive");
+            $table->date('date_reference')->nullable();
             $table->timestamps();
         });
     }

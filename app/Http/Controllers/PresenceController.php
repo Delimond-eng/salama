@@ -265,7 +265,123 @@ class PresenceController extends Controller
      *Creation de la presence des agents
      *16:10/15-05-2025
      */
+
     public function createPresenceAgent(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                "matricule"    => "required|string|exists:agents,matricule",
+                "status_photo" => "nullable|string",
+                "heure"        => "nullable|string",
+                "coordonnees"  => "required|string",
+            ]);
+
+            $agent = Agent::with("groupe.horaire", "site")->where('matricule', $data['matricule'])->firstOrFail();
+            $now = Carbon::now()->setTimezone("Africa/Kinshasa");
+            $photoUrl = null;
+
+            // Coordonnées
+            [$lat1, $lng1] = array_pad(explode(',', $data['coordonnees']), 2, null);
+            $site = $agent->site ?? null;
+            $distance = null;
+            $commentaire_distance = "Pas de site défini.";
+
+            if ($site && $site->latlng && $lat1 && $lng1) {
+                [$lat2, $lng2] = explode(',', $site->latlng);
+                $distance = app(AppManagerController::class)->calculateDistance($lat1, $lng1, $lat2, $lng2);
+                $commentaire_distance = "Présence à environ " . round($distance) . " mètres du site.";
+            }
+
+            // Horaire
+            $horaire = $agent->groupe->horaire ?? null;
+            $heureDebut = $horaire ? Carbon::createFromTimeString($horaire->started_at) : null;
+            $heureFin = $horaire ? Carbon::createFromTimeString($horaire->ended_at) : null;
+
+            $isHoraireNuit = $horaire && $heureFin->lt($heureDebut);
+            $isHoraire24h = $horaire && $heureDebut->eq($heureFin);
+
+            // Détermination de la date de référence
+            $dateReference = Carbon::today();
+
+            if ($isHoraireNuit && $now->lt(Carbon::today()->setTimeFrom($heureFin))) {
+                $dateReference = Carbon::yesterday();
+            }
+
+            if ($isHoraire24h) {
+                $seuil = Carbon::today()->setTimeFrom($heureDebut);
+                $dateReference = $now->lt($seuil) ? Carbon::yesterday() : Carbon::today();
+            }
+
+            // Photo
+            if ($request->hasFile('photo')) {
+                $photo = $request->file('photo');
+                $filename = time() . '_' . $photo->getClientOriginalName();
+                $photo->move(public_path('uploads/presence_photos'), $filename);
+                $photoUrl = url('uploads/presence_photos/' . $filename);
+            }
+            // Recherche de présence existante
+            $presence = PresenceAgents::where('agent_id', $agent->id)
+                ->whereDate('date_reference', $dateReference->toDateString())
+                ->latest()
+                ->first();
+
+            if (!$presence) {
+                // Nouvelle présence
+                $retard = 'non';
+                if ($horaire) {
+                    $heureRef = Carbon::today()->setTimeFromTimeString($horaire->started_at);
+                    $retard = $now->gt($heureRef->addMinutes(15)) ? 'oui' : 'non';
+                }
+                $presence = PresenceAgents::create([
+                    'agent_id'           => $agent->id,
+                    'site_id'            => $agent->site_id ?? 0,
+                    'horaire_id'         => $agent->groupe->horaire_id ?? null,
+                    'date_reference'     => $dateReference->toDateString(),
+                    'started_at'         => $now,
+                    'photos_debut'       => $photoUrl,
+                    'status_photo_debut' => $data['status_photo'] ?? null,
+                    'retard'             => $retard,
+                    'commentaires'       => $commentaire_distance,
+                    'status'             => 'debut',
+                ]);
+                $message = "Présence enregistrée (début).";
+            } else {
+                // Mise à jour de la sortie
+                $presence->update([
+                    'ended_at'           => $now,
+                    'photos_fin'         => $photoUrl,
+                    'status_photo_fin'   => $data['status_photo'] ?? null,
+                    'commentaires'       => $presence->commentaires . " | Sortie mise à jour à " . $now->format("H:i"),
+                    'status'             => 'fin',
+                ]);
+                $message = "Sortie mise à jour.";
+            }
+            // Envoi Email
+            if ($site && $site->emails) {
+                (new EmailController())->sendMail([
+                    "emails" => $site->emails,
+                    "title"  => "Mise à jour de présence",
+                    "photo"  => $photoUrl,
+                    "agent"  => $agent->matricule . ' - ' . $agent->fullname,
+                    "site"   => $site->code . ' - ' . $site->name,
+                    "date"   => $now->format("d/m/Y H:i"),
+                ]);
+            }
+
+            return response()->json([
+                "status"  => "success",
+                "message" => $message,
+                "result"  => $presence,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->validator->errors()->all()]);
+        } catch (\Exception $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
+    }
+
+
+    /* public function createPresenceAgent(Request $request)
     {
         try {
             $data = $request->validate([
@@ -388,7 +504,7 @@ class PresenceController extends Controller
         } catch (\Exception $e) {
             return response()->json(['errors' => $e->getMessage()]);
         }
-    }
+    } */
 
 
 
@@ -707,6 +823,8 @@ class PresenceController extends Controller
         $horaires = PresenceHoraire::orderByDesc("id");
         return response()->json(['horaires' => isset($all) ? $horaires->get() : $horaires->paginate(10)]);
     }
+
+
     public function getAllGroups(Request $request)
     {
         $all    = $request->query("all") ?? null;
