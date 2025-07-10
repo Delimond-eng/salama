@@ -607,7 +607,7 @@ class AppManagerController extends Controller
                     $tokens = $site->tokens;
                     $fcm = new FcmService();
                     $title = "Fin de la patrouille";
-                    $heure = $patrol->ended_at->format("H:i");
+                    $heure = $patrol->started_at->format("H:i");
                     $heureFin = $patrol->ended_at->format("H:i");
                     $body = "Fin de la patrouille dans votre concession. Début : $heure - Fin : $heureFin.";
                     $fcm->sendNotificationToManyTokens($tokens, $title, $body);
@@ -973,55 +973,64 @@ class AppManagerController extends Controller
     public function autoCreateNightPlannings(): void
     {
         try {
-            $sites = Site::whereNotNull('fcm_token')->get();
-            $agency_id = Auth::user()->agency_id ?? null; // à adapter si tu fais un appel via Scheduler (sans user connecté)
-
-            $startHour = Carbon::today()->addHours(21)->addMinutes(30); // 21h30
-            $interval = 2; // en heures
-            $pause = 1; // une heure de pause
-            $numberOfPlannings = 4; // nombre total de patrouilles à créer
-            $fcm = new FcmService();
+            $sites = Site::all();
+            $agency_id = Auth::user()->agency_id ?? 1; // à adapter si tu fais un appel via Scheduler
+            $startHour = Carbon::today()->addHours(21)->addMinutes(0); // 21h00
+            $interval = 1; // heure entre les patrouilles
+            $pause = 0;
+            $numberOfPlannings = 9;
+            $baseDate = Carbon::today()->setTimezone("Africa/Kinshasa");
+            $date = $baseDate->copy();
+            $dateShifted = false; // pour ne pas cumuler plusieurs fois
 
             for ($i = 0; $i < $numberOfPlannings; $i++) {
                 $start = (clone $startHour)->addHours(($interval + $pause) * $i);
-                $end = (clone $start)->addHour(); // durée : 1 heure
-                $date = $start->toDateString();
+                $end = (clone $start)->addHour(); // durée : 1h
+                // Vérifie si l'heure dépasse minuit une seule fois
+                if (!$dateShifted && $start->format('H:i') === '00:00') {
+                    $date->addDay();
+                    $dateShifted = true;
+                }
+
                 $startTime = $start->format('H:i');
                 $endTime = $end->format('H:i');
 
                 foreach ($sites as $site) {
-                    // Vérifie si un planning existe déjà pour cette période et ce site
                     $exists = Schedules::where('site_id', $site->id)
-                        ->where('date', $date)
+                        ->where('date', $date->toDateString())
                         ->where('start_time', $startTime)
                         ->exists();
 
                     if (!$exists) {
-                        // Création du planning
-                        $schedule = Schedules::create([
-                            'libelle'   => 'Patrouille automatique',
+                        Schedules::create([
+                            'libelle'   => "Patrouille de {$startTime}",
                             'start_time'=> $startTime,
                             'end_time'  => $endTime,
-                            'date'      => $date,
+                            'date'      => $date->toDateString(),
                             'site_id'   => $site->id,
                             'agency_id' => $agency_id,
                         ]);
-
-                        // Notification
-                        $fcm->sendNotification(
-                            $site->fcm_token,
-                            "Patrouille automatique programmée",
-                            "Une patrouille est prévue le {$start->translatedFormat('l j F')} de $startTime à $endTime."
-                        );
                     }
                 }
             }
-
+            try{
+                $fcm = new FcmService();
+                foreach($sites as $site){
+                    if($site->fcm_token){
+                        $fcm->sendNotification(
+                            $site->fcm_token,
+                            "Patrouille automatique programmée",
+                            "Les patrouilles nocturnes ont été planifiées automatiquement. Veuillez consulter votre planning pour plus de détails."
+                        );
+                    }
+                }
+            }catch(\Exception $e){
+                Log::error($e->getMessage());
+            }
         } catch (\Exception $e) {
             Log::error("Erreur création automatique des plannings : " . $e->getMessage());
         }
     }
-
 
 
     /**
@@ -1064,7 +1073,7 @@ class AppManagerController extends Controller
         } 
         $schedules = $req
             ->where("agency_id", $agencyId)
-            ->orderByDesc("id")->paginate(10);
+            ->orderByDesc("id")->paginate(8);
         return response()->json([
             "status"=>"success",
             "schedules"=>$schedules

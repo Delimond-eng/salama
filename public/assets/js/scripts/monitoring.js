@@ -209,7 +209,7 @@ new Vue({
                                 0
                             ) / sitesData.length;
                     }
-                    const map = L.map(mapElement).setView([avgLat, avgLng], 20);
+                    const map = L.map(mapElement).setView([avgLat, avgLng], 13);
                     mapElement._leaflet_map = map; // Stocker la nouvelle instance de carte sur l'élément
 
                     L.tileLayer(

@@ -620,7 +620,7 @@ class PresenceController extends Controller
         try {
             $targetDate = $request->query("date")
                 ? Carbon::parse($request->query("date"))->startOfDay()
-                : Carbon::today()->setTimezone("Africa/Kinshasa");
+                : Carbon::today()->setTimezone("Africa/Kinshasa")->startOfDay();
 
             $siteId = $request->query("site_id");
 
@@ -665,7 +665,6 @@ class PresenceController extends Controller
                     // Ne garder que les présences de la veille sans sortie encore enregistrée
                     return $presenceDate->equalTo($targetDate->copy()->subDay()) && !$presence->ended_at;
                 }
-
                 // Shift de jour : on garde si c’est aujourd’hui
                 return $presenceDate->equalTo($targetDate);
             })->values();

@@ -234,7 +234,7 @@ new Vue({
         exportToExcel() {
             const data = this.filteredPresences.map((p) => ({
                 "Nom complet": p.agent.fullname || "",
-                Horaire: p.horaire.libelle || "",
+                Horaire: p.agent.groupe.horaire.libelle || "",
                 "Heure d'entrée": p.started_at || "",
                 "Heure de sortie": p.ended_at || "",
                 Durée: p.duree || "",

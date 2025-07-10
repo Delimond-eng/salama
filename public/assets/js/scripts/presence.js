@@ -388,30 +388,12 @@ new Vue({
                 "C1 = Retards",
                 "A1/A2/A3 = Appels",
                 "CA1/2/3 = Retards + Appels",
-                "L = Licencié",
-                "D = Décédé",
-                "DM = Démission",
-                "DS = Déserteur",
             ];
 
             const headers = ["#", "Matricule", "Nom", "Poste"];
             for (let day = 1; day <= this.daysInMonth; day++)
                 headers.push(day.toString());
-            headers.push(
-                "PP",
-                "A",
-                "M",
-                "C",
-                "MP",
-                "AU",
-                "C1",
-                "A1",
-                "CA1",
-                "L",
-                "D",
-                "DM",
-                "DS"
-            );
+            headers.push("PP", "A", "M", "C", "MP", "AU", "C1", "A1", "CA1");
 
             const data = [];
 
@@ -439,10 +421,6 @@ new Vue({
                     "c1",
                     "a1",
                     "ca1",
-                    "l",
-                    "d",
-                    "dm",
-                    "ds",
                 ];
                 keys.forEach((k) => row.push(stats[k]));
                 data.push(row);
