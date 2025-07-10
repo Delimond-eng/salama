@@ -595,7 +595,7 @@ class AdminController extends Controller
     {
         $targetDate = $request->input('date') 
             ? Carbon::parse($request->input('date'))->startOfDay()
-            : Carbon::today()->setTimezone("Africa/Kinshasa");
+            : Carbon::today()->setTimezone("Africa/Kinshasa")->startOfDay();
 
         $yesterday = $targetDate->copy()->subDay();
 
@@ -616,7 +616,7 @@ class AdminController extends Controller
             $agentsAttendus = $site->presence ?? 0;
             $totalAgentsAttendus += $agentsAttendus;
 
-            // Filtrer les présences en fonction des horaires du groupe de l'agent
+            // Filtrage intelligent comme dans getPresencesBySiteAndDate
             $filteredPresences = $site->presences->filter(function ($presence) use ($targetDate) {
                 $horaire = optional($presence->agent->groupe)->horaire;
                 if (!$horaire) return false;
@@ -634,9 +634,15 @@ class AdminController extends Controller
                 $shiftDeNuit  = $heureFin->lessThan($heureDebut);
 
                 if ($isHoraire24h || $shiftDeNuit) {
-                    return $presenceDate->equalTo($targetDate->copy()->subDay()) && !$presence->ended_at;
+                    // Afficher uniquement les présences non clôturées de la veille
+                    if (!$presence->ended_at) {
+                        return $presenceDate->equalTo($targetDate->copy()->subDay());
+                    } else {
+                        return $presenceDate->equalTo($targetDate->copy()->subDay());
+                    }
                 }
 
+                // Shift de jour classique : affichage le jour même
                 return $presenceDate->equalTo($targetDate);
             })->values();
 
@@ -668,14 +674,11 @@ class AdminController extends Controller
     }
 
 
-
-
-
     public function exportPresenceReport(Request $request)
     {
         $targetDate = $request->input('date') 
             ? Carbon::parse($request->input('date'))->startOfDay()
-            : Carbon::today()->setTimezone("Africa/Kinshasa");
+            : Carbon::today()->setTimezone("Africa/Kinshasa")->startOfDay();
 
         $yesterday = $targetDate->copy()->subDay();
 
@@ -715,9 +718,14 @@ class AdminController extends Controller
                 $shiftDeNuit  = $heureFin->lessThan($heureDebut);
 
                 if ($isHoraire24h || $shiftDeNuit) {
-                    return $presenceDate->equalTo($targetDate->copy()->subDay()) && !$presence->ended_at;
+                    // Afficher uniquement les présences de la veille (non clôturées ou non)
+                    if (!$presence->ended_at) {
+                        return $presenceDate->equalTo($targetDate->copy()->subDay());
+                    } else {
+                        return $presenceDate->equalTo($targetDate->copy()->subDay());
+                    }
                 }
-
+                // Shifts de jour
                 return $presenceDate->equalTo($targetDate);
             })->values();
 
@@ -740,6 +748,4 @@ class AdminController extends Controller
 
         return $pdf->download("rapport-presence-{$targetDate->format('Y-m-d')}.pdf");
     }
-
-
 }

@@ -662,10 +662,16 @@ class PresenceController extends Controller
                 $shiftDeNuit  = $heureFin->lessThan($heureDebut); // ex: 20h à 06h
 
                 if ($isHoraire24h || $shiftDeNuit) {
-                    // Ne garder que les présences de la veille sans sortie encore enregistrée
-                    return $presenceDate->equalTo($targetDate->copy()->subDay()) && !$presence->ended_at;
+                    // Présence non clôturée : afficher uniquement le jour suivant
+                    if (!$presence->ended_at) {
+                        return $presenceDate->equalTo($targetDate->copy()->subDay());
+                    } else {
+                        // Présence clôturée : afficher uniquement si elle a commencé la veille
+                        return $presenceDate->equalTo($targetDate->copy()->subDay());
+                    }
                 }
-                // Shift de jour : on garde si c’est aujourd’hui
+
+                // Shift de jour : afficher uniquement les présences du jour même
                 return $presenceDate->equalTo($targetDate);
             })->values();
 
@@ -692,6 +698,7 @@ class PresenceController extends Controller
             return response()->json(['errors' => $e->getMessage()]);
         }
     }
+
 
     //Renvoie la liste de l'horaire complet
     public function getAllHoraires(Request $request)

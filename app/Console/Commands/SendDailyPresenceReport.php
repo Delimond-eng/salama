@@ -20,7 +20,6 @@ class SendDailyPresenceReport extends Command
     protected $signature = 'presence:send-daily-report';
 
     protected $description = 'Génère et envoie le rapport PDF de présence chaque jour à 10h';
-
     /**
      * Execute the console command.
      *
@@ -39,7 +38,7 @@ class SendDailyPresenceReport extends Command
                         ->orWhereDate('created_at', $yesterday);
                     });
             },
-            'presences.agent.groupe.horaire', // ici le groupe de l'agent
+            'presences.agent.groupe.horaire',
             'agents',
             'secteur'
         ])->get();
@@ -55,7 +54,7 @@ class SendDailyPresenceReport extends Command
                 try {
                     $presenceDate = Carbon::parse($presence->created_at)->startOfDay();
                     $heureDebut = Carbon::parse($horaire->started_at);
-                    $heureFin = Carbon::parse($horaire->ended_at);
+                    $heureFin   = Carbon::parse($horaire->ended_at);
                 } catch (\Exception $e) {
                     Log::error("Erreur parsing horaire groupe agent : " . $e->getMessage());
                     return false;
@@ -65,9 +64,11 @@ class SendDailyPresenceReport extends Command
                 $shiftDeNuit  = $heureFin->lessThan($heureDebut);
 
                 if ($isHoraire24h || $shiftDeNuit) {
+                    // Présence non clôturée acceptée uniquement si elle date d’hier
                     return $presenceDate->equalTo($date->copy()->subDay());
                 }
 
+                // Présence de jour (non clôturée) acceptée uniquement pour aujourd’hui
                 return $presenceDate->equalTo($date);
             })->values();
 
@@ -109,8 +110,5 @@ class SendDailyPresenceReport extends Command
         $this->info("✅ Rapport envoyé aux destinataires avec succès.");
         return 1;
     }
-
-
-
 
 }
