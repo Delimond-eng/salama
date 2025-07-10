@@ -601,8 +601,8 @@ class AdminController extends Controller
 
         $presenceBySites = Site::with([
             'presences' => function ($query) use ($targetDate, $yesterday) {
-                $query->whereDate('created_at', $targetDate)
-                    ->orWhereDate('created_at', $yesterday);
+                $query->whereDate('date_reference', $targetDate)
+                    ->orWhereDate('date_reference', $yesterday);
             },
             'presences.agent.groupe.horaire',
             'agents',
@@ -685,8 +685,8 @@ class AdminController extends Controller
         $sites = Site::with([
             'presences' => function ($query) use ($targetDate, $yesterday) {
                 $query->where(function ($q) use ($targetDate, $yesterday) {
-                    $q->whereDate('created_at', $targetDate)
-                    ->orWhereDate('created_at', $yesterday);
+                    $q->whereDate('date_reference', $targetDate)
+                    ->orWhereDate('date_reference', $yesterday);
                 });
             },
             'presences.agent.groupe.horaire',

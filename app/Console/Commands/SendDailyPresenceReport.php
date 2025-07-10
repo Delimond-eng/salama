@@ -34,8 +34,8 @@ class SendDailyPresenceReport extends Command
             'presences' => function ($query) use ($date, $yesterday) {
                 $query->whereNull("ended_at")
                     ->where(function ($q) use ($date, $yesterday) {
-                        $q->whereDate('created_at', $date)
-                        ->orWhereDate('created_at', $yesterday);
+                        $q->whereDate('date_reference', $date)
+                        ->orWhereDate('date_reference', $yesterday);
                     });
             },
             'presences.agent.groupe.horaire',
