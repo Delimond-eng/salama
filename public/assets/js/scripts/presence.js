@@ -373,6 +373,10 @@ new Vue({
                 );
             });
         },
+
+        separerLettresEtChiffres(chaine) {
+            return chaine.replace(/([A-Za-z]+)(\d+)/, "$1 $2");
+        },
         exportToExcel() {
             const moisNom = this.currentMonthName || this.currentMonth;
             const titre = `POINTAGES MENSUELS DES AGENTS - ${moisNom} ${this.currentYear}`;
@@ -401,7 +405,7 @@ new Vue({
             this.filteredAgents.forEach((agent, index) => {
                 const row = [
                     index + 1,
-                    agent.matricule,
+                    this.separerLettresEtChiffres(agent.matricule),
                     agent.fullname,
                     agent.poste,
                 ];
