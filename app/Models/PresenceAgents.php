@@ -19,7 +19,8 @@ class PresenceAgents extends Model
         'started_at', 'ended_at', 'duree', 'retard',
         'photos_debut', 'photos_fin',
         'status_photo_debut', 'status_photo_fin',
-        'commentaires', 'status'
+        'commentaires', 'status',
+        'date_reference'
     ];
 
     protected $casts =[

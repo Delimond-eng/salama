@@ -591,6 +591,7 @@ class AdminController extends Controller
      * @param Request $request
      * @return JsonResponse
     */
+
     public function getDashboardData(Request $request)
     {
         $targetDate = $request->input('date') 
@@ -601,8 +602,10 @@ class AdminController extends Controller
 
         $presenceBySites = Site::with([
             'presences' => function ($query) use ($targetDate, $yesterday) {
-                $query->whereDate('date_reference', $targetDate)
-                    ->orWhereDate('date_reference', $yesterday);
+                $query->whereIn('date_reference', [
+                    $targetDate->toDateString(), 
+                    $yesterday->toDateString()
+                ]);
             },
             'presences.agent.groupe.horaire',
             'agents',
@@ -613,16 +616,16 @@ class AdminController extends Controller
         $totalAgentsAttendus = 0;
 
         foreach ($presenceBySites->items() as $site) {
-            $agentsAttendus = $site->presence ?? 0;
+            $agentsAttendus = $site->presence ?? 0; // Vérifie bien que $site->presence correspond au nombre attendu
             $totalAgentsAttendus += $agentsAttendus;
 
-            // Filtrage intelligent comme dans getPresencesBySiteAndDate
+            // Filtrage intelligent des présences
             $filteredPresences = $site->presences->filter(function ($presence) use ($targetDate) {
                 $horaire = optional($presence->agent->groupe)->horaire;
                 if (!$horaire) return false;
 
                 try {
-                    $presenceDate = Carbon::parse($presence->created_at)->startOfDay();
+                    $presenceDate = Carbon::parse($presence->date_reference)->startOfDay();
                     $heureDebut = Carbon::parse($horaire->started_at);
                     $heureFin = Carbon::parse($horaire->ended_at);
                 } catch (\Exception $e) {
@@ -634,15 +637,20 @@ class AdminController extends Controller
                 $shiftDeNuit  = $heureFin->lessThan($heureDebut);
 
                 if ($isHoraire24h || $shiftDeNuit) {
-                    // Afficher uniquement les présences non clôturées de la veille
+                    // Pour les horaires 24h ou nuit, accepter aussi la veille (dateReference)
                     if (!$presence->ended_at) {
+                        // Présence non terminée : doit être la veille
                         return $presenceDate->equalTo($targetDate->copy()->subDay());
                     } else {
-                        return $presenceDate->equalTo($targetDate->copy()->subDay());
+                        // Présence terminée : accepter la veille ou le jour même
+                        return in_array($presenceDate->toDateString(), [
+                            $targetDate->toDateString(),
+                            $targetDate->copy()->subDay()->toDateString()
+                        ]);
                     }
                 }
 
-                // Shift de jour classique : affichage le jour même
+                // Horaires classiques : présence le jour même uniquement
                 return $presenceDate->equalTo($targetDate);
             })->values();
 
@@ -674,6 +682,7 @@ class AdminController extends Controller
     }
 
 
+
     public function exportPresenceReport(Request $request)
     {
         $targetDate = $request->input('date') 
@@ -684,10 +693,10 @@ class AdminController extends Controller
 
         $sites = Site::with([
             'presences' => function ($query) use ($targetDate, $yesterday) {
-                $query->where(function ($q) use ($targetDate, $yesterday) {
-                    $q->whereDate('date_reference', $targetDate)
-                    ->orWhereDate('date_reference', $yesterday);
-                });
+                $query->whereIn('date_reference', [
+                    $targetDate->toDateString(),
+                    $yesterday->toDateString()
+                ]);
             },
             'presences.agent.groupe.horaire',
             'agents',
@@ -706,7 +715,7 @@ class AdminController extends Controller
                 if (!$horaire) return false;
 
                 try {
-                    $presenceDate = Carbon::parse($presence->created_at)->startOfDay();
+                    $presenceDate = Carbon::parse($presence->date_reference)->startOfDay();
                     $heureDebut = Carbon::parse($horaire->started_at);
                     $heureFin   = Carbon::parse($horaire->ended_at);
                 } catch (\Exception $e) {
@@ -718,13 +727,10 @@ class AdminController extends Controller
                 $shiftDeNuit  = $heureFin->lessThan($heureDebut);
 
                 if ($isHoraire24h || $shiftDeNuit) {
-                    // Afficher uniquement les présences de la veille (non clôturées ou non)
-                    if (!$presence->ended_at) {
-                        return $presenceDate->equalTo($targetDate->copy()->subDay());
-                    } else {
-                        return $presenceDate->equalTo($targetDate->copy()->subDay());
-                    }
+                    // Présences liées à la veille pour horaires 24h/nuit
+                    return $presenceDate->equalTo($targetDate->copy()->subDay());
                 }
+
                 // Shifts de jour
                 return $presenceDate->equalTo($targetDate);
             })->values();
@@ -748,4 +754,5 @@ class AdminController extends Controller
 
         return $pdf->download("rapport-presence-{$targetDate->format('Y-m-d')}.pdf");
     }
+
 }

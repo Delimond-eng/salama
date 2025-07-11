@@ -976,9 +976,9 @@ class AppManagerController extends Controller
             $sites = Site::all();
             $agency_id = Auth::user()->agency_id ?? 1; // à adapter si tu fais un appel via Scheduler
             $startHour = Carbon::today()->addHours(21)->addMinutes(0); // 21h00
-            $interval = 1; // heure entre les patrouilles
+            $interval = 2; // heure entre les patrouilles
             $pause = 0;
-            $numberOfPlannings = 9;
+            $numberOfPlannings = 5;
             $baseDate = Carbon::today()->setTimezone("Africa/Kinshasa");
             $date = $baseDate->copy();
             $dateShifted = false; // pour ne pas cumuler plusieurs fois

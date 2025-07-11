@@ -143,7 +143,13 @@ Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function
     //UPDATE CLIENT TOKEN 
     Route::post("/client.token", [ClientController::class, "updateFcmToken"])->name("client.token");
 });
-
+Route::get("/check.update", function(){
+    return response()->json([
+        'version_code' => 6,
+        'apk_url' => url('/apks/app.apk'),
+        'changelog' => "- Ajout des nouvelles fonctionnalités \n- Correction des bugs \n- Interface améliorée"
+    ]);
+});
 
 /* Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

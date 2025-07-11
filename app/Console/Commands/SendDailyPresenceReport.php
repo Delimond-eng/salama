@@ -27,16 +27,16 @@ class SendDailyPresenceReport extends Command
      */
     public function handle()
     {
-        $date = Carbon::today()->setTimezone("Africa/Kinshasa");
+        $date = Carbon::today()->setTimezone("Africa/Kinshasa")->startOfDay();
+
         $yesterday = $date->copy()->subDay();
 
         $sites = Site::with([
             'presences' => function ($query) use ($date, $yesterday) {
-                $query->whereNull("ended_at")
-                    ->where(function ($q) use ($date, $yesterday) {
-                        $q->whereDate('date_reference', $date)
-                        ->orWhereDate('date_reference', $yesterday);
-                    });
+                $query->whereIn('date_reference', [
+                    $date->toDateString(),
+                    $yesterday->toDateString()
+                ]);
             },
             'presences.agent.groupe.horaire',
             'agents',
@@ -47,16 +47,19 @@ class SendDailyPresenceReport extends Command
         $totalAgents = 0;
 
         foreach ($sites as $site) {
-            $site->presences = $site->presences->filter(function ($presence) use ($date) {
+            $presenceAttendue = $site->presence ?? 0;
+            $totalAgents += $presenceAttendue;
+
+            $filteredPresences = $site->presences->filter(function ($presence) use ($date) {
                 $horaire = optional($presence->agent->groupe)->horaire;
                 if (!$horaire) return false;
 
                 try {
-                    $presenceDate = Carbon::parse($presence->created_at)->startOfDay();
+                    $presenceDate = Carbon::parse($presence->date_reference)->startOfDay();
                     $heureDebut = Carbon::parse($horaire->started_at);
                     $heureFin   = Carbon::parse($horaire->ended_at);
                 } catch (\Exception $e) {
-                    Log::error("Erreur parsing horaire groupe agent : " . $e->getMessage());
+                    Log::error("⛔ Erreur parsing horaire via groupe de l'agent : " . $e->getMessage());
                     return false;
                 }
 
@@ -64,28 +67,28 @@ class SendDailyPresenceReport extends Command
                 $shiftDeNuit  = $heureFin->lessThan($heureDebut);
 
                 if ($isHoraire24h || $shiftDeNuit) {
-                    // Présence non clôturée acceptée uniquement si elle date d’hier
+                    // Présences liées à la veille pour horaires 24h/nuit
                     return $presenceDate->equalTo($date->copy()->subDay());
                 }
-
-                // Présence de jour (non clôturée) acceptée uniquement pour aujourd’hui
+                // Shifts de jour
                 return $presenceDate->equalTo($date);
             })->values();
 
-            $expectedAgents = $site->presence ?? 0;
-
-            $site->presences_count = $site->presences->count();
-            $site->agents_count = $expectedAgents;
+            $site->presences = $filteredPresences;
+            $site->presences_count = $filteredPresences->count();
+            $site->presence_expected = $presenceAttendue;
+            $site->presence_rate = $presenceAttendue > 0 
+                ? round(($filteredPresences->count() / $presenceAttendue) * 100, 1)
+                : 0;
 
             $totalPresences += $site->presences_count;
-            $totalAgents += $expectedAgents;
         }
 
         $pdf = Pdf::loadView('pdf.reports.presence_simple_report', [
             'sites' => $sites,
             'totalPresences' => $totalPresences,
             'totalAgents' => $totalAgents,
-            'date' => $date->toDateString(),
+            'date' => $date,
         ]);
 
         $filename = 'rapport-presence-' . $date->format('Y-m-d') . '.pdf';
