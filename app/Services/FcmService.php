@@ -76,7 +76,6 @@ class FcmService
             ],
             "validate_only" => false
         ];
-
         // Résultats des envois
         $results = [];
         // Envoi des notifications un par un avec un message personnalisé pour chaque token
