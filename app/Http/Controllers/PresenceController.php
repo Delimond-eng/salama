@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Log;
+use Mail;
 
 class PresenceController extends Controller
 {
@@ -408,6 +409,31 @@ class PresenceController extends Controller
                     "date"   => $now->format("d/m/Y H:i"),
                 ]);
             }
+
+            try{
+                if ($presence->gps_site_id && $presence->gps_site_id != $presence->site_id) {
+                    $siteAssigne = $site;
+                    $siteDetecte = Site::find($presence->gps_site_id);
+
+                    if ($siteAssigne && $siteAssigne->emails) {
+                        // Séparer la chaîne emails en tableau, enlever les espaces éventuels
+                        $emails = array_map('trim', explode(';', $siteAssigne->emails));
+                        Mail::send('emails.alert', [
+                            "agent"        => $agent->matricule . ' - ' . $agent->fullname,
+                            "site"         => $siteAssigne->code . ' - ' . $siteAssigne->name,
+                            "site_detecte" => $siteDetecte ? $siteDetecte->code . ' - ' . $siteDetecte->name : 'Inconnu',
+                            "date"         => $now->format("d/m/Y H:i"),
+                            "photo"        => $photoUrl,
+                        ], function ($message) use ($emails) {
+                            $message->to($emails)
+                                    ->subject("Présence détectée hors site assigné");
+                        });
+                    }
+                }
+            }
+            catch(\Exception $e){
+                Log::warning($e->getMessage());
+            }   
 
             return response()->json([
                 "status"  => "success",
