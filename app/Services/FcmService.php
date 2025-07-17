@@ -55,7 +55,7 @@ class FcmService
 
         return json_decode($response->getBody(), true);
     }
-    
+
     public function sendNotificationToManyTokens(array $tokens, string $title, string $body)
     {
         // Préparation du message multicast

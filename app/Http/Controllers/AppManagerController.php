@@ -143,7 +143,7 @@ class AppManagerController extends Controller
                     }
                 }
                 catch(\Exception $exception){
-                    Log::info($exception->getMessage());
+                    Log::info("SEND MULTIPLES ERRORS : {$exception->getMessage()}");
                 }
                 return response()->json([
                     "status" => "success",

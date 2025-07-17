@@ -686,7 +686,7 @@ class PresenceController extends Controller
             // Récupération brute des présences (d’aujourd’hui et d’hier)
             $presences = PresenceAgents::with(['agent.groupe.horaire','agent.site', 'site'])
                 ->when($siteId, function ($query, $siteId) {
-                    return $query->where('site_id', $siteId);
+                    return $query->where('gps_site_id', $siteId);
                 })
                 ->whereIn('date_reference', [
                     $targetDate->toDateString(),
