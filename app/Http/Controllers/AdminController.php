@@ -70,88 +70,98 @@ class AdminController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function createAgencieSite(Request $request):JsonResponse
+   public function createAgencieSite(Request $request): JsonResponse
     {
-        try{
-            $data = null;
-            if($request->id){
+        try {
+            // Si un ID est présent, on met à jour le site existant
+            if ($request->id) {
                 $data = $request->validate([
-                    "areas.*.libelle"=>"required|string",
+                    "name" => "nullable|string",
+                    "code" => "nullable|string|unique:sites,code," . $request->id,
+                    "secteur_id" => "nullable|int|exists:secteurs,id",
+                    "latlng" => "nullable|string",
+                    "adresse" => "nullable|string",
+                    "phone" => "nullable|string",
+                    "client_email" => "nullable|string",
+                    "areas.*.libelle" => "nullable|string",
+                    "presence" => "nullable|int",
+                    "emails" => "nullable|string",
                 ]);
-                //Crée les zones de patrouille pour un site nouvellement créé
-                $areas = $data["areas"];
-                foreach ($areas as $area) {
-                    $area['site_id'] = $request->id;
-                    $latestArea = Area::updateOrCreate(
+
+                $site = Site::findOrFail($request->id);
+
+                // Mise à jour uniquement des champs non nuls, hors 'areas'
+                foreach ($data as $key => $value) {
+                    if ($value !== null && $key !== 'areas') {
+                        $site->$key = $value;
+                    }
+                }
+                $site->save();
+
+                // Mise à jour ou ajout des zones si présentes
+                if (isset($data['areas'])) {
+                    foreach ($data['areas'] as $area) {
+                        if(!empty($area['libelle'])){
+                            $area['site_id'] = $site->id;
+                            Area::updateOrCreate(
+                                [
+                                    "site_id" => $area["site_id"],
+                                    "libelle" => $area["libelle"]
+                                ],
+                                $area
+                            );
+                        }
+                    }
+                }
+
+                return response()->json([
+                    "status" => "success",
+                    "result" => "Site mis à jour avec succès !"
+                ]);
+            }
+
+            // Sinon, on crée un nouveau site
+            else {
+                $data = $request->validate([
+                    "name" => "required|string",
+                    "code" => "required|string|unique:sites,code",
+                    "secteur_id" => "required|int|exists:secteurs,id",
+                    "latlng" => "nullable|string",
+                    "adresse" => "required|string",
+                    "phone" => "nullable|string",
+                    "client_email" => "nullable|string",
+                    "areas.*.libelle" => "required|string",
+                    "presence" => "nullable|int",
+                    "emails" => "nullable|string",
+                ]);
+
+                $data["agency_id"] = Auth::user()->agency_id;
+
+                $site = Site::create($data);
+
+                foreach ($data["areas"] as $area) {
+                    $area['site_id'] = $site->id;
+                    Area::updateOrCreate(
                         [
-                            "site_id"=>$area["site_id"],
-                            "libelle"=>$area["libelle"]
+                            "site_id" => $area["site_id"],
+                            "libelle" => $area["libelle"]
                         ],
                         $area
                     );
-                    $json = $latestArea->toJson();
-                    $qrCode = $this->generateQRCode($json);
-                    $latestArea->qrcode = $qrCode;
-                    $latestArea->save();
                 }
+
                 return response()->json([
-                    "status"=>"success",
-                    "result"=>"Nouveaux sites ajoutés avec succès !"
+                    "status" => "success",
+                    "result" => $site
                 ]);
             }
-            else{
-                $data = $request->validate([
-                    "name"=>"required|string",
-                    "code"=>"required|string|unique:sites,code",
-                    "secteur_id"=>"required|int|exists:secteurs,id",
-                    "latlng"=>"nullable|string",
-                    "adresse"=>"required|string",
-                    "phone"=>"nullable|string",
-                    "client_email"=>"nullable|string",
-                    "areas.*.libelle"=>"required|string",
-                    "presence"=>"nullable|int",
-                    "emails"=>"nullable|string",
-                ]);
-                $data["agency_id"] = Auth::user()->agency_id;
-                $response = Site::updateOrCreate(
-                    [
-                        "code"=>$data["code"],
-                        "agency_id"=>$data["agency_id"],
-                    ],
-                    $data
-                );
-                if($response){
-                    //Crée les zones de patrouille pour un site nouvellement créé
-                    $areas = $data["areas"];
-                    foreach ($areas as $area) {
-                        $area['site_id'] = $response->id;
-                        $latestArea = Area::updateOrCreate(
-                            [
-                                "site_id"=>$area["site_id"],
-                                "libelle"=>$area["libelle"]
-                            ],
-                            $area
-                        );
-                        $json = $latestArea->toJson();
-                        $qrCode = $this->generateQRCode($json);
-                        $latestArea->qrcode = $qrCode;
-                        $latestArea->save();
-                    }
-                }
-                return response()->json([
-                    "status"=>"success",
-                    "result"=>$response
-                ]);
-            }
-        }
-        catch (\Illuminate\Validation\ValidationException $e) {
-            $errors = $e->validator->errors()->all();
-            return response()->json(['errors' => $errors ]);
-        }
-        catch (\Illuminate\Database\QueryException $e){
-            return response()->json(['errors' => $e->getMessage() ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->validator->errors()->all()], 422);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()], 500);
         }
     }
+
 
     /**
      * complete existing area with GPS DATA

@@ -63,7 +63,10 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     })->name('site.create.view')->middleware('check.permission:sites,create');
     Route::post('site.create', [AdminController::class, 'createAgencieSite'])->name('site.create')->middleware('check.permission:sites,create');
 
-    Route::get('/sites.list', fn () => view('site_list'))->name('sites.list')->middleware('check.permission:sites,view');
+    Route::get('/sites.list', function(){
+        $secteurs = Secteur::orderBy("libelle")->get();
+        return view('site_list', ["secteurs"=>$secteurs]);
+    })->name('sites.list')->middleware('check.permission:sites,view');
 
     Route::get('/sites', function () {
         $agencyId = Auth::user()->agency_id;

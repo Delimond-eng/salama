@@ -107,6 +107,20 @@ new Vue({
             this.openAccordion = this.openAccordion === index ? null : index;
         },
 
+        triggerData(data) {
+            this.selectedAreas = data.areas;
+            this.form.id = data.id;
+            this.form.code = data.code;
+            this.form.name = data.name;
+            this.form.secteur_id = data.secteur_id;
+            this.form.client_email = data.client_email;
+            this.form.adresse = data.adresse;
+            this.form.phone = data.phone;
+            this.form.emails = data.emails;
+            this.form.presence = data.presence;
+            this.error = null;
+        },
+
         downloadQRCode(id) {
             location.href = `/loadpdf/${id}`;
         },
