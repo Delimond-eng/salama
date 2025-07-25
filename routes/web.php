@@ -216,6 +216,7 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get('/loadpdf/{siteId}', [AppManagerController::class, 'generatePdfWithQRCodes'])->name('loadpdf')->middleware('check.permission:sites,export');
+    Route::get('/sites.qrcode', [AdminController::class, 'generateSiteQrcodes'])->name('site.loadpdf')->middleware('check.permission:sites,export');
     /*
     |--------------------------------------------------------------------------
     | PRESENCES HORAIRES

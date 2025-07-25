@@ -1066,7 +1066,7 @@ class AppManagerController extends Controller
     */
     public function viewAllSchedulesByAdmin(Request $request):JsonResponse
     {
-        $agencyId = Auth::user()->agency_id;
+        $agencyId = Auth::user()->agency_id ?? 1;
         $date = $request->query("date") ?? null;
         $req = Schedules::with("site")->with(["patrol.site", "patrol.agent", "patrol.scans.area"]);
         if(isset($date)){

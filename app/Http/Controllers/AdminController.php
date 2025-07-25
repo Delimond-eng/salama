@@ -141,13 +141,17 @@ class AdminController extends Controller
 
                 foreach ($data["areas"] as $area) {
                     $area['site_id'] = $site->id;
-                    Area::updateOrCreate(
+                    $latestArea = Area::updateOrCreate(
                         [
                             "site_id" => $area["site_id"],
                             "libelle" => $area["libelle"]
                         ],
                         $area
                     );
+                    $json = $latestArea->toJson();
+                    $qrCode = $this->generateQRCode($json);
+                    $latestArea->qrcode = $qrCode;
+                    $latestArea->save();
                 }
 
                 return response()->json([
@@ -198,6 +202,34 @@ class AdminController extends Controller
         }
         catch (\Illuminate\Database\QueryException $e){
             return response()->json(['errors' => $e->getMessage() ]);
+        }
+    }
+
+
+    /**
+     *Generate Site Qrcodes
+     * @return JsonResponse
+    */
+    public function generateSiteQrcodes(Request $request)
+    {
+        try {
+            $sites = Site::select("id","name","code","latlng")->orderBy("name")->get();
+            $data = [];
+
+            foreach ($sites as $site) {
+                $json = $site->toJson();
+                $qrCode = $this->generateQRCode($json);
+                $data[] = [
+                    'name' => $site->name,
+                    'qrcode' => $qrCode
+                ];
+            }
+
+            $pdf = PDF::loadView('pdf.qrcodes', ['areas' => $data])
+                    ->setPaper('A4', 'portrait');
+            return $pdf->download('qrcodes-sites.pdf');
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()]);
         }
     }
 
@@ -420,11 +452,6 @@ class AdminController extends Controller
             "histories"=>$histories
         ]);
     }
-
-
-    
-
-
     /**
      * View all agents by agency
      * @return JsonResponse
@@ -522,8 +549,6 @@ class AdminController extends Controller
             return response()->json(['errors' => $e->getMessage() ]);
         }
     }
-
-
     /**
      * CREATE NEW USER
      * @param Request $request
@@ -596,8 +621,6 @@ class AdminController extends Controller
             return response()->json(['errors' => $e->getMessage() ]);
         }
     }
-
-
     /**
      * GET DASHBOARD DATAS
      * @param Request $request
