@@ -143,7 +143,8 @@ Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function
     //UPDATE CLIENT TOKEN 
     Route::post("/client.token", [ClientController::class, "updateFcmToken"])->name("client.token");
 });
-Route::get('/schedules.all', [AppManagerController::class, 'viewAllSchedulesByAdmin']);
+/* Route::get('/schedules.all', [AppManagerController::class, 'viewAllSchedulesByAdmin']);
+Route::get('/schedules.generate', [AppManagerController::class, 'autoCreateNightPlannings']); */
 Route::get("/check.update", function(){
     return response()->json([
         'version_code' => 3,

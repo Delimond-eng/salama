@@ -24,11 +24,39 @@
     </div>
     <!-- END: Top Bar -->
     <div class="mt-5 grid grid-cols-12 gap-6" id="App" v-cloak>
+        <!-- Permet de faire un trigger picker du bouton import excel -->
+        <input type="file" ref="excelInput" accept=".xls,.xlsx" style="display: none" @change="handleExcelFile"/>
 
         <div class="intro-y col-span-12 mt-2 flex flex-wrap items-center xl:flex-nowrap">
-            <button data-tw-merge="" onclick="location.href='/agent.create'" class="transition duration-200 border inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-primary border-primary text-white dark:border-primary mr-2 shadow-md"> <i class="w-3 h-3" data-lucide="plus"></i> Nouveau agent</button>
-            <button @click.stop="exportToExcel" data-tw-merge="" class="transition duration-200 inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-white text-slate-800 dark:border-darkmode-100 mr-2 shadow-md"><i data-tw-merge="" data-lucide="file-text" class="stroke-1.5 mr-2 h-4 w-4"></i>
-                Exporter en Exel</button>
+            <button data-tw-merge="" onclick="location.href='/agent.create'" class="transition duration-200 border inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-primary border-primary text-white dark:border-primary mr-2 shadow-md"> <i class="w-3 h-3 mr-2 stroke-1.5" data-lucide="plus"></i> Nouveau agent</button>
+            <button data-tw-merge="" @click.stop="pickExcelFile" :disabled="isLoading" class="transition duration-200 border inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-success border-success text-white dark:border-primary mr-2 shadow-md"> 
+                <i class="w-3 h-3 mr-2 stroke-1.5" data-lucide="upload"></i> Importer Excel
+                <span class="h-3 w-3 ml-2" v-if="isLoading">
+                    <svg class="h-3 w-3" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="a" x1="8.042%" y1="0%" x2="65.682%" y2="23.865%">
+                                <stop stop-color="#FFFFFF" stop-opacity="0" offset="0%" />
+                                <stop stop-color="#FFFFFF" offset="100%" />
+                                <stop stop-color="#FFFFFF" stop-opacity=".631" offset="63.146%" />
+                            </linearGradient>
+                        </defs>
+                        <g fill="none" fill-rule="evenodd">
+                            <g transform="translate(1 1)">
+                                <path id="Oval-2" d="M36 18c0-9.94-8.06-18-18-18" stroke="url(#a)" stroke-width="4">
+                                    <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="0.9s" repeatCount="indefinite" />
+                                </path>
+                                <circle fill="#FFFFFF" cx="36" cy="18" r="1">
+                                    <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="0.9s" repeatCount="indefinite" />
+                                </circle>
+                            </g>
+                        </g>
+                    </svg>
+                </span>
+            </button>
+            <button @click.stop="exportToExcel" data-tw-merge="" class="transition duration-200 inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-white text-slate-800 dark:border-darkmode-100 mr-2 shadow-md">
+                <i data-tw-merge="" data-lucide="file-text" class="stroke-1.5 mr-2 h-4 w-4"></i>
+                Exporter en Exel
+            </button>
             <div class="mx-auto hidden text-slate-500 xl:block">
 
             </div>
@@ -71,7 +99,6 @@
                         <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-1">
                             ACTIONS
                         </th>
-                        
                     </tr>
                 </thead>
                 <tbody>
@@ -104,11 +131,12 @@
                             <div v-if="data.site" class="mt-0.5 whitespace-nowrap text-xs text-slate-500">
                                 @{{ data.site.code }}
                             </div>
-                            <span v-else>Non assigné.</span>
+                            <span class="uppercase" v-else>Non assigné.</span>
                         </td>
 
                         <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 text-center shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
                             <span v-if="data.groupe">@{{data.groupe.libelle}}</span>
+                            <span class="uppercase" v-else>NON ASSIGNé</span>
                         </td>
                         <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 text-center shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
                             @{{data.password}}
@@ -331,7 +359,13 @@
         </div>
         <!-- END: Modal Content -->
        
-
+        <div id="success-notification-content" class="py-5 pl-5 pr-14 bg-white border border-slate-200/60 rounded-lg shadow-xl dark:bg-darkmode-600 dark:text-slate-300 dark:border-darkmode-600 hidden flex">
+            <i data-tw-merge="" data-lucide="check-circle" class="stroke-1.5 w-5 h-5 text-success"></i>
+            <div class="ml-4 mr-4">
+                <div class="font-medium">Opération reussi !</div>
+                <div class="text-slate-500 mt-1">Importation de la liste des agents effectuées ! </div>
+            </div>
+        </div>
 
     </div>
 

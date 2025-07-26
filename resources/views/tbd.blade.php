@@ -157,6 +157,7 @@
                                         <!-- Secteur -->
                                         <td class="px-5 py-3 border-b dark:border-darkmode-300">
                                             <span v-if="data.secteur">@{{ data.secteur.libelle }}</span>
+                                            <span class="uppercase" v-else>NON Défini</span>
                                         </td>
 
                                         <!-- Présences / Agents -->

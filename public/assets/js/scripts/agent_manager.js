@@ -69,6 +69,48 @@ new Vue({
     },
 
     methods: {
+        pickExcelFile() {
+            this.$refs.excelInput.click();
+        },
+        handleExcelFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            console.log("Fichier sélectionné :", file.name);
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            this.isLoading = true;
+            post("/agents.import.excel", formData).then(({ status, data }) => {
+                this.isLoading = false;
+                if (data.status === "success") {
+                    new Toastify({
+                        node: $("#success-notification-content")
+                            .clone()
+                            .removeClass("hidden")[0],
+                        duration: 3000,
+                        newWindow: true,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        stopOnFocus: true,
+                    }).showToast();
+                    this.viewAllAgents();
+                }
+            });
+            // Facultatif : Lire le fichier avec FileReader (en binaire pour le traitement Excel)
+            /* const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = e.target.result;
+
+                // Exemple avec SheetJS si tu veux lire les données :
+                // const workbook = XLSX.read(data, { type: 'binary' });
+                // const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                // const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                // console.log(jsonData);
+            };
+            reader.readAsBinaryString(file); */
+        },
         createAgent(event) {
             const isValid = this.pristine.validate();
             if (isValid) {

@@ -99,7 +99,7 @@
                                         <i data-lucide="home" class="h-6 w-6 text-primary"></i>
                                         <div>
                                             <h3 class="text-lg font-semibold text-slate-800">@{{ data.name }}</h3>
-                                            <p class="text-sm text-slate-500">CODE : @{{ data.code }} | SECTEUR : @{{ data.secteur.libelle }}</p>
+                                            <p class="text-sm text-slate-500">CODE : @{{ data.code }} <span v-if="data.secteur">| SECTEUR : @{{ data.secteur.libelle }}</span></p>
                                         </div>
                                     </div>
 
@@ -198,6 +198,17 @@
                 </div>
                 <!-- END: Vertical Form -->
             </div>
+        </div>
+
+        <div class="col-span-12">
+            <Pagination
+                :current-page="pagination.current_page"
+                :last-page="pagination.last_page"
+                :total-items="pagination.total"
+                :per-page="pagination.per_page"
+                @page-changed="changePage"
+                @per-page-changed="onPerPageChange">
+            </Pagination>
         </div>
 
         <!-- BEGIN: Modal Content -->

@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class AdminController extends Controller
@@ -395,6 +396,115 @@ class AdminController extends Controller
             return response()->json(['errors' => $e->getMessage() ]);
         }
     }
+
+
+    /**
+     * Allow to import agents List Excel
+     * @param Request $request
+     * @return JsonResponse
+    */
+    public function importAgentsListToExcel(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'file' => 'required|file|mimes:xlsx,xls',
+            ]);
+
+            DB::beginTransaction(); // Sécurise les insertions
+
+            $file = $request->file('file');
+            $spreadsheet = IOFactory::load($file->getPathname());
+            $rows = $spreadsheet->getActiveSheet()->toArray();
+
+            $total = 0;
+            $ajoutes = 0;
+            $ignores = 0;
+            $newSites = 0;
+
+            foreach ($rows as $index => $row) {
+                if ($index === 0) continue; // Ignorer l'en-tête
+
+                $matricule = preg_replace('/\s+/', '', $row[0]);
+                $noms = trim($row[1]);
+                $siteName = trim((string)$row[2]);
+                $siteAdresse = trim((string)$row[3]);
+
+                $total++;
+
+                // Chercher le site existant
+                $site = Site::where('name', 'LIKE', "%{$siteName}%")->first();
+
+                // S'il n'existe pas, le créer avec nouveau code
+                if (!$site && $siteName !== '') {
+                    $lastSite = Site::latest('id')->first();
+                    $lastCode = $lastSite->code;
+                    $code = $this->incrementCode($lastCode);
+                    $site = Site::updateOrCreate(
+                        ["code"=>$code],
+                        [
+                        'code'    => $code,
+                        'name'    => $siteName,
+                        'adresse' => $siteAdresse,
+                        'agency_id'=>1
+                    ]);
+                    $newSites++;
+                }
+
+                // Vérifier si l’agent avec même matricule et site existe déjà
+                $agentExiste = Agent::where('matricule', $matricule)
+                                    ->exists();
+                if ($agentExiste) {
+                    $ignores++;
+                    continue;
+                }
+
+                Agent::updateOrCreate(
+                    ['matricule' => $matricule],
+                    [
+                        'fullname' => $noms,
+                        'site_id'  => $site ? $site->id : null,
+                        'password' => '0000',
+                        'agency_id'=> 1
+                    ]
+                );
+                $ajoutes++;
+            }
+
+            DB::commit(); // Tout s’est bien passé
+
+            return response()->json([
+                "status" => "success",
+                "message" => "Import terminé",
+                "summary" => [
+                    "total" => $total,
+                    "ajoutes" => $ajoutes,
+                    "ignores" => $ignores,
+                    "nouveaux_sites" => $newSites
+                ]
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['status' => 'error', 'errors' => $e->validator->errors()->all()]);
+        }
+        catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['status' => 'error', 'errors' => $e->getMessage()]);
+        }
+    }
+
+
+    private function incrementCode(string $code): string
+    {
+        if (preg_match('/^([A-Za-z]*)(\d+)$/', $code, $matches)) {
+            $prefix = $matches[1];
+            $number = $matches[2];
+            $length = strlen($number);
+            $newNumber = str_pad(((int)$number + 1), $length, '0', STR_PAD_LEFT);
+            return $prefix . $newNumber;
+        }
+        throw new \InvalidArgumentException("Format de code invalide : $code");
+    }
+
 
     /**
      * GET ALL AGENTS LIST

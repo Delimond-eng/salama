@@ -40,6 +40,7 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     })->name('agent.create')->middleware('check.permission:agents,create');
 
     Route::post('agent.create', [AdminController::class, 'createAgent'])->name('agent.create')->middleware('check.permission:agents,create');
+    Route::post('agents.import.excel', [AdminController::class, 'importAgentsListToExcel'])->name('agents.import.excel')->middleware('check.permission:agents,create');
 
     Route::get('/agents.list', function () {
         $agencyId = Auth::user()->agency_id;
@@ -71,7 +72,7 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     Route::get('/sites', function () {
         $agencyId = Auth::user()->agency_id;
         $sites = Site::where('agency_id', $agencyId)
-            ->with(['areas' => fn ($query) => $query->where('status', 'actif')])->with("secteur")
+            ->with(['areas' => fn ($query) => $query->where('status', 'actif')])->with("secteur")->orderBy("name")
             ->get();
         return response()->json(['sites' => $sites]);
     })->middleware('check.permission:sites,view');

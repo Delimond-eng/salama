@@ -221,7 +221,6 @@ new Vue({
         viewPresenceBySite() {
             this.isPresenceLoading = true;
             this.presences = [];
-
             const selectedDate = this.filter_datep || this.presenceDate;
 
             get(
@@ -271,11 +270,25 @@ new Vue({
 
         changePage(page) {
             this.pagination.current_page = page;
-            this.viewPresenceBySite();
+            this.onRefreshData();
         },
 
         onPerPageChange(perPage) {
-            this.viewPresenceBySite();
+            this.onRefreshData();
+        },
+
+        onRefreshData() {
+            let path = location.pathname;
+            switch (path) {
+                case "/sites.list":
+                    this.viewAllSites();
+                    break;
+                case "/reports.presences":
+                    this.viewPresenceBySite();
+                    break;
+                default:
+                    break;
+            }
         },
     },
 
