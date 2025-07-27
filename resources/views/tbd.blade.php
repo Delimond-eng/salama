@@ -32,7 +32,7 @@
             <div class="grid grid-cols-12 gap-6">
 
                 <!-- BEGIN: General Report -->
-                <div v-if="!isDataLoading" class="col-span-12">
+                <div v-show="!isDataLoading" class="col-span-12">
                     <div class="intro-y flex h-10 items-center">
                         <h2 class="mr-5 truncate text-lg font-medium">Rapport général</h2>
                         <a class="ml-auto flex items-center text-primary" @click="loadPresencesData" href="#">
@@ -101,18 +101,15 @@
                     </div>
                 </div>
                 <!-- END: General Report -->
-                <div v-if="!isDataLoading" class="col-span-12">
+                <div class="col-span-12" v-show="!isDataLoading">
                     <div class="intro-y block h-10 items-center flex-wrap xl:flex-nowrap sm:flex items-center">
                         <h2 class="mr-5 uppercase font-extrabold truncate text-lg text-blue-500">
                             Situation globale des présences par sites
                         </h2>
                         <div class="mt-3 flex items-center sm:ml-auto sm:mt-0">
-                            <div class="relative w-56 text-slate-500">
-                                <input data-tw-merge="" v-model="search" type="text" placeholder="Recherche par site..."
-                                    class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
-                                <i data-tw-merge="" data-lucide="search"
-                                    class="stroke-1.5 absolute inset-y-0 right-0 my-auto mr-3 h-4 w-4"></i>
-                            </div>
+                            <select class="tom-select select-site rounded-md bg-white w-48">
+                                <option value="" selected hidden>Filtrez par site</option>
+                            </select>
                             <button @click="exportToPdf" data-tw-merge=""
                                 class="transition duration-200 border shadow-sm items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed !box ml-3 flex text-slate-600 dark:text-slate-300"><i
                                     data-tw-merge="" data-lucide="file-text"

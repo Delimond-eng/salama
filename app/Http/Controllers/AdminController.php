@@ -209,7 +209,7 @@ class AdminController extends Controller
 
     /**
      *Generate Site Qrcodes
-     * @return JsonResponse
+     * @return mixed
     */
     public function generateSiteQrcodes(Request $request)
     {
@@ -230,7 +230,7 @@ class AdminController extends Controller
                     ->setPaper('A4', 'portrait');
             return $pdf->download('qrcodes-sites.pdf');
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()]);
+            Log::error($e->getMessage());
         }
     }
 
@@ -761,6 +761,7 @@ class AdminController extends Controller
             : Carbon::today()->setTimezone("Africa/Kinshasa")->startOfDay();
 
         $yesterday = $targetDate->copy()->subDay();
+        $site = $request->query("site");
 
         $presenceBySites = Site::with([
             'presences' => function ($query) use ($targetDate, $yesterday) {
@@ -772,7 +773,10 @@ class AdminController extends Controller
             'presences.agent.groupe.horaire',
             'agents',
             'secteur'
-        ])->paginate(10);
+        ])->when($site, function ($query, $site) {
+            $query->where("id", $site );
+        })
+        ->paginate(10);
 
 
 

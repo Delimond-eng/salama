@@ -251,42 +251,42 @@ class AppManagerController extends Controller
      */
     public function createSignalement(Request $request): JsonResponse
     {
-            try {
-                // Validation des données
-                $data = $request->validate([
-                    "title" => "required|string",
-                    "description" => "required|string",
-                    "media" => "nullable|file",
-                    "site_id" => "required|int|exists:sites,id",
-                    "agent_id" => "required|int|exists:agents,id",
-                    "agency_id" => "required|int"
-                ]);
+        try {
+            // Validation des données
+            $data = $request->validate([
+                "title" => "required|string",
+                "description" => "required|string",
+                "media" => "nullable|file",
+                "site_id" => "required|int|exists:sites,id",
+                "agent_id" => "required|int|exists:agents,id",
+                "agency_id" => "required|int"
+            ]);
 
-                // Vérifier si un fichier est fourni dans le champ 'media'
-                if ($request->hasFile('media')) {
-                    $file = $request->file('media');
-                    $filename = uniqid('signalement_') . '.' . $file->getClientOriginalExtension();
-                    $destination = public_path(path: 'uploads/signalements');
-                    $file->move($destination, $filename);
-                    // Générer un lien complet sans utiliser storage
-                    $data['media'] = url('uploads/signalements/' . $filename);
-                }
-                $response = Signalement::create($data);
-
-                if($response) {
-                    return response()->json([
-                        "status" => "success",
-                        "result" => $response
-                    ]);
-                } else {
-                    return response()->json(['errors' => 'Echec du traitement de la requête !']);
-                }
-            } catch (\Illuminate\Validation\ValidationException $e) {
-                $errors = $e->validator->errors()->all();
-                return response()->json(['errors' => $errors]);
-            } catch (\Illuminate\Database\QueryException $e) {
-                return response()->json(['errors' => $e->getMessage()]);
+            // Vérifier si un fichier est fourni dans le champ 'media'
+            if ($request->hasFile('media')) {
+                $file = $request->file('media');
+                $filename = uniqid('signalement_') . '.' . $file->getClientOriginalExtension();
+                $destination = public_path(path: 'uploads/signalements');
+                $file->move($destination, $filename);
+                // Générer un lien complet sans utiliser storage
+                $data['media'] = url('uploads/signalements/' . $filename);
             }
+            $response = Signalement::create($data);
+
+            if($response) {
+                return response()->json([
+                    "status" => "success",
+                    "result" => $response
+                ]);
+            } else {
+                return response()->json(['errors' => 'Echec du traitement de la requête !']);
+            }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
     }
 
 

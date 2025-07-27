@@ -55,6 +55,7 @@ new Vue({
             },
             deep: true,
         },
+
         selectedPatrol: {
             handler(newVal, oldVal) {
                 if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
@@ -66,6 +67,9 @@ new Vue({
             immediate: true,
             deep: false,
         },
+        allSites() {
+            this.refreshSelectSite();
+        },
     },
 
     mounted() {
@@ -73,8 +77,8 @@ new Vue({
             document.getElementById("loader").style.display = "none";
         }
 
+        this.viewAllSites();
         if (location.pathname === "/") {
-            this.viewAllSites();
             setInterval(() => {
                 this.viewAllSites();
             }, 5000);
@@ -105,7 +109,7 @@ new Vue({
             if (location.pathname === "/global.view") {
                 this.isDataLoading = true;
                 get(
-                    `/global.view.req?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}`
+                    `/global.view.req?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&site=${this.search}`
                 ).then((res) => {
                     this.isDataLoading = false;
                     this.presences = res.data.dash_presences.data;
@@ -118,6 +122,29 @@ new Vue({
                     };
                 });
             }
+        },
+
+        refreshSelectSite() {
+            const options = [
+                { value: "", text: "Tous les agents" },
+                ...this.allSites.map((site) => ({
+                    value: String(site.id),
+                    text: site.name,
+                })),
+            ];
+            const tom = new TomSelect(".select-site", {
+                plugins: {
+                    dropdown_input: {},
+                },
+                create: false,
+                placeholder: "Filtrez par site",
+                options: options,
+            });
+
+            tom.on("change", (value) => {
+                this.search = value;
+                this.loadPresencesData();
+            });
         },
 
         exportToPdf() {
@@ -565,13 +592,14 @@ new Vue({
         },
 
         allPresences() {
-            if (this.search) {
+            /* if (this.search) {
                 return this.presences.filter((el) =>
                     el.name.toLowerCase().includes(this.search.toLowerCase())
                 );
             } else {
-                return this.presences;
-            }
+                
+            } */
+            return this.presences;
         },
 
         agentsAbsents() {
