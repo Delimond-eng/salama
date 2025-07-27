@@ -25,19 +25,19 @@
     </div>
     <!-- END: Top Bar -->
     <div class="mt-5 grid grid-cols-16 gap-6" id="App" v-cloak>
-        <div class="intro-y box col-span-12 lg:col-span-8">
+        <div class="intro-y box col-span-12 lg:col-span-12">
             <div class="flex flex-wrap items-center border-b border-slate-200/60 px-5 py-5 dark:border-darkmode-400 sm:py-3">
-                <h2 class="mr-auto text-base font-medium">Rapport des présences par site</h2>
+                <h2 class="mr-auto text-base font-extrabold uppercase">Rapport des présences par site</h2>
                 <div class="mt-3 flex w-full items-center xl:mt-0 xl:w-auto">
-                    <div class="relative w-56 text-slate-500 mr-2">
-                        <input data-tw-merge="" v-model="search" type="text" placeholder="Recherche..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
-                        <i data-tw-merge="" data-lucide="search" class="stroke-1.5 absolute inset-y-0 right-0 my-auto mr-3 h-4 w-4"></i>
+                    <div class="relative w-56 text-slate-500">
+                        <input data-tw-merge="" v-model="search" @input="viewAllSites" type="text" placeholder="Recherche..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
+                        <i data-tw-merge="" data-lucide="search" class="stroke-1.5 absolute inset-y-0 right-0 my-auto h-4 w-4 mr-2"></i>
                     </div>
-                    <button onclick="location.href='/site.create'" class="bg-primary text-white transition duration-200 border border-primary shadow-sm inline-flex items-center justify-center py-2 px-2 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 disabled:opacity-70 disabled:cursor-not-allowed hover:bg-opacity-90 hover:border-opacity-90">
+                    <!-- <button onclick="location.href='/site.create'" class="bg-primary text-white transition duration-200 border border-primary shadow-sm inline-flex items-center justify-center py-2 px-2 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 disabled:opacity-70 disabled:cursor-not-allowed hover:bg-opacity-90 hover:border-opacity-90">
                         <span class="flex h-5 w-5 items-center justify-center">
                             <i class="w-4 h-4" data-lucide="plus"></i>
                         </span>
-                    </button>
+                    </button> -->
                 </div>
             </div>
             <div class="space-y-4" v-if="allSites.length > 0">
@@ -201,6 +201,14 @@
                 </div>
             </div>
         </div>
+        <Pagination
+            :current-page="pagination1.current_page"
+            :last-page="pagination1.last_page"
+            :total-items="pagination1.total"
+            :per-page="pagination1.per_page"
+            @page-changed="changePage1"
+            @per-page-changed="onPerPageChange1">
+        </Pagination>
          <div data-tw-backdrop="" aria-hidden="true" tabindex="-1" id="presence-details-modal" class="modal group bg-black/60 transition-[visibility,opacity] w-screen h-screen fixed left-0 top-0 [&:not(.show)]:duration-[0s,0.2s] [&:not(.show)]:delay-[0.2s,0s] [&:not(.show)]:invisible [&:not(.show)]:opacity-0 [&.show]:visible [&.show]:opacity-100 [&.show]:duration-[0s,0.4s]">
             <div data-tw-merge="" class="w-[90%] ml-auto h-screen flex flex-col bg-white relative shadow-md transition-[margin-right] duration-[0.6s] -mr-[100%] group-[.show]:mr-0 dark:bg-darkmode-600 sm:w-[460px]"><a class="absolute inset-y-0 left-0 right-auto my-auto -ml-[60px] flex h-8 w-8 items-center justify-center rounded-full border border-white/90 bg-white/5 text-white/90 transition-all hover:rotate-180 hover:scale-105 hover:bg-white/10 focus:outline-none sm:-ml-[105px] sm:h-14 sm:w-14" data-tw-dismiss="modal" href="javascript:;">
                     <i data-tw-merge="" data-lucide="x" class="h-3 w-3 stroke-[1] sm:h-8 sm:w-8"></i>
@@ -208,7 +216,7 @@
                 <div data-tw-merge="" class="overflow-y-auto flex-1 p-0" v-if="selectedPresence">
                     <div class="flex flex-col border-b">
                         <div class="px-8 pt-6 pb-8">
-                            <div class="text-base font-bold uppercase">Détails de la présence de l'agent</div>
+                            <div class="text-base font-extrabold uppercase">Détails de la présence de l'agent</div>
                             <!-- <div class="mt-0.5 text-slate-500 flex items-center border-b border-slate-200/60 pb-4" v-if="selectedPatrol">
                                 <i data-lucide="map-pin" class="w-3 h-3 mr-1 text-primary"></i>
                                 <span v-if="selectedPatrol.site">@{{ selectedPatrol.site.name }}</span>

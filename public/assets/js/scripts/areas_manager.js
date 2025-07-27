@@ -50,6 +50,12 @@ new Vue({
                 total: 0,
                 per_page: 10,
             },
+            pagination1: {
+                current_page: 1,
+                last_page: 1,
+                total: 0,
+                per_page: 10,
+            },
         };
     },
 
@@ -128,6 +134,7 @@ new Vue({
         openPhoto(url) {
             window.open(url, "_blank", "height=400,width=600");
         },
+
         reset() {
             this.form = {
                 name: "",
@@ -151,10 +158,18 @@ new Vue({
 
         viewAllSites() {
             this.isDataLoading = true;
-            get("/sites")
-                .then((res) => {
+            get(
+                `/sites?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&search=${this.search}`
+            )
+                .then(({ data, status }) => {
                     this.isDataLoading = false;
-                    this.sites = res.data.sites;
+                    this.sites = data.sites.data;
+                    this.pagination1 = {
+                        current_page: data.sites.current_page,
+                        last_page: data.sites.last_page,
+                        total: data.sites.total,
+                        per_page: data.sites.per_page,
+                    };
                 })
                 .catch((err) => {
                     this.isDataLoading = false;
@@ -222,7 +237,6 @@ new Vue({
             this.isPresenceLoading = true;
             this.presences = [];
             const selectedDate = this.filter_datep || this.presenceDate;
-
             get(
                 `/presences?site_id=${this.selectedSiteId}&date=${selectedDate}&page=${this.pagination.current_page}&per_page=${this.pagination.per_page}`
             )
@@ -270,25 +284,24 @@ new Vue({
 
         changePage(page) {
             this.pagination.current_page = page;
-            this.onRefreshData();
+            this.viewPresenceBySite();
         },
 
         onPerPageChange(perPage) {
-            this.onRefreshData();
+            this.pagination.per_page = perPage;
+            this.pagination.current_page = 1;
+            this.viewPresenceBySite();
         },
 
-        onRefreshData() {
-            let path = location.pathname;
-            switch (path) {
-                case "/sites.list":
-                    this.viewAllSites();
-                    break;
-                case "/reports.presences":
-                    this.viewPresenceBySite();
-                    break;
-                default:
-                    break;
-            }
+        changePage1(page) {
+            this.pagination.current_page = page;
+            this.viewAllSites();
+        },
+
+        onPerPageChange1(perPage) {
+            this.pagination1.per_page = perPage;
+            this.pagination1.current_page = 1;
+            this.viewAllSites();
         },
     },
 
@@ -322,7 +335,7 @@ new Vue({
             });
         },
         allSites() {
-            if (this.search && this.search.trim()) {
+            /* if (this.search && this.search.trim()) {
                 return this.sites.filter(
                     (el) =>
                         el.name
@@ -333,8 +346,9 @@ new Vue({
                             .includes(this.search.toLowerCase())
                 );
             } else {
-                return this.sites;
-            }
+                
+            } */
+            return this.sites;
         },
     },
 });

@@ -463,7 +463,7 @@ class AdminController extends Controller
                     [
                         'fullname' => $noms,
                         'site_id'  => $site ? $site->id : null,
-                        'password' => '0000',
+                        'password' => str_pad(rand(0, 999999), rand(4, 6), '0', STR_PAD_LEFT),
                         'agency_id'=> 1
                     ]
                 );
@@ -511,18 +511,33 @@ class AdminController extends Controller
      * @param Request $request
      * @return JsonResponse
     */
-     public function fetchAgents(Request $request){
+    public function fetchAgents(Request $request)
+    {
+        $search = trim($request->query('search'));
+        $statusFilter = $request->query('status');
+        $siteFilter = $request->query('site');
         $agencyId = Auth::user()->agency_id;
-        $agents = Agent::whereIn("status", ["actif", "permenant", "dispo"])
-            ->where("agency_id", $agencyId)
-            ->with("site")->with("groupe")
-            ;
-        if($request->query("status")){
-            $agents->where("status", $request->query("status"));
-        }
-        $datas = $agents->orderByDesc("id")->paginate(10);
+
+        $agents = Agent::whereIn('status', ['actif', 'permenant', 'dispo'])
+            ->where('agency_id', $agencyId)
+            ->with(['site', 'groupe'])
+            ->when($statusFilter, function ($query, $statusFilter) {
+                $query->where('status', $statusFilter);
+            })
+            ->when($siteFilter, function ($query, $siteFilter) {
+                $query->where('site_id', $siteFilter);
+            })
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('matricule', 'LIKE', "%$search%")
+                    ->orWhere('fullname', 'LIKE', "%$search%");
+                });
+            })
+            ->orderByDesc('id')
+            ->paginate(10);
+
         return response()->json([
-            "agents" => $datas
+            'agents' => $agents
         ]);
     }
 
@@ -531,16 +546,18 @@ class AdminController extends Controller
      * Crée l'historique de mouvement des agents
      * @return AgentHistory
     */
-    protected function createAgentHistory(Agent $agent, $siteId = null){
-        (new Carbon())->setTimezone("Africa/Kinshasa");
-        $history = AgentHistory::create([
-            "agent_id"=>$agent->id,
-            "site_id"=>$agent->site_id,
-            "site_provenance_id"=>$siteId,
-            "status"=>$agent->status,
-            "date"=>Carbon::now(),
-        ]);
-        return $history;
+    protected function createAgentHistory(Agent $agent, $siteId = null):void
+    {
+        // Vérifie que les deux IDs sont définis et différents
+        if (!is_null($agent->site_id) && !is_null($siteId) && $agent->site_id != $siteId) {
+             AgentHistory::create([
+                "agent_id" => $agent->id,
+                "site_id" => $agent->site_id, // ancien site
+                "site_provenance_id" => $siteId, // nouveau site demandé
+                "status" => $agent->status,
+                "date" => Carbon::today()->setTimezone("Africa/Kinshasa"),
+            ]);
+        }
     }
 
 

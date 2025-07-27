@@ -28,6 +28,11 @@ new Vue({
                 date: "",
                 start_time: "",
                 end_time: "",
+                sites: [
+                    {
+                        site_id: "",
+                    },
+                ],
             },
             formSup: {
                 title: "",
@@ -52,6 +57,7 @@ new Vue({
             searchSite: "",
             searchStatus: "",
             filter_date: "",
+            tomInstances: [],
         };
     },
 
@@ -72,7 +78,7 @@ new Vue({
             );
         }
 
-        if ($(".tom-select").length) {
+        if ($(".tom-select-agent").length) {
             const self = this;
             $(".tom-select").each(function () {
                 const tom = new TomSelect(this, {
@@ -91,7 +97,10 @@ new Vue({
         this.refreshData();
         this.viewAllSectors();
         this.viewAllSites();
-        console.log(this.today);
+
+        this.$nextTick(() => {
+            this.initTomSelects();
+        });
     },
 
     methods: {
@@ -279,6 +288,7 @@ new Vue({
                 libelle: "",
                 start_time: "",
                 end_time: "",
+                sites: [{ site_id: "" }],
             };
             this.formSup = {
                 title: "",
@@ -428,6 +438,79 @@ new Vue({
             const [day, month, year] = str.split("/");
             return new Date(`${year}-${month}-${day}`);
         },
+
+        addSite() {
+            this.form.sites.push({ site_id: "" });
+            this.$nextTick(() => {
+                this.initTomSelects();
+            });
+        },
+
+        removeSite(index) {
+            this.form.sites.splice(index, 1);
+            const instance = this.tomInstances[index];
+            if (instance) {
+                instance.destroy();
+                this.tomInstances.splice(index, 1);
+            }
+
+            this.$nextTick(() => {
+                this.initTomSelects();
+            });
+        },
+
+        initTomSelects() {
+            const options = [
+                { value: "", text: "--Sélectionnez un site--" },
+                ...this.allSites.map((site) => ({
+                    value: String(site.id),
+                    text: site.name,
+                })),
+            ];
+
+            this.$refs.siteSelect.forEach((select, index) => {
+                if (!select) return;
+                // Détruire si déjà instancié
+                if (select.tomselect) {
+                    select.tomselect.destroy();
+                }
+
+                const tom = new TomSelect(select, {
+                    options,
+                    placeholder: "Sélectionnez un site",
+                    create: false,
+                    plugins: {
+                        dropdown_input: {},
+                    },
+                });
+
+                // Mise à jour de la valeur sélectionnée
+                tom.on("change", (value) => {
+                    // Vérifie si value existe déjà dans un autre index
+                    const isDuplicate = this.form.sites.some(
+                        (site, i) => site.site_id === value && i !== index
+                    );
+
+                    if (isDuplicate) {
+                        this.removeSite(index);
+                    } else {
+                        // Sinon, mets à jour normalement
+                        this.form.sites[index].site_id = value;
+                        console.log(JSON.stringify(this.form.sites));
+                    }
+                });
+
+                // Pré-remplir si la valeur est valide
+                const selected = this.form.sites[index].site_id;
+                if (
+                    selected &&
+                    options.some((opt) => opt.value === String(selected))
+                ) {
+                    tom.setValue(String(selected));
+                }
+                this.tomInstances[index] = tom;
+            });
+        },
     },
 
     computed: {
@@ -497,6 +580,22 @@ new Vue({
                     return "text-danger";
                 }
             };
+        },
+    },
+
+    watch: {
+        form: {
+            handler() {
+                this.$nextTick(() => {
+                    this.initTomSelects();
+                });
+            },
+            deep: true,
+        },
+        allSites() {
+            this.$nextTick(() => {
+                this.initTomSelects();
+            });
         },
     },
 });

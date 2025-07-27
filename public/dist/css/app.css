@@ -11859,3 +11859,9 @@
  label {
      font-weight: 900 !important;
  }
+
+ input::placeholder,
+ input::-moz-placeholder,
+ input::-webkit-input-placeholder {
+     font-size: 12px;
+ }

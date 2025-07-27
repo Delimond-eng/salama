@@ -24,6 +24,7 @@ new Vue({
                 per_page: 10,
             },
             search: "",
+            filter_by_site: "",
             showComment: null,
             delete_id: "",
             filter_status: "",
@@ -111,6 +112,7 @@ new Vue({
             };
             reader.readAsBinaryString(file); */
         },
+
         createAgent(event) {
             const isValid = this.pristine.validate();
             if (isValid) {
@@ -248,7 +250,7 @@ new Vue({
         viewAllAgents() {
             this.isDataLoading = true;
             get(
-                `/agents?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&status=${this.filter_status}`
+                `/agents?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&status=${this.filter_status}&search=${this.search}&site=${this.filter_by_site}`
             )
                 .then((res) => {
                     this.isDataLoading = false;
@@ -346,9 +348,34 @@ new Vue({
         },
     },
 
+    watch: {
+        allSites() {
+            const options = [
+                { value: "", text: "Tous les agents" },
+                ...this.allSites.map((site) => ({
+                    value: String(site.id),
+                    text: site.name,
+                })),
+            ];
+            const tom = new TomSelect(".select-site", {
+                plugins: {
+                    dropdown_input: {},
+                },
+                create: false,
+                placeholder: "Filtrez par site",
+                options: options,
+            });
+
+            tom.on("change", (value) => {
+                this.filter_by_site = value;
+                this.viewAllAgents();
+            });
+        },
+    },
+
     computed: {
         allAgents() {
-            if (this.search && this.search.trim()) {
+            /* if (this.search && this.search.trim()) {
                 return this.agents.filter(
                     (el) =>
                         el.fullname
@@ -360,7 +387,8 @@ new Vue({
                 );
             } else {
                 return this.agents;
-            }
+            } */
+            return this.agents;
         },
 
         allHistories() {

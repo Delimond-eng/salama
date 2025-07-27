@@ -766,9 +766,8 @@ class PresenceController extends Controller
 
     public function getAllGroups(Request $request)
     {
-        $all    = $request->query("all") ?? null;
         $groups = AgentGroup::with("horaire")->orderByDesc("id");
-        return response()->json(['groups' => isset($all) ? $groups->get() : $groups->paginate(perPage: 10)]);
+        return response()->json(['groups' => $request->has("all") ? $groups->get() : $groups->paginate(perPage: 10)]);
     }
 
     private function getDateRange(Request $request, $year)

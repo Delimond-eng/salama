@@ -851,7 +851,86 @@ class AppManagerController extends Controller
      * @param Request $request
      * @return JsonResponse
     */
-    public function createPlanning(Request $request) : JsonResponse
+    public function createPlanning(Request $request): JsonResponse
+    {
+        try {
+            // Validation des données (sites.*.site_id déjà validé)
+            $data = $request->validate([
+                "schedule.libelle" => "required|string",
+                "schedule.start_time" => "required|string",
+                "schedule.end_time" => "nullable|string",
+                "schedule.date" => "nullable|date",
+                "schedule.sites.*.site_id" => "required|int|exists:sites,id",
+            ]);
+
+            $schedule = $data["schedule"];
+            $schedule["agency_id"] = Auth::user()->agency_id;
+
+            $results = [];
+
+            foreach ($schedule["sites"] as $siteData) {
+                $siteId = $siteData["site_id"];
+                $site = Site::find($siteId);
+
+                // Préparer les données pour ce site précis
+                $scheduleForSite = $schedule;
+                $scheduleForSite["site_id"] = $siteId;
+
+                // Création ou mise à jour du planning
+                $planning = Schedules::updateOrCreate(
+                    [
+                        "id" => $request->id,
+                        "site_id" => $siteId,
+                    ],
+                    $scheduleForSite
+                );
+
+                // Stocker le résultat pour retour éventuel
+                $results[] = $planning;
+
+                // Envoi notification FCM si token présent
+                try {
+                    if ($site && $site->fcm_token) {
+                        $fcm = new FcmService();
+                        $title = "Nouvelle Patrouille programmée";
+
+                        Carbon::setLocale('fr');
+                        $date = Carbon::parse($schedule['date']);
+                        $start = $schedule['start_time'];
+                        $end = $schedule['end_time'];
+
+                        $today = Carbon::today();
+                        $tomorrow = Carbon::tomorrow();
+
+                        if ($date->isSameDay($today)) {
+                            $formattedDate = "aujourd'hui";
+                        } elseif ($date->isSameDay($tomorrow)) {
+                            $formattedDate = "demain";
+                        } else {
+                            $formattedDate = $date->translatedFormat('l j F Y');
+                        }
+
+                        $body = "Vous avez une nouvelle patrouille $formattedDate de $start à $end.";
+                        $fcm->sendNotification($site->fcm_token, $title, $body);
+                    }
+                } catch (\Exception $exception) {
+                    Log::info("Erreur notification site $siteId : " . $exception->getMessage());
+                }
+            }
+
+            return response()->json([
+                "status" => "success",
+                "result" => $results,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
+    }
+
+    /* public function createPlanning(Request $request) : JsonResponse
     {
         try {
             // Validation des données
@@ -860,7 +939,7 @@ class AppManagerController extends Controller
                 "schedule.start_time" => "required|string",
                 "schedule.end_time" => "nullable|string",
                 "schedule.date" => "nullable|date",
-                "schedule.site_id" => "required|int|exists:sites,id",
+                "schedule.sites.*.site_id" => "required|int|exists:sites,id",
             ]);
 
             $schedule = $data["schedule"];
@@ -911,7 +990,7 @@ class AppManagerController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['errors' => $e->getMessage()]);
         }
-    }
+    } */
 
     /**
      * Create planning for supervisor

@@ -20,7 +20,8 @@
         <!-- END: Breadcrumb -->
 
         <!-- BEGIN: Account Menu -->
-        <div data-tw-merge="" data-tw-placement="bottom-end" class="dropdown relative"><button
+        <div data-tw-merge="" data-tw-placement="bottom-end" class="dropdown relative">
+            <button
                 data-tw-toggle="dropdown" aria-expanded="false"
                 class="cursor-pointer zoom-in intro-x block h-9 w-9 bg-primary text-white overflow-hidden rounded-full shadow-lg">
                 <h1 style="font-weight: 900;">{{ substr(Auth::user()->name, 0, 1) }}</h1>
@@ -72,7 +73,7 @@
                         <h2 class="mr-auto text-base font-bold uppercase">Liste des sites</h2>
                         <div class="mt-3 flex w-full items-center xl:mt-0 xl:w-auto">
                             <div class="relative w-56 text-slate-500 mr-2">
-                                <input data-tw-merge="" v-model="search" type="text" placeholder="Recherche..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
+                                <input data-tw-merge="" v-model="search" @input="viewAllSites" type="text" placeholder="Recherche..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
                                 <i data-tw-merge="" data-lucide="search" class="stroke-1.5 absolute inset-y-0 right-0 my-auto mr-3 h-4 w-4"></i>
                             </div>
                             <button onclick="location.href='/site.create'" class="bg-primary text-white transition duration-200 shadow-sm inline-flex items-center justify-center py-2 px-2 rounded-full mr-1 font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 disabled:opacity-70 disabled:cursor-not-allowed hover:bg-opacity-90 hover:border-opacity-90">
@@ -81,9 +82,9 @@
                                 </span>
                             </button>
 
-                            <button onclick="location.href='/sites.qrcode'" class="bg-success text-white transition duration-200 shadow-sm inline-flex items-center justify-center py-2 px-2 rounded-full font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 disabled:opacity-70 disabled:cursor-not-allowed hover:bg-opacity-90 hover:border-opacity-90">
+                            <button onclick="location.href='/sites.qrcode'" class="bg-dark text-white transition duration-200 shadow-sm inline-flex items-center justify-center py-2 px-2 rounded-full font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 disabled:opacity-70 disabled:cursor-not-allowed hover:bg-opacity-90 hover:border-opacity-90">
                                 <span class="flex h-5 w-5 items-center justify-center">
-                                    <i class="w-4 h-4" data-lucide="download"></i>
+                                    <svg class="w-4 h-4" fill="#FFFFFF" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><path d="M 34.4335 26.0664 L 45.0976 26.0664 C 48.0976 26.0664 49.5743 24.5664 49.5743 21.4727 L 49.5743 10.9961 C 49.5743 7.9023 48.0976 6.4258 45.0976 6.4258 L 34.4335 6.4258 C 31.4570 6.4258 29.9570 7.9023 29.9570 10.9961 L 29.9570 21.4727 C 29.9570 24.5664 31.4570 26.0664 34.4335 26.0664 Z M 10.9023 26.0664 L 21.5898 26.0664 C 24.5663 26.0664 26.0663 24.5664 26.0663 21.4727 L 26.0663 10.9961 C 26.0663 7.9023 24.5663 6.4258 21.5898 6.4258 L 10.9023 6.4258 C 7.9257 6.4258 6.4257 7.9023 6.4257 10.9961 L 6.4257 21.4727 C 6.4257 24.5664 7.9257 26.0664 10.9023 26.0664 Z M 10.9492 22.7617 C 10.1288 22.7617 9.7304 22.3398 9.7304 21.4727 L 9.7304 10.9961 C 9.7304 10.1523 10.1288 9.7305 10.9492 9.7305 L 21.5195 9.7305 C 22.3398 9.7305 22.7617 10.1523 22.7617 10.9961 L 22.7617 21.4727 C 22.7617 22.3398 22.3398 22.7617 21.5195 22.7617 Z M 34.4804 22.7617 C 33.6601 22.7617 33.2617 22.3398 33.2617 21.4727 L 33.2617 10.9961 C 33.2617 10.1523 33.6601 9.7305 34.4804 9.7305 L 45.0742 9.7305 C 45.8710 9.7305 46.2695 10.1523 46.2695 10.9961 L 46.2695 21.4727 C 46.2695 22.3398 45.8710 22.7617 45.0742 22.7617 Z M 14.2304 18.7071 L 18.2382 18.7071 C 18.5898 18.7071 18.7304 18.5664 18.7304 18.1680 L 18.7304 14.2774 C 18.7304 13.9023 18.5898 13.7617 18.2382 13.7617 L 14.2304 13.7617 C 13.8788 13.7617 13.7851 13.9023 13.7851 14.2774 L 13.7851 18.1680 C 13.7851 18.5664 13.8788 18.7071 14.2304 18.7071 Z M 37.9023 18.7071 L 41.8866 18.7071 C 42.2382 18.7071 42.3788 18.5664 42.3788 18.1680 L 42.3788 14.2774 C 42.3788 13.9023 42.2382 13.7617 41.8866 13.7617 L 37.9023 13.7617 C 37.5507 13.7617 37.4335 13.9023 37.4335 14.2774 L 37.4335 18.1680 C 37.4335 18.5664 37.5507 18.7071 37.9023 18.7071 Z M 10.9023 49.5742 L 21.5898 49.5742 C 24.5663 49.5742 26.0663 48.0977 26.0663 45.0039 L 26.0663 34.5039 C 26.0663 31.4336 24.5663 29.9336 21.5898 29.9336 L 10.9023 29.9336 C 7.9257 29.9336 6.4257 31.4336 6.4257 34.5039 L 6.4257 45.0039 C 6.4257 48.0977 7.9257 49.5742 10.9023 49.5742 Z M 31.5273 36.0039 L 35.5351 36.0039 C 35.8866 36.0039 36.0273 35.8633 36.0273 35.4649 L 36.0273 31.5742 C 36.0273 31.1992 35.8866 31.0586 35.5351 31.0586 L 31.5273 31.0586 C 31.1757 31.0586 31.0820 31.1992 31.0820 31.5742 L 31.0820 35.4649 C 31.0820 35.8633 31.1757 36.0039 31.5273 36.0039 Z M 43.9726 36.0039 L 47.9804 36.0039 C 48.3320 36.0039 48.4727 35.8633 48.4727 35.4649 L 48.4727 31.5742 C 48.4727 31.1992 48.3320 31.0586 47.9804 31.0586 L 43.9726 31.0586 C 43.6210 31.0586 43.5039 31.1992 43.5039 31.5742 L 43.5039 35.4649 C 43.5039 35.8633 43.6210 36.0039 43.9726 36.0039 Z M 10.9492 46.2695 C 10.1288 46.2695 9.7304 45.8477 9.7304 45.0039 L 9.7304 34.5274 C 9.7304 33.6602 10.1288 33.2383 10.9492 33.2383 L 21.5195 33.2383 C 22.3398 33.2383 22.7617 33.6602 22.7617 34.5274 L 22.7617 45.0039 C 22.7617 45.8477 22.3398 46.2695 21.5195 46.2695 Z M 14.2304 42.2383 L 18.2382 42.2383 C 18.5898 42.2383 18.7304 42.0977 18.7304 41.6758 L 18.7304 37.8086 C 18.7304 37.4336 18.5898 37.2930 18.2382 37.2930 L 14.2304 37.2930 C 13.8788 37.2930 13.7851 37.4336 13.7851 37.8086 L 13.7851 41.6758 C 13.7851 42.0977 13.8788 42.2383 14.2304 42.2383 Z M 37.8085 42.2383 L 41.8163 42.2383 C 42.1679 42.2383 42.3085 42.0977 42.3085 41.6758 L 42.3085 37.8086 C 42.3085 37.4336 42.1679 37.2930 41.8163 37.2930 L 37.8085 37.2930 C 37.4570 37.2930 37.3632 37.4336 37.3632 37.8086 L 37.3632 41.6758 C 37.3632 42.0977 37.4570 42.2383 37.8085 42.2383 Z M 31.5273 48.4492 L 35.5351 48.4492 C 35.8866 48.4492 36.0273 48.3086 36.0273 47.9102 L 36.0273 44.0195 C 36.0273 43.6445 35.8866 43.5039 35.5351 43.5039 L 31.5273 43.5039 C 31.1757 43.5039 31.0820 43.6445 31.0820 44.0195 L 31.0820 47.9102 C 31.0820 48.3086 31.1757 48.4492 31.5273 48.4492 Z M 43.9726 48.4492 L 47.9804 48.4492 C 48.3320 48.4492 48.4727 48.3086 48.4727 47.9102 L 48.4727 44.0195 C 48.4727 43.6445 48.3320 43.5039 47.9804 43.5039 L 43.9726 43.5039 C 43.6210 43.5039 43.5039 43.6445 43.5039 44.0195 L 43.5039 47.9102 C 43.5039 48.3086 43.6210 48.4492 43.9726 48.4492 Z"/></svg>
                                 </span>
                             </button>
                         </div>
@@ -116,7 +117,7 @@
                                         </button>
                                         <button @click="deleteSite(data)" class="bg-red-100 text-danger border border-red-300 rounded-lg px-2 py-2 text-sm hover:bg-red-200 hover:border-red-400">
                                             <span class="h-3 w-3" v-if="data.id === delete_id">
-                                                <svg width="14" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="red">
+                                                <svg class="h-3 w-3" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="red">
                                                     <g fill="none" fill-rule="evenodd">
                                                         <g transform="translate(1 1)" stroke-width="4">
                                                             <circle stroke-opacity=".5" cx="18" cy="18" r="18"></circle>
@@ -127,7 +128,7 @@
                                                     </g>
                                                 </svg>
                                             </span>
-                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            <i v-else data-lucide="trash-2" class="w-4 h-4"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -202,12 +203,12 @@
 
         <div class="col-span-12">
             <Pagination
-                :current-page="pagination.current_page"
-                :last-page="pagination.last_page"
-                :total-items="pagination.total"
-                :per-page="pagination.per_page"
-                @page-changed="changePage"
-                @per-page-changed="onPerPageChange">
+                :current-page="pagination1.current_page"
+                :last-page="pagination1.last_page"
+                :total-items="pagination1.total"
+                :per-page="pagination1.per_page"
+                @page-changed="changePage1"
+                @per-page-changed="onPerPageChange1">
             </Pagination>
         </div>
 

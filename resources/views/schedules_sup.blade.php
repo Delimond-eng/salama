@@ -89,7 +89,7 @@
                                     <label for="vertical-form-1" class="inline-block mb-2 group-[.form-inline]:mb-2 group-[.form-inline]:sm:mb-0 group-[.form-inline]:sm:mr-5 group-[.form-inline]:sm:text-right">
                                         Superviseur concerné *
                                     </label>
-                                    <select data-placeholder="Sélectionnez un superviseur" class="tom-select w-full" required>
+                                    <select data-placeholder="Sélectionnez un superviseur" class="tom-select tom-select-agent w-full" required>
                                         <option value="">Sélectionnez un superviseur</option> <!-- Placeholder visible -->
                                         @foreach ($supervisors as $sup )
                                         <option value="{{ $sup->id }}">{{ $sup->matricule  }} | {{ $sup->fullname }}</option>

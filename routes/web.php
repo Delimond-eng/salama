@@ -17,6 +17,7 @@ use App\Models\Secteur;
 use App\Models\Site;
 use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Http\Request; 
 
 Auth::routes();
 
@@ -69,11 +70,34 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
         return view('site_list', ["secteurs"=>$secteurs]);
     })->name('sites.list')->middleware('check.permission:sites,view');
 
-    Route::get('/sites', function () {
-        $agencyId = Auth::user()->agency_id;
-        $sites = Site::where('agency_id', $agencyId)
-            ->with(['areas' => fn ($query) => $query->where('status', 'actif')])->with("secteur")->orderBy("name")
-            ->get();
+    Route::get('/sites', function (Request $request) {
+    $agencyId = Auth::user()->agency_id;
+    $search = $request->query('search');
+
+    $sitesQuery = Site::where('agency_id', $agencyId)
+            ->with([
+                'areas' => fn ($query) => $query->where('status', 'actif'),
+                'secteur'
+            ])
+            ->select("*")
+            ->selectRaw('
+                EXISTS (    
+                    SELECT 1 FROM areas
+                    WHERE areas.site_id = sites.id AND areas.status = ?
+                ) AS has_active_areas
+            ', ['actif'])
+            ->when($search, function ($query, $search) {
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery->where('code', 'LIKE', "%$search%")
+                            ->orWhere('name', 'LIKE', "%$search%");
+                });
+            })
+            ->orderByDesc('has_active_areas')
+            ->orderBy('name');
+
+        $sites = $request->has('page')
+            ? $sitesQuery->paginate(8)
+            : $sitesQuery->get();
         return response()->json(['sites' => $sites]);
     })->middleware('check.permission:sites,view');
 

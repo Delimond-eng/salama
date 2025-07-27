@@ -61,15 +61,12 @@
 
             </div>
             <div class="mt-3 flex w-full items-center xl:mt-0 xl:w-auto">
-                <div class="relative w-56 text-slate-500">
-                    <input data-tw-merge="" v-model="search" type="text" placeholder="Recherche..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
+                <div class="relative w-56 text-slate-500 mr-2">
+                    <input data-tw-merge="" v-model="search" @input="viewAllAgents" type="text" placeholder="Recherche par nom ou matricule..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
                     <i data-tw-merge="" data-lucide="search" class="stroke-1.5 absolute inset-y-0 right-0 my-auto mr-3 h-4 w-4"></i>
                 </div>
-                <select v-model="filter_status" @change="viewAllAgents" data-tw-merge="" class="disabled:bg-slate-100 disabled:cursor-not-allowed disabled:dark:bg-darkmode-800/50 [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md py-2 px-3 pr-8 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 group-[.form-inline]:flex-1 !box ml-2 w-56 xl:w-auto">
-                    <option value="" selected hidden>Status</option>
-                    <option value="">Tout</option>
-                    <option value="permenant">Permenant</option>
-                    <option value="dispo">Dispo</option>
+                <select data-tw-merge="" class="tom-select select-site rounded-md bg-white w-48">
+                    <option value="" selected hidden>Site</option>
                 </select>
             </div>
         </div>
@@ -147,15 +144,19 @@
                                 Actif
                             </div>
                         </td>
-                        <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box w-56 rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600 before:absolute before:inset-y-0 before:left-0 before:my-auto before:block before:h-8 before:w-px before:bg-slate-200 before:dark:bg-darkmode-400">
+                        <td data-tw-merge="" class="px-5 py-3 border-b box dark:border-darkmode-300 rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600 before:absolute before:inset-y-0 before:left-0 before:my-auto before:block before:h-8 before:w-px before:bg-slate-200 before:dark:bg-darkmode-400">
                             <div class="flex items-center justify-center">
-                                <a href="#" class="mr-3 flex items-center text-blue-500" data-tw-toggle="modal" data-tw-target="#agent-edit-modal" @click="editAgent(data)">
-                                    <i data-tw-merge="" data-lucide="edit" class="stroke-1.5 mr-1 h-4 w-4"></i>
+                                <a href="#" class="mr-3 flex items-center text-blue-500 txt-xs" data-tw-toggle="modal" data-tw-target="#agent-edit-modal" @click="editAgent(data)">
+                                    <i data-tw-merge="" data-lucide="edit" class="stroke-1.5 mr-1 h-3 w-3"></i>
                                     Editer
                                 </a>
+                                <a class="flex items-center justify-center mx-2 txt-xs text-primary" href="#">
+                                    <svg class="w-3 h-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right-left-icon lucide-arrow-right-left"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
+                                    Historique
+                                </a>
                                 <a class="flex text-danger" href="#" @click="deleteAgent(data)">
-                                    <span class="ml-2 h-4 w-4" v-if="data.id === delete_id">
-                                        <svg class="h-full w-full" width="25" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="red">
+                                    <span class="h-3 w-3" v-if="data.id === delete_id">
+                                        <svg class="h-3 w-3" width="25" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="red">
                                             <g fill="none" fill-rule="evenodd">
                                                 <g transform="translate(1 1)" stroke-width="4">
                                                     <circle stroke-opacity=".5" cx="18" cy="18" r="18"></circle>
@@ -181,7 +182,8 @@
             :total-items="pagination.total"
             :per-page="pagination.per_page"
             @page-changed="changePage"
-            @per-page-changed="onPerPageChange"></Pagination>
+            @per-page-changed="onPerPageChange">
+        </Pagination>
         <!-- END: Pagination -->
         </div>
         <!-- END: Data List -->
@@ -378,3 +380,4 @@
 <script type="module" src="{{ asset("assets/js/scripts/agent_manager.js") }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 @endpush
+
