@@ -13,7 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('areas', function (Blueprint $table) {
+        if (!Schema::hasTable('areas')) {
+    Schema::create('areas', function (Blueprint $table) {
             $table->id();
             $table->string("libelle");
             $table->string("latlng")->nullable();
@@ -22,6 +23,7 @@ return new class extends Migration
             $table->string("status")->default("actif");
             $table->timestamps();
         });
+        }
     }
 
     /**

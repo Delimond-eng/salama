@@ -13,13 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('supervision_control_elements', function (Blueprint $table) {
+        if (!Schema::hasTable('supervision_control_elements')) {
+    Schema::create('supervision_control_elements', function (Blueprint $table) {
             $table->id();
             $table->string('libelle');
             $table->string('description')->nullable();
             $table->boolean('active')->default(true); 
             $table->timestamps();
         });
+        }
     }
 
     /**

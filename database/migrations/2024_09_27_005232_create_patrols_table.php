@@ -13,6 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
+        if (!Schema::hasTable('patrols')) {
         Schema::create('patrols', function (Blueprint $table) {
             $table->id();
             $table->timestamp("started_at")->nullable()->comment("datetime of patrol MM-DD-AAAA HH:MM");
@@ -27,6 +28,7 @@ return new class extends Migration
             $table->string("status")->default("actif");
             $table->timestamps();
         });
+        }
     }
 
     /**

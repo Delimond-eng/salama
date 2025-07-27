@@ -13,7 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('agent_histories', function (Blueprint $table) {
+        if (!Schema::hasTable('agent_histories')) {
+    Schema::create('agent_histories', function (Blueprint $table) {
             $table->id();
             $table->dateTime("date")->nullable();
             $table->unsignedBigInteger("agent_id");
@@ -21,7 +22,7 @@ return new class extends Migration
             $table->unsignedBigInteger("site_provenance_id")->nullable();
             $table->string("status")->default("permenant");
             $table->timestamps();
-        });
+        });}
     }
 
     /**

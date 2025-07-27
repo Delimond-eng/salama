@@ -13,7 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('presence_horaires', function (Blueprint $table) {
+        if (!Schema::hasTable('presence_horaires')) {
+    Schema::create('presence_horaires', function (Blueprint $table) {
             $table->id();
             $table->string("libelle");
             $table->time("started_at");
@@ -21,6 +22,7 @@ return new class extends Migration
             $table->time("tolerence")->nullable();
             $table->timestamps();
         });
+        }
     }
 
     /**

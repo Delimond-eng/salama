@@ -13,7 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('schedule_supervisors', function (Blueprint $table) {
+        if (!Schema::hasTable('schedule_supervisors')) {
+    Schema::create('schedule_supervisors', function (Blueprint $table) {
             $table->id();
             $table->string("title");
             $table->date("date")->nullable();
@@ -23,6 +24,7 @@ return new class extends Migration
             $table->foreignId("user_id")->nullable()->constrained("users", "id")->nullOnDelete();
             $table->timestamps();
         });
+        }
     }
 
     /**

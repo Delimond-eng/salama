@@ -14,14 +14,15 @@ return new class extends Migration
     public function up()
     {
         // migration create_permissions_table
-        Schema::create('permissions', function (Blueprint $table) {
+        if (!Schema::hasTable('permissions')) {
+    Schema::create('permissions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('menu_id');
             $table->unsignedBigInteger('action_id');
             $table->timestamps();
         });
-
+}
     }
 
     /**

@@ -13,7 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('presence_supervisor_sites', function (Blueprint $table) {
+        if (!Schema::hasTable('presence_supervisor_sites')) {
+    Schema::create('presence_supervisor_sites', function (Blueprint $table) {
             $table->id();
             $table->foreignId("site_id")->constrained("sites", "id")->cascadeOnDelete();
             $table->foreignId("agent_id")->constrained("agents", "id")->cascadeOnDelete();
@@ -30,6 +31,7 @@ return new class extends Migration
             $table->string("status")->nullable();
             $table->timestamps();
         });
+        }
     }
 
     /**

@@ -13,7 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('presence_agents', function (Blueprint $table) {
+        if (!Schema::hasTable('presence_agents')) {
+    Schema::create('presence_agents', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("agent_id");
             $table->unsignedBigInteger("site_id");
@@ -31,6 +32,7 @@ return new class extends Migration
             $table->date('date_reference')->nullable();
             $table->timestamps();
         });
+        }
     }
 
     /**

@@ -13,7 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('agent_requests', function (Blueprint $table) {
+        if (!Schema::hasTable('agent_requests')) {
+    Schema::create('agent_requests', function (Blueprint $table) {
             $table->id();
             $table->string("object");
             $table->string("description");
@@ -21,6 +22,7 @@ return new class extends Migration
             $table->unsignedBigInteger("agency_id");
             $table->timestamps();
         });
+        }
     }
 
     /**

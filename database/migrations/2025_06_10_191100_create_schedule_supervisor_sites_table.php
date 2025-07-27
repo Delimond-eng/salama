@@ -13,7 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('schedule_supervisor_sites', function (Blueprint $table) {
+        if (!Schema::hasTable('schedule_supervisor_sites')) {
+    Schema::create('schedule_supervisor_sites', function (Blueprint $table) {
             $table->id();
             $table->foreignId("schedule_id")->nullable()->constrained("schedule_supervisors", "id")->nullOnDelete();
             $table->foreignId("site_id")->nullable()->constrained("sites", "id")->nullOnDelete();
@@ -21,6 +22,7 @@ return new class extends Migration
             $table->string("status")->default("pending");
             $table->timestamps();
         });
+        }
     }
 
     /**

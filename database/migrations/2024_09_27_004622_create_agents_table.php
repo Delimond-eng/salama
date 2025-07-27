@@ -13,7 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('agents', function (Blueprint $table) {
+        if (!Schema::hasTable('agents')) {
+    Schema::create('agents', function (Blueprint $table) {
             $table->id();
             $table->string("matricule")->unique();
             $table->string("photo")->nullable();
@@ -26,6 +27,7 @@ return new class extends Migration
             $table->string("status")->default("actif");
             $table->timestamps();
         });
+        }
     }
 
     /**

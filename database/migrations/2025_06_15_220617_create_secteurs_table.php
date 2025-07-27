@@ -13,12 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('secteurs', function (Blueprint $table) {
+        if (!Schema::hasTable('secteurs')) {
+    Schema::create('secteurs', function (Blueprint $table) {
             $table->id();
             $table->string("libelle");
             $table->text("description")->nullable();
             $table->timestamps();
         });
+        }
     }
 
     /**

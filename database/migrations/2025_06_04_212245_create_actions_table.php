@@ -14,13 +14,14 @@ return new class extends Migration
     public function up()
     {
         // migration create_actions_table
-        Schema::create('actions', function (Blueprint $table) {
+        if (!Schema::hasTable('actions')) {
+    Schema::create('actions', function (Blueprint $table) {
             $table->id();
             $table->string('name'); // Voir, Créer, Modifier, Supprimer, Export, import
             $table->string('slug')->unique(); // view, create, edit, delete, export, import
             $table->timestamps();
         });
-
+}
     }
 
     /**

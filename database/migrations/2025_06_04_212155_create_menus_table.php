@@ -14,12 +14,13 @@ return new class extends Migration
     public function up()
     {
         // migration create_menus_table
-        Schema::create('menus', function (Blueprint $table) {
+        if (!Schema::hasTable('menus')) {
+    Schema::create('menus', function (Blueprint $table) {
             $table->id();
             $table->string('name'); // ex: Produits, Utilisateurs
             $table->string('slug')->unique(); // ex: produits, utilisateurs
             $table->timestamps();
-        });
+        });}
 
     }
 

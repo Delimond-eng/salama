@@ -13,7 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('agencies', function (Blueprint $table) {
+        if (!Schema::hasTable('agencies')) {
+    Schema::create('agencies', function (Blueprint $table) {
             $table->id();
             $table->string("name")->unique();
             $table->string("adresse");
@@ -23,6 +24,7 @@ return new class extends Migration
             $table->string("status")->default("actif");
             $table->timestamps();
         });
+        }
     }
 
     /**

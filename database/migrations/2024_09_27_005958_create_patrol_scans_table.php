@@ -13,7 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('patrol_scans', function (Blueprint $table) {
+        if (!Schema::hasTable('patrol_scans')) {
+    Schema::create('patrol_scans', function (Blueprint $table) {
             $table->id();
             $table->timestamp("time")->useCurrent();
             $table->string("latlng");
@@ -27,6 +28,7 @@ return new class extends Migration
             $table->unsignedBigInteger("patrol_id");
             $table->timestamps();
         });
+        }
     }
 
     /**

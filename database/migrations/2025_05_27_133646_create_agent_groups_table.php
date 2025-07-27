@@ -13,13 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('agent_groups', function (Blueprint $table) {
+        if (!Schema::hasTable('agent_groups')) {
+    Schema::create('agent_groups', function (Blueprint $table) {
             $table->id();
             $table->string("libelle");
             $table->unsignedBigInteger("horaire_id");
             $table->string("status")->default("actif");
             $table->timestamps();
         });
+        }
     }
 
     /**

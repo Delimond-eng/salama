@@ -13,7 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('schedules', function (Blueprint $table) {
+        if (!Schema::hasTable('schedules')) {
+    Schema::create('schedules', function (Blueprint $table) {
             $table->id();
             $table->string("libelle");
             $table->time("start_time");
@@ -24,6 +25,7 @@ return new class extends Migration
             $table->string("status")->default("actif");
             $table->timestamps();
         });
+        }
     }
 
     /**

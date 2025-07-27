@@ -13,12 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('tokens', function (Blueprint $table) {
+        if (!Schema::hasTable('tokens')) {
+    Schema::create('tokens', function (Blueprint $table) {
             $table->id();
             $table->text("token");
             $table->foreignId("site_id")->constrained("sites", "id")->cascadeOnDelete();
             $table->timestamps();
         });
+        }
     }
 
     /**

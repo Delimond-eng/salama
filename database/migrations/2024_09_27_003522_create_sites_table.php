@@ -13,7 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('sites', function (Blueprint $table) {
+        if (!Schema::hasTable('sites')) {
+    Schema::create('sites', function (Blueprint $table) {
             $table->id();
             $table->string("name");
             $table->string("code")->unique();
@@ -31,6 +32,7 @@ return new class extends Migration
             $table->string("fcm_token")->nullable();
             $table->timestamps();
         });
+        }
     }
 
     /**

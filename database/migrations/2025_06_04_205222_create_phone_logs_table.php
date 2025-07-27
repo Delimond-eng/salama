@@ -13,7 +13,8 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('phone_logs', function (Blueprint $table) {
+        if (!Schema::hasTable('phone_logs')) {
+    Schema::create('phone_logs', function (Blueprint $table) {
             $table->id();
             $table->string("reason")->nullable();
             $table->string("battery_level")->nullable();
@@ -22,6 +23,7 @@ return new class extends Migration
             $table->unsignedInteger("site_id")->nullable();
             $table->timestamps();
         });
+        }
     }
 
     /**
