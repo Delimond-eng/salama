@@ -677,17 +677,28 @@ class PresenceController extends Controller
     public function getPresencesBySiteAndDate(Request $request)
     {
         try {
-            $targetDate = $request->query("date")
-                ? Carbon::parse($request->query("date"))->startOfDay()
-                : Carbon::today()->setTimezone("Africa/Kinshasa")->startOfDay();
+            // 📅 Récupération de la date cible (par défaut aujourd'hui à Kinshasa)
+            $targetDate = $request->query('date')
+                ? Carbon::parse($request->query('date'))->startOfDay()
+                : Carbon::today('Africa/Kinshasa')->startOfDay();
 
-            $siteId = $request->query("site_id");
+            $siteId = $request->query('site_id');
+            $search = $request->query('search');
 
-            // Récupération brute des présences (d’aujourd’hui et d’hier)
-            $presences = PresenceAgents::with(['agent.groupe.horaire','agent.site', 'site'])
-                ->when($siteId, function ($query, $siteId) {
-                    return $query->where('gps_site_id', $siteId);
-                })
+            // 🔍 Recherche par nom ou matricule
+            $agentId = null;
+            if ($search) {
+                $agent = Agent::where('matricule', 'LIKE', "%$search%")
+                    ->orWhere('fullname', 'LIKE', "%$search%")
+                    ->first();
+
+                $agentId = $agent?->id;
+            }
+
+            // 📥 Requête principale avec relations et conditions
+            $presences = PresenceAgents::with(['agent.groupe.horaire', 'agent.site', 'site'])
+                ->when($siteId, fn($query) => $query->where('gps_site_id', $siteId))
+                ->when($agentId, fn($query) => $query->where('agent_id', $agentId))
                 ->whereIn('date_reference', [
                     $targetDate->toDateString(),
                     $targetDate->copy()->subDay()->toDateString()
@@ -700,10 +711,10 @@ class PresenceController extends Controller
                         ELSE 3
                     END
                 ")
-                ->orderByDesc("created_at")
+                ->orderByDesc('created_at')
                 ->get();
 
-            // Filtrage selon la logique horaire
+            // 🧠 Filtrage intelligent selon l'horaire de travail
             $filtered = $presences->filter(function ($presence) use ($targetDate) {
                 $horaire = optional($presence->agent->groupe)->horaire;
                 if (!$horaire) return false;
@@ -713,27 +724,23 @@ class PresenceController extends Controller
                     $heureDebut = Carbon::parse($horaire->started_at);
                     $heureFin   = Carbon::parse($horaire->ended_at);
                 } catch (\Exception $e) {
-                    Log::warning("Erreur parsing horaire présence : " . $e->getMessage());
+                    Log::warning("Erreur parsing horaire : " . $e->getMessage());
                     return false;
                 }
 
-                $isHoraire24h = $heureDebut->equalTo($heureFin);
-                $isHoraireNuit = $heureFin->lessThan($heureDebut); // ex : 20h - 06h
+                $is24h = $heureDebut->equalTo($heureFin);
+                $isNuit = $heureFin->lessThan($heureDebut);
 
-                // Horaire nuit ou 24h : on affiche la veille ET aujourd’hui
-                if ($isHoraire24h || $isHoraireNuit) {
-                    return $presenceDate->equalTo($targetDate) || $presenceDate->equalTo($targetDate->copy()->subDay());
-                }
-
-                // Horaire de jour : uniquement aujourd’hui
-                return $presenceDate->equalTo($targetDate);
+                return $is24h || $isNuit
+                    ? $presenceDate->equalTo($targetDate) || $presenceDate->equalTo($targetDate->copy()->subDay())
+                    : $presenceDate->equalTo($targetDate);
             })->values();
 
-            // Pagination manuelle
+            // 📦 Pagination manuelle
             $perPage = 5;
             $currentPage = LengthAwarePaginator::resolveCurrentPage();
             $paginated = new LengthAwarePaginator(
-                $filtered->forPage($currentPage, $perPage)->values(),
+                $filtered->forPage($currentPage, $perPage),
                 $filtered->count(),
                 $perPage,
                 $currentPage,
@@ -745,13 +752,15 @@ class PresenceController extends Controller
                 'date'      => $targetDate->toDateString(),
                 'presences' => $paginated,
             ]);
-            
+
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json(['errors' => $e->validator->errors()->all()]);
+            return response()->json(['errors' => $e->validator->errors()->all()], 422);
         } catch (\Exception $e) {
-            return response()->json(['errors' => $e->getMessage()]);
+            Log::error("Erreur getPresencesBySiteAndDate : " . $e->getMessage());
+            return response()->json(['errors' => $e->getMessage()], 500);
         }
     }
+
 
 
 

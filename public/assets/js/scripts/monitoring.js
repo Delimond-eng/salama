@@ -125,26 +125,29 @@ new Vue({
         },
 
         refreshSelectSite() {
-            const options = [
-                { value: "", text: "Tous les agents" },
-                ...this.allSites.map((site) => ({
-                    value: String(site.id),
-                    text: site.name,
-                })),
-            ];
-            const tom = new TomSelect(".select-site", {
-                plugins: {
-                    dropdown_input: {},
-                },
-                create: false,
-                placeholder: "Filtrez par site",
-                options: options,
-            });
+            if ($(".select-site").length) {
+                const options = [
+                    { value: "", text: "Tous les agents" },
+                    ...this.allSites.map((site) => ({
+                        value: String(site.id),
+                        text: site.name,
+                    })),
+                ];
+                const tom = new TomSelect(".select-site", {
+                    plugins: {
+                        dropdown_input: {},
+                    },
+                    create: false,
+                    placeholder: "Filtrez par site",
+                    options: options,
+                });
 
-            tom.on("change", (value) => {
-                this.search = value;
-                this.loadPresencesData();
-            });
+                tom.on("change", (value) => {
+                    this.pagination.current_page = 1;
+                    this.search = value;
+                    this.loadPresencesData();
+                });
+            }
         },
 
         exportToPdf() {

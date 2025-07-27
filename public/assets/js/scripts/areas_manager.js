@@ -159,7 +159,7 @@ new Vue({
         viewAllSites() {
             this.isDataLoading = true;
             get(
-                `/sites?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&search=${this.search}`
+                `/sites?page=${this.pagination1.current_page}&per_page=${this.pagination1.per_page}&search=${this.search}`
             )
                 .then(({ data, status }) => {
                     this.isDataLoading = false;
@@ -238,7 +238,7 @@ new Vue({
             this.presences = [];
             const selectedDate = this.filter_datep || this.presenceDate;
             get(
-                `/presences?site_id=${this.selectedSiteId}&date=${selectedDate}&page=${this.pagination.current_page}&per_page=${this.pagination.per_page}`
+                `/presences?site_id=${this.selectedSiteId}&date=${selectedDate}&page=${this.pagination.current_page}&per_page=${this.pagination.per_page}search=${this.search2}`
             )
                 .then(({ data, status }) => {
                     this.isPresenceLoading = false;
@@ -294,7 +294,7 @@ new Vue({
         },
 
         changePage1(page) {
-            this.pagination.current_page = page;
+            this.pagination1.current_page = page;
             this.viewAllSites();
         },
 
@@ -307,9 +307,10 @@ new Vue({
 
     computed: {
         filteredPresences() {
-            if (!this.search2.trim()) return this.presences;
+            return this.presences;
+            /* if (!this.search2.trim())  */
 
-            const searchTerm = this.search2.toLowerCase();
+            /* const searchTerm = this.search2.toLowerCase();
 
             return this.presences.filter((p) => {
                 return (
@@ -332,7 +333,7 @@ new Vue({
                     (p.created_at || "").toLowerCase().includes(searchTerm) ||
                     (p.commentaires || "").toLowerCase().includes(searchTerm)
                 );
-            });
+            }); */
         },
         allSites() {
             /* if (this.search && this.search.trim()) {

@@ -31,7 +31,7 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | AGENTS
+    | AGENTS/presences
     |--------------------------------------------------------------------------
     */
     Route::get('/agent.create', function () {
@@ -286,6 +286,8 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     | PRESENCES DES AGENTS
     |--------------------------------------------------------------------------
     */
+
+    
     Route::post('/presence.create', [PresenceController::class, 'createPresenceAgent'])->name('presence.create')->middleware('check.permission:presences,create');
     Route::get('/presences', [PresenceController::class, 'getPresencesBySiteAndDate'])->name('presences')->middleware('check.permission:presences,view');
 
