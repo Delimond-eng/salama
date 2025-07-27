@@ -18,6 +18,15 @@ class SitePlanningConfig extends Model
         'number_of_plannings',
     ];
 
+     /**
+     * The attributes that should be casted to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'start_hour'=>'datetime:H:i'
+    ];
+
     public function site()
     {
         return $this->belongsTo(Site::class);

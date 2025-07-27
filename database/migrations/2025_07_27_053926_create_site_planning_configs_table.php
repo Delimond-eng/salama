@@ -22,7 +22,6 @@ return new class extends Migration
             $table->unsignedTinyInteger('pause')->default(1);    // en heures
             $table->unsignedTinyInteger('number_of_plannings')->default(5);
             $table->timestamps();
-
             $table->foreign('site_id')->references('id')->on('sites')->onDelete('cascade');
         });
         }

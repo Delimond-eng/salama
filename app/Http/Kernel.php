@@ -74,6 +74,7 @@ class Kernel extends HttpKernel
     protected $commands = [
         \App\Console\Commands\VerifySchedulesCommand::class,
         \App\Console\Commands\SendDatabaseBackup::class,
+        \App\Console\Commands\GenerateSitePlanningConfigs::class,
     ];
 
 
