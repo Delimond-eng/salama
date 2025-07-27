@@ -424,11 +424,19 @@ class AppManagerController extends Controller
      * View all Patrol reports
      * @return JsonResponse
     */
-    public function viewPatrolReports(): JsonResponse
+    public function viewPatrolReports(Request $request): JsonResponse
     {
         $agencyId = Auth::user()->agency_id ?? 1;
+        $date = $request->query("date");
+        $siteId = $request->query("site");
 
         $patrols = Patrol::with(["agent", "site", "scans.agent", "scans.area"])
+            ->when($date, function ($query, $date) {
+                $query->whereDate("created_at", $date);
+            })
+            ->when($siteId, function ($query, $siteId) {
+                $query->where("site_id", $siteId);
+            })
             ->where("agency_id", $agencyId)
             ->orderByDesc("id")
             ->paginate(perPage: 10);

@@ -12,7 +12,7 @@
                     <a href="#">Salama</a>
                 </li>
                 <li class="relative ml-5 pl-0.5 before:content-[''] before:w-[14px] before:h-[14px] before:bg-chevron-black before:transform before:rotate-[-90deg] before:bg-[length:100%] before:-ml-[1.125rem] before:absolute before:my-auto before:inset-y-0 dark:before:bg-chevron-white text-slate-800 cursor-text dark:text-slate-400">
-                    <a href="#">Liste des agents</a>
+                    <a href="#">Historique de mouvement des agents</a>
                 </li>
             </ol>
         </nav>
@@ -91,7 +91,7 @@
                                     <td
                                         data-tw-merge
                                         class="px-5 py-3 border-b dark:border-darkmode-300">
-                                        @{{ data.agent.matricule }} | @{{ data.agent.fullname }}
+                                        <span class="font-extrabold text-primary">@{{ data.agent.matricule }}</span> | @{{ data.agent.fullname }}
                                     </td>
                                     <td
                                         data-tw-merge

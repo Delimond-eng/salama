@@ -5,6 +5,7 @@ new Vue({
     components: {
         Pagination,
     },
+
     data() {
         return {
             error: null,
@@ -26,6 +27,33 @@ new Vue({
                 per_page: 10,
             },
         };
+    },
+
+    watch: {
+        allSites() {
+            const options = [
+                { value: "", text: "Tous les agents" },
+                ...this.allSites.map((site) => ({
+                    value: String(site.id),
+                    text: site.name,
+                })),
+            ];
+            const tom = new TomSelect(".select-site", {
+                plugins: {
+                    dropdown_input: {},
+                },
+                create: false,
+                placeholder: "Filtrez par site",
+                options: options,
+            });
+
+            tom.on("change", (value) => {
+                this.filter_date = "";
+                this.pagination.current_page = 1;
+                this.filter_site = value;
+                this.viewAllReports();
+            });
+        },
     },
 
     mounted() {
@@ -71,7 +99,7 @@ new Vue({
         viewAllReports() {
             this.isDataLoading = true;
             get(
-                `/patrols.reports?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}`
+                `/patrols.reports?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&site=${this.filter_site}&date=${this.filter_date}`
             )
                 .then((res) => {
                     this.isDataLoading = false;
@@ -183,28 +211,20 @@ new Vue({
         },
 
         allPatrolReports() {
-            if (this.filter_site || this.filter_date) {
+            /* if (this.filter_site || this.filter_date) {
                 return this.reports.filter((el) => {
-                    /**
-                        if (this.filter_site && this.filter_date) {
-                            return el.site_id === this.filter_site && el.started_at.includes(this.filter_date);
-                        }
-                     * */
                     if (this.filter_site) {
-                        // Si seul le site est défini, filtrer par site
                         return el.site_id === this.filter_site;
                     } else if (this.filter_date) {
                         const [year, month, day] = this.filter_date.split("-");
-                        // Formater en JJ/MM/AAAA
                         const formattedDate = `${day}/${month}/${year}`;
-                        // Si seule la date est définie, filtrer par date
                         return el.started_at.includes(formattedDate);
                     }
                 });
             } else {
-                // Si aucun filtre n'est défini, retourner tous les rapports
-                return this.reports;
-            }
+               
+            } */
+            return this.reports;
         },
     },
 });
