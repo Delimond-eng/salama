@@ -24,7 +24,6 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
 Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function(){
     //ALLOW TO CREATE AGENCY
     Route::post("/agency.create", [AdminController::class, "createAgencie"])->name("agency.create");
@@ -43,6 +42,10 @@ Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function
 
     //ALLOW TO CLOSE PATROL SCAN
     Route::post("patrol.close", [AppManagerController::class, "closePatrolTag"])->name("patrol.close");
+
+    //ALLOW TO CREATE ROND 011
+    Route::post("ronde.scan", [AppManagerController::class, "confirmRonde011"])->name("ronde.scan");
+
 
     //ALLOW TO VIEW PENDING PATROLS
     Route::get("/patrols.pending", [AppManagerController::class, "viewPendingPatrols"])->name("patrols.pending");
@@ -100,7 +103,7 @@ Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function
     Route::post("/send.mail", [EmailController::class, "sendMail"])->name("send.mail");
     Route::post("/send.notication", [FCMController::class, "sendNotification"])->name("send.notification");
 
-    Route::post("/parse.date", function(Request $req){
+    /* Route::post("/parse.date", function(Request $req){
         Carbon::setLocale('fr');
         $date = Carbon::parse($req->input("date"));
         $today = Carbon::today();
@@ -119,7 +122,7 @@ Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function
         return response()->json([
             "message"=>$body
         ]);
-    });
+    }); */
 
     // GET SUPERVISOR DATAS
     Route::get("/supervisor.datas", [AppManagerController::class, "getSupervisorDatas"])->name("supervisor.datas");

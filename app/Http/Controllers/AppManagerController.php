@@ -10,6 +10,7 @@ use App\Models\Cessation;
 use App\Models\Conge;
 use App\Models\Patrol;
 use App\Models\PatrolScan;
+use App\Models\Ronde011;
 use App\Models\Schedules;
 use App\Models\ScheduleSupervisor;
 use App\Models\Signalement;
@@ -23,6 +24,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class AppManagerController extends Controller
 {
@@ -1567,6 +1569,118 @@ class AppManagerController extends Controller
         return response()->json([
             'status' => 'success',
             'cessations' => $cessations
+        ]);
+    }
+
+     /**
+     * Confirm Ronde 011
+     * @param Request $request
+     */
+    public function confirmRonde011(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                "site_id"   => "required|int|int|exists:sites,id",
+                "matricule" => "required|string|exists:agents,matricule",
+                "comment"  => "nullable|string",
+                "latlng"   => "required|string",
+                "photo"   => "required|file",
+            ]);
+
+            // Traitement de la photo
+            if ($request->hasFile('photo')) {
+                $file = $request->file('photo');
+                $filename = uniqid('ronde011_') . '.' . $file->getClientOriginalExtension();
+                $destination = public_path('uploads/ronde011s');
+                $file->move($destination, $filename);
+                // Générer un lien complet sans utiliser storage
+                $data['photo'] = url('uploads/ronde011s/' . $filename);
+            }
+            else{
+                $data["photo"]="";
+            }
+
+            list($areaLat, $areaLng) = explode(',', $area->latlng ?? "0,0");
+            list($scanLat, $scanLng) = explode(',', $data['latlng']);
+            $distance = $this->calculateDistance($areaLat, $areaLng, $scanLat, $scanLng);
+
+            if(isset($data["matricule"])){
+                $agent = Agent::where('matricule', $data["matricule"])->first();
+                $data["agent_id"]=$agent->id;
+            }
+
+            $data['distance'] = "{$distance} m";
+            
+            $result = Ronde011::create([
+                'site_id' => $data['site_id'],
+                'agent_id' => $data['agent_id'],
+                'comment' => $data['comment'],
+                'latlng' => $data['latlng'],
+                'distance' => $data['distance'],
+                'photo' => $data['photo'],
+                'created_at'=>Carbon::now()->setTimezone("Africa/Kinshasa")
+            ]);
+            if($result){
+                $agent = Agent::find($data['agent_id']);
+                $site = Site::find($data['site_id']);
+                $now = Carbon::now()->setTimezone('Africa/Kinshasa');
+                // Récupération des emails du site
+                $emails = $site?->emails;
+                $emailList = collect(explode(';', $emails))
+                    ->map(fn($email) => trim($email))
+                    ->filter()
+                    ->toArray();
+
+                // Sujet du mail
+                $subject = "Ronde 011 - {$agent->matricule} - {$site->code} ({$now->format('d/m/Y H:i')})";
+
+                // Contenu du mail (tu dois créer cette vue Blade)
+                $body = view('emails.ronde011_passed', [
+                    'site'      => $site,
+                    'agent'     => $agent,
+                    'now'       => $now,
+                    'photo'     => $data['photo'] ?? null,
+                    'distance'  => $data['distance'],
+                    'comment'   => $data['comment'] ?? '',
+                ])->render();
+
+                // Envoi du mail
+                if (!empty($emailList)) {
+                    Mail::html($body, function ($message) use ($subject, $emailList) {
+                        $message->to($emailList);
+                        $message->subject($subject);
+                    });
+                }
+            }
+            return response()->json([
+                "status"=>"success",
+                "result"=>$result
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->validator->errors()->all()], 400);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()], 500);
+        }
+    }
+
+     /**
+     * GET ROND 01 REPORT
+     * @param Request $request
+     */
+    public function getRonde011Report(Request $request){
+        $date = $request->query("date");
+        $siteId = $request->query("site");
+        $rondes = Ronde011::with(["agent", "site"])
+         ->when($date, function ($query, $date) {
+            $query->whereDate("created_at", $date);
+        })->when($siteId, function ($query, $siteId) {
+            $query->whereDate("site_id", $siteId);
+        })
+        ->orderByDesc("id")->paginate(10);
+
+        return response()->json([
+            "status"=>"success",
+            "rondes"=>$rondes
         ]);
     }
 }

@@ -57,6 +57,32 @@
              </ul>
          </li>
          @endif
+         <li>
+             <a href="javascript:;" class="side-menu @active(['round.reports',])">
+                 <div class="side-menu__icon">
+                     <i data-tw-merge="" data-lucide="file" class="stroke-1.5 w-5 h-5"></i>
+                 </div>
+                 <div class="side-menu__title">
+                    Rapports
+                     <div class="side-menu__sub-icon">
+                         <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-3 h-3"></i>
+                     </div>
+                 </div>
+             </a>
+             <ul class="">
+                 <li>
+                     <a href="{{ url('/round.reports') }}"
+                         class="side-menu">
+                         <div class="side-menu__icon">
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
+                         </div>
+                         <div class="side-menu__title">
+                            Rapports des rondes 011
+                         </div>
+                     </a>
+                 </li>
+             </ul>
+         </li>
 
          @if (Auth::user()->hasMenu("sites"))
          <li>

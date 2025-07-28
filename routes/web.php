@@ -303,6 +303,11 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     Route::get("/elements.all", [\App\Http\Controllers\ConfigController::class, 'viewAllPaginateElements'])->name("elements.all");
     Route::post("/element.create", [\App\Http\Controllers\ConfigController::class, 'createElement'])->name("element.create");
 
+
+    //==================== ROUND 011 ====================//
+    Route::get("/ronde.reports", [AppManagerController::class, "getRonde011Report"])->name("ronde.reports");
+    Route::view("/round.reports", "round011_report")->name("round.reports");
+
     //Emettre sur un canal de talkie walkie
     Route::post('/send.talk', [\App\Http\Controllers\TalkieWalkieController::class, 'sendTalkAudio'])->name('send.talk');
     Route::post('/table.delete', [AdminController::class, 'triggerDelete'])->name('table.delete');

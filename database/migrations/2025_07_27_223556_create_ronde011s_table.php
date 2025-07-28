@@ -19,8 +19,8 @@ return new class extends Migration
                 $table->text("comment")->nullable();
                 $table->string("latlng")->nullable();
                 $table->string("photo")->nullable();
-                $table->foreign('agent_id')->references('id')->on('agents')->onDelete('cascade');
-                $table->foreign('site_id')->references('id')->on('sites')->onDelete('cascade');
+                $table->foreignId('agent_id')->constrained("agents")->references("id")->cascadeOnDelete();
+                $table->foreignId('site_id')->constrained("sites")->references("id")->cascadeOnDelete();
                 $table->timestamps();
             });
         }
