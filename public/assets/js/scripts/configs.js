@@ -166,8 +166,24 @@ new Vue({
             postJson("/config.planning.activate", {
                 site_id: siteId,
                 value: val,
-            }).then((res) => {
+            }).then(({ data, status }) => {
                 this.plannings = [];
+                if (data.errors !== undefined) {
+                    this.error = data.errors.toString();
+                    setTimeout(() => {
+                        new Toastify({
+                            node: $("#error-notification-content")
+                                .clone()
+                                .removeClass("hidden")[0],
+                            duration: 3000,
+                            newWindow: true,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            stopOnFocus: true,
+                        }).showToast();
+                    }, 100);
+                }
                 this.viewAllPlanningConfigs();
             });
         },

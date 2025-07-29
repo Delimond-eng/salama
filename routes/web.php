@@ -317,6 +317,12 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     Route::post("/config.planning.activate", function(Request $request){
         $siteId = $request->input("site_id");
         $activate = $request->input("value");
+        $site = Site::where("id", $siteId)->whereHas("areas")->first();
+        if(!$site){
+            return response()->json([
+                "errors"=>"Ce site ne contient aucune zone (area) et ne peut pas être configuré."
+            ]);
+        }
         $result = SitePlanningConfig::where("site_id", $siteId)
         ->update(["activate" => $activate]);
         if($result){
