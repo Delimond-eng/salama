@@ -1305,30 +1305,30 @@ class AppManagerController extends Controller
      * View all schedules from admin
      * @return JsonResponse
     */
-    public function viewAllSchedulesByAdmin(Request $request):JsonResponse
+    public function viewAllSchedulesByAdmin(Request $request): JsonResponse
     {
         $date = $request->query("date");
         $search = $request->query("search");
-        $siteId = null;
-        if($search){
-            $site = Site::where("name", "LIKE", "%$search%")->first();
-            if($site){
-                $siteId = $site->id;
-            }
-        }
 
-        $schedules = Schedules::with("site")->with(["patrol.site", "patrol.agent", "patrol.scans.area"])
-         ->when($date, function ($query, $date) {
-            $query->whereDate("date", $date);
-        })->when($siteId, function ($query, $siteId) {
-            $query->where("site_id", $siteId);
-        })
-        ->orderByDesc("id")->paginate(10);
+        $schedules = Schedules::with("site")
+            ->with(["patrol.site", "patrol.agent", "patrol.scans.area"])
+            ->when($date, function ($query, $date) {
+                $query->whereDate("date", $date);
+            })
+            ->when($search, function ($query) use ($search) {
+                $query->whereHas("site", function ($siteQuery) use ($search) {
+                    $siteQuery->where("name", "LIKE", "%$search%");
+                });
+            })
+            ->orderByDesc("id")
+            ->paginate(10);
+
         return response()->json([
-            "status"=>"success",
-            "schedules"=>$schedules
+            "status" => "success",
+            "schedules" => $schedules
         ]);
     }
+
 
 
     /**
@@ -1859,21 +1859,19 @@ class AppManagerController extends Controller
     */
     public function viewSitePlannings(Request $request){
         $search = $request->query("search");
-        $siteId = null;
-        if($search){
-            $site = Site::where("name", "like", "%$search%")->first();
-            if($site){
-                $siteId = $site->id;
-            }
-        }
+
         $plannings = SitePlanningConfig::with("site")
-        ->when($siteId, function ($query, $siteId) {
-            $query->where("site_id", $siteId);
-        })->orderByDesc('activate')
-        ->paginate(10);
+            ->when($search, function ($query) use ($search) {
+                $query->whereHas("site", function ($subQuery) use ($search) {
+                    $subQuery->where("name", "LIKE", "%$search%");
+                });
+            })
+            ->orderByDesc('activate')
+            ->paginate(10);
+
         return response()->json([
-            "status"=>"success",
-            "plannings"=>$plannings
+            "status" => "success",
+            "plannings" => $plannings
         ]);
     }
 
@@ -1924,7 +1922,7 @@ class AppManagerController extends Controller
                 'result' => 'Configuration du planning automatique enregistrée avec succès.',
             ]);
         }
-         catch (\Illuminate\Validation\ValidationException $e) {
+        catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->validator->errors()->all()]);
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(['errors' => $e->getMessage()]);

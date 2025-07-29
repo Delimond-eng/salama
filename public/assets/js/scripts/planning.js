@@ -221,7 +221,7 @@ new Vue({
         viewAllSchedules() {
             this.isDataLoading = true;
             get(
-                `/schedules.all?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&date=${this.filter_date}`
+                `/schedules.all?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&date=${this.filter_date}&search=${this.search}`
             )
                 .then((res) => {
                     this.isDataLoading = false;
@@ -247,7 +247,7 @@ new Vue({
         viewAllSupervisorSchedules() {
             this.isDataLoading = true;
             get(
-                `/schedules.supervisor.all?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&date=${this.filter_date}&search=${this.search}`
+                `/schedules.supervisor.all?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&date=${this.filter_date}`
             )
                 .then((res) => {
                     this.isDataLoading = false;
@@ -532,13 +532,13 @@ new Vue({
                     return this.status(el) === this.searchStatus;
                 });
             }
-            if (this.search) {
+            /*            if (this.search) {
                 return this.schedules.filter((el) => {
                     return el.agent.fullname
                         .toLowerCase()
                         .includes(this.search.toLowerCase());
                 });
-            }
+            } */
             return this.schedules;
         },
 

@@ -44,34 +44,34 @@
                 <div>
                     <div class="box intro-y p-5">
                         <div class="flex w-full justify-between items-center dark:border-darkmode-400">
-                            <div class="flex flex-wrap mx-4 gap-x-5">
-                                <div class="flex items-center text-success border-b border-dashed">
+                            <div class="flex flex-wrap mx-2 gap-1">
+                                <div class="flex items-center text-success box p-2">
                                     <div class="mr-1 h-2 w-2 rounded-full bg-success">
                                     </div>
                                     Effectuée
                                 </div>
-                                <div class="flex items-center text-primary border-b border-dashed">
+                                <div class="flex items-center text-primary box p-2">
                                     <div class="mr-1 h-2 w-2 rounded-full bg-primary">
                                     </div>
                                     Effectuée partiellement
                                 </div>
-                                <div class="flex items-center text-danger border-b border-dashed">
+                                <div class="flex items-center text-danger box p-2">
                                     <div class="mr-1 h-2 w-2 rounded-full bg-danger">
                                     </div>
                                     Non Effectuée
                                 </div>
-                                <div class="flex items-center text-warning border-b border-dashed">
+                                <div class="flex items-center text-warning box p-2">
                                     <div class="mr-1 h-2 w-2 rounded-full bg-warning">
                                     </div>
                                     Effectuée en avance
                                 </div>
-                                <div class="flex items-center text-pending border-b border-dashed">
+                                <div class="flex items-center text-pending box p-2">
                                     <div class="mr-1 h-2 w-2 rounded-full bg-pending">
                                     </div>
                                     En attente
                                 </div>
                             </div>
-                            <button  class="ml-5 border-0 flex h-5 w-5 items-center justify-center" @click="filter_date=''; viewAllSchedules()">
+                            <button  class="ml-5 border-0 flex h-5 w-5 items-center justify-center" @click="filter_date=''; schedules=[]; viewAllSchedules()">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="refresh-cw" class="lucide lucide-refresh-cw stroke-1.5 h-4 w-4">
                                     <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
                                     <path d="M21 3v5h-5"></path>

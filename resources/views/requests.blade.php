@@ -13,7 +13,7 @@
                     <a href="#">Salama</a>
                 </li>
                 <li class="relative ml-5 pl-0.5 before:content-[''] before:w-[14px] before:h-[14px] before:bg-chevron-black before:transform before:rotate-[-90deg] before:bg-[length:100%] before:-ml-[1.125rem] before:absolute before:my-auto before:inset-y-0 dark:before:bg-chevron-white text-slate-800 cursor-text dark:text-slate-400">
-                    <a href="#">Alertes panique</a>
+                    <a href="#">Requêtes & demandes</a>
                 </li>
             </ol>
         </nav>
@@ -88,7 +88,7 @@
                                 <div class="flex px-5 py-3">
                                     <div class="mr-5 flex w-72 flex-none items-center">
                                         <div class="image-fit relative ml-5 h-6 w-6 flex-none">
-                                            <img class="rounded-full" src="{{ asset("assets/images/profil-2.png") }}" alt="avatar">
+                                            <img class="rounded-full" :src="data.agent.photo ? data.agent.photo : 'assets/images/profil-2.png' " alt="photo">
                                         </div>
                                         <div class="ml-3 truncate">
                                             <span class="font-medium" v-if="data.agent">@{{ data.agent.fullname }}</span> <br>
