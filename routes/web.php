@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\SitePlanningConfig;
 use Google\Service\AnalyticsData\OrderBy;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -71,10 +72,10 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     })->name('sites.list')->middleware('check.permission:sites,view');
 
     Route::get('/sites', function (Request $request) {
-    $agencyId = Auth::user()->agency_id;
-    $search = $request->query('search');
+        $agencyId = Auth::user()->agency_id;
+        $search = $request->query('search');
 
-    $sitesQuery = Site::where('agency_id', $agencyId)
+        $sitesQuery = Site::where('agency_id', $agencyId)
             ->with([
                 'areas' => fn ($query) => $query->where('status', 'actif'),
                 'secteur'
@@ -307,6 +308,24 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     //==================== ROUND 011 ====================//
     Route::get("/ronde.reports", [AppManagerController::class, "getRonde011Report"])->name("ronde.reports");
     Route::view("/round.reports", "round011_report")->name("round.reports");
+
+
+    //=================== CONFIGS =========================//
+    Route::view("/config.planning", "config_planning")->name("config.planning");
+    Route::get("/config.planning.get", [AppManagerController::class, "viewSitePlannings"])->name("config.planning.get");
+    Route::post("/config.planning.create", [AppManagerController::class, "createOrUpdateSiteAutoPlanningConfig"])->name("config.planning.create");
+    Route::post("/config.planning.activate", function(Request $request){
+        $siteId = $request->input("site_id");
+        $activate = $request->input("value");
+        $result = SitePlanningConfig::where("site_id", $siteId)
+        ->update(["activate" => $activate]);
+        if($result){
+            return response()->json([
+                "status"=>"success",
+                "result"=>$result
+            ]);
+        }
+    });
 
     //Emettre sur un canal de talkie walkie
     Route::post('/send.talk', [\App\Http\Controllers\TalkieWalkieController::class, 'sendTalkAudio'])->name('send.talk');

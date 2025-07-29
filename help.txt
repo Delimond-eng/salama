@@ -3,5 +3,6 @@
 php artisan serve --host=0.0.0.0 --port=8000
 
 
-
+La theorie c'est quand on sait tout mais rien ne fonctionne, 
+et la pratique c'est quand tout fonctionne et que personne ne sait pourquoi ?
 

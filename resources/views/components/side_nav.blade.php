@@ -8,7 +8,7 @@
      <ul>
          @if (Auth::user()->hasMenu("patrouilles"))
          <li>
-             <a href="javascript:;" class="side-menu @active(['dashboard','reports.patrols', 'global.view'])">
+             <a href="javascript:;" class="side-menu @active(['dashboard','global.view'])">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="monitor" class="stroke-1.5 w-5 h-5"></i>
                  </div>
@@ -42,23 +42,12 @@
                          </div>
                      </a>
                  </li>
-                 @if (Auth::user()->hasPermission("patrouilles", "view"))
-                 <li>
-                     <a href="{{ url('/reports.patrols') }}" class="side-menu">
-                         <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
-                         </div>
-                         <div class="side-menu__title">
-                             Rapport des patrouilles
-                         </div>
-                     </a>
-                 </li>
-                 @endif
+                
              </ul>
          </li>
          @endif
          <li>
-             <a href="javascript:;" class="side-menu @active(['round.reports',])">
+             <a href="javascript:;" class="side-menu @active(['round.reports','reports.patrols' ])">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="file" class="stroke-1.5 w-5 h-5"></i>
                  </div>
@@ -81,6 +70,18 @@
                          </div>
                      </a>
                  </li>
+                  @if (Auth::user()->hasPermission("patrouilles", "view"))
+                 <li>
+                     <a href="{{ url('/reports.patrols') }}" class="side-menu">
+                         <div class="side-menu__icon">
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
+                         </div>
+                         <div class="side-menu__title">
+                             Rapport des patrouilles
+                         </div>
+                     </a>
+                 </li>
+                 @endif
              </ul>
          </li>
 
@@ -304,7 +305,7 @@
                      </a>
                  </li>
                  @endif
-                 <li>
+                 <!-- <li>
                      <a href="{{ url("/reports.presences.filter") }}" class="side-menu">
                          <div class="side-menu__icon">
                              <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
@@ -313,7 +314,7 @@
                              Rapport filtré
                          </div>
                      </a>
-                 </li>
+                 </li> -->
              </ul>
          </li>
          @endif
@@ -365,7 +366,7 @@
                          </div>
                      </a>
                  </li>
-                  <li>
+                 <!--  <li>
                      <a href="javascript:;" class="side-menu">
                          <div class="side-menu__icon">
                              <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
@@ -399,7 +400,7 @@
                              </a>
                          </li>
                      </ul>
-                 </li>
+                 </li> -->
                  <!-- <li>
                      <a href="{{ url("/schedules.report") }}" class="side-menu">
                          <div class="side-menu__icon">
@@ -457,62 +458,6 @@
                          </div>
                      </a>
                  </li>
-                
-                 <li>
-                     <a href="javascript:;" class="side-menu">
-                         <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
-                         </div>
-                         <div class="side-menu__title">
-                             Rapports
-                             <div class="side-menu__sub-icon ">
-                                 <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-5 h-5"></i>
-                             </div>
-                         </div>
-                     </a>
-                     <ul class="">
-                         <li>
-                             <a href="rubick-side-menu-invoice-layout-1-page.html" class="side-menu">
-                                 <div class="side-menu__icon">
-                                     <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-2 h-2"></i>
-                                 </div>
-                                 <div class="side-menu__title">
-                                    Présences Globales
-                                 </div>
-                             </a>
-                         </li>
-                         <li>
-                             <a href="rubick-side-menu-invoice-layout-1-page.html" class="side-menu">
-                                 <div class="side-menu__icon">
-                                     <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-2 h-2"></i>
-                                 </div>
-                                 <div class="side-menu__title">
-                                    Absences
-                                 </div>
-                             </a>
-                         </li>
-                         <li>
-                             <a href="rubick-side-menu-invoice-layout-1-page.html" class="side-menu">
-                                 <div class="side-menu__icon">
-                                     <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-2 h-2"></i>
-                                 </div>
-                                 <div class="side-menu__title">
-                                    Retards
-                                 </div>
-                             </a>
-                         </li>
-                         <li>
-                             <a href="rubick-side-menu-invoice-layout-1-page.html" class="side-menu">
-                                 <div class="side-menu__icon">
-                                     <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-2 h-2"></i>
-                                 </div>
-                                 <div class="side-menu__title">
-                                    Congés
-                                 </div>
-                             </a>
-                         </li>
-                     </ul>
-                 </li>
              </ul>
          </li>
 
@@ -545,7 +490,7 @@
          <div class="my-4 side-nav__divider"></div>
          @if (Auth::user()->hasMenu("configurations"))
          <li>
-             <a href="javascript:;" class="side-menu @active(['secteurs', 'elements'])">
+             <a href="javascript:;" class="side-menu @active(['secteurs', 'elements', 'config.planning'])">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="settings" class="stroke-1.5 w-5 h-5"></i>
                  </div>
@@ -574,6 +519,16 @@
                          </div>
                          <div class="side-menu__title">
                              Inspection Eléments
+                         </div>
+                     </a>
+                 </li>
+                 <li>
+                     <a href="{{ url("/config.planning") }}" class="side-menu">
+                         <div class="side-menu__icon">
+                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
+                         </div>
+                         <div class="side-menu__title">
+                            Planning automatique
                          </div>
                      </a>
                  </li>

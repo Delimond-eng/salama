@@ -104,13 +104,17 @@ class AdminController extends Controller
                     foreach ($data['areas'] as $area) {
                         if(!empty($area['libelle'])){
                             $area['site_id'] = $site->id;
-                            Area::updateOrCreate(
+                            $latestArea = Area::updateOrCreate(
                                 [
                                     "site_id" => $area["site_id"],
                                     "libelle" => $area["libelle"]
                                 ],
                                 $area
                             );
+                            $json = $latestArea->toJson();
+                            $qrCode = $this->generateQRCode($json);
+                            $latestArea->qrcode = $qrCode;
+                            $latestArea->save();
                         }
                     }
                 }

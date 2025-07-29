@@ -14,29 +14,33 @@ class GenerateSitePlanningConfigs extends Command
     // Description de la commande
     protected $description = 'Génère ou réinitialise les configurations de planning pour tous les sites';
 
-    public function handle()
+   public function handle()
     {
-        $defaultConfig = [
+        $baseConfig = [
             'start_hour' => '21:00',
             'interval' => 1,
             'pause' => 1,
             'number_of_plannings' => 5,
         ];
 
-        $sites = Site::all();
+        $sites = Site::with('areas')->get();
+
         $countCreated = 0;
         $countUpdated = 0;
 
         foreach ($sites as $site) {
-            $config = SitePlanningConfig::where('site_id', $site->id)->first();
+            // Générer la config pour ce site
+            $configData = $baseConfig;
+            // Si le site a des areas, activer
+            $configData['activate'] = $site->areas->isNotEmpty() ? 1 : 0;
 
-            if ($config) {
-                // Met à jour la config existante si besoin (optionnel)
-                $config->update($defaultConfig);
+            $existingConfig = SitePlanningConfig::where('site_id', $site->id)->first();
+
+            if ($existingConfig) {
+                $existingConfig->update($configData);
                 $countUpdated++;
             } else {
-                // Crée une nouvelle config
-                SitePlanningConfig::create(array_merge(['site_id' => $site->id], $defaultConfig));
+                SitePlanningConfig::create(array_merge(['site_id' => $site->id], $configData));
                 $countCreated++;
             }
         }
@@ -46,4 +50,6 @@ class GenerateSitePlanningConfigs extends Command
 
         return 0;
     }
+
+
 }

@@ -16,11 +16,11 @@ class Ronde011 extends Model
         'photo',
         'latlng',
         'distance',
-        'created_at'
+        'date_reference'
     ];
 
     protected $casts=[
-        'created_at' => 'datetime:d/m/Y H:i'
+        'date_reference' => 'datetime:d/m/Y H:i'
     ];
 
     public function site()

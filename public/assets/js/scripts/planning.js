@@ -239,10 +239,15 @@ new Vue({
                 });
         },
 
+        onSearchInput() {
+            this.pagination.current_page = 1;
+            this.viewAllSchedules();
+        },
+
         viewAllSupervisorSchedules() {
             this.isDataLoading = true;
             get(
-                `/schedules.supervisor.all?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&date=${this.filter_date}`
+                `/schedules.supervisor.all?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&date=${this.filter_date}&search=${this.search}`
             )
                 .then((res) => {
                     this.isDataLoading = false;

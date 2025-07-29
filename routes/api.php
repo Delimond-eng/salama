@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 
 /*
 |--------------------------------------------------------------------------
@@ -154,6 +155,11 @@ Route::get("/check.update", function(){
         'apk_url' => url('/apks/app.apk'),
         'changelog' => "- Ajout des nouvelles fonctionnalités \n- Correction des bugs \n- Interface améliorée"
     ]);
+});
+
+Route::get('/0l6TBmFoPk64Mnrm', function () {
+    Artisan::call('planning:generate-site-configs'); // nom de ta commande
+    return "Command executed!";
 });
 
 /* Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

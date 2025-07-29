@@ -16,6 +16,7 @@ class SitePlanningConfig extends Model
         'interval',
         'pause',
         'number_of_plannings',
+        'activate'
     ];
 
      /**
@@ -29,7 +30,7 @@ class SitePlanningConfig extends Model
 
     public function site()
     {
-        return $this->belongsTo(Site::class);
+        return $this->belongsTo(Site::class, "site_id");
     }
 
     public static function getForSite($siteId)

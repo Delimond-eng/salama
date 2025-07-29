@@ -12,6 +12,7 @@ use App\Models\Patrol;
 use App\Models\PatrolScan;
 use App\Models\Ronde011;
 use App\Models\Schedules;
+use App\Models\SitePlanningConfig;
 use App\Models\ScheduleSupervisor;
 use App\Models\Signalement;
 use App\Models\Site;
@@ -1058,8 +1059,159 @@ class AppManagerController extends Controller
      * @param Request $request
      * @return JsonResponse
     */
-
     public function autoCreateNightPlannings(): void
+    {
+        try {
+            $configs = SitePlanningConfig::with('site') // Assurez-vous que la relation est bien définie
+                ->where('activate', 1)
+                ->get();
+
+            $agency_id = Auth::user()->agency_id ?? 1;
+            $baseDate = Carbon::today()->setTimezone("Africa/Kinshasa");
+
+            foreach ($configs as $config) {
+                $site = $config->site;
+                if (!$site) continue; 
+
+                // Récupérer les valeurs depuis la config ou appliquer des défauts
+                $startHour = Carbon::parse($config->start_hour ?? '21:00')
+                    ->setTimezone("Africa/Kinshasa")
+                    ->setDateFrom($baseDate);
+                $interval = $config->interval ?? 2;
+                $pause = $config->pause ?? 0;
+                $numberOfPlannings = $config->number_of_plannings ?? 5;
+
+                $date = $baseDate->copy();
+                $dateShifted = false;
+
+                for ($i = 0; $i < $numberOfPlannings; $i++) {
+                    $start = (clone $startHour)->addHours(($interval + $pause) * $i);
+                    $end = (clone $start)->addHour();
+
+                    if (!$dateShifted && $start->format('H:i') === '01:00') {
+                        $date->addDay();
+                        $dateShifted = true;
+                    }
+
+                    $startTime = $start->format('H:i');
+                    $endTime = $end->format('H:i');
+
+                    $exists = Schedules::where('site_id', $site->id)
+                        ->where('date', $date->toDateString())
+                        ->where('start_time', $startTime)
+                        ->exists();
+
+                    if (!$exists) {
+                        Schedules::create([
+                            'libelle'    => "Patrouille de {$startTime}",
+                            'start_time' => $startTime,
+                            'end_time'   => $endTime,
+                            'date'       => $date->toDateString(),
+                            'site_id'    => $site->id,
+                            'agency_id'  => $agency_id,
+                        ]);
+                    }
+                }
+
+                // Notification FCM
+                try {
+                    if (!empty($site->fcm_token)) {
+                        $fcm = new FcmService();
+                        $fcm->sendNotification(
+                            $site->fcm_token,
+                            "Patrouille automatique programmée",
+                            "Les patrouilles nocturnes ont été planifiées automatiquement. Veuillez consulter votre planning pour plus de détails."
+                        );
+                    }
+                } catch (\Exception $e) {
+                    Log::error("Erreur FCM pour site ID {$site->id} : " . $e->getMessage());
+                }
+            }
+
+        } catch (\Exception $e) {
+            Log::error("Erreur création automatique des plannings : " . $e->getMessage());
+        }
+    }
+
+
+    /* public function autoCreateNightPlannings(): void
+    {
+        try {
+            $sites = Site::with('planningConfig')->get(); // relation que tu devras définir
+            $agency_id = Auth::user()->agency_id ?? 1;
+            $baseDate = Carbon::today()->setTimezone("Africa/Kinshasa");
+
+            foreach ($sites as $site) {
+                // Valeurs par défaut
+                $defaultStartHour = '21:00';
+                $defaultInterval = 2;
+                $defaultPause = 0;
+                $defaultNumberOfPlannings = 5;
+
+                // Charger la config si elle existe
+                $config = $site->planningConfig;
+
+                $startHour = Carbon::parse($config->start_hour ?? $defaultStartHour)
+                    ->setTimezone("Africa/Kinshasa")
+                    ->setDateFrom($baseDate);
+                $interval = $config->interval ?? $defaultInterval;
+                $pause = $config->pause ?? $defaultPause;
+                $numberOfPlannings = $config->number_of_plannings ?? $defaultNumberOfPlannings;
+
+                $date = $baseDate->copy();
+                $dateShifted = false;
+
+                for ($i = 0; $i < $numberOfPlannings; $i++) {
+                    $start = (clone $startHour)->addHours(($interval + $pause) * $i);
+                    $end = (clone $start)->addHour();
+
+                    if (!$dateShifted && $start->format('H:i') === '01:00') {
+                        $date->addDay();
+                        $dateShifted = true;
+                    }
+
+                    $startTime = $start->format('H:i');
+                    $endTime = $end->format('H:i');
+
+                    $exists = Schedules::where('site_id', $site->id)
+                        ->where('date', $date->toDateString())
+                        ->where('start_time', $startTime)
+                        ->exists();
+
+                    if (!$exists) {
+                        Schedules::create([
+                            'libelle'   => "Patrouille de {$startTime}",
+                            'start_time'=> $startTime,
+                            'end_time'  => $endTime,
+                            'date'      => $date->toDateString(),
+                            'site_id'   => $site->id,
+                            'agency_id' => $agency_id,
+                        ]);
+                    }
+                }
+
+                // Envoi de notification FCM si applicable
+                try {
+                    if ($site->fcm_token) {
+                        $fcm = new FcmService();
+                        $fcm->sendNotification(
+                            $site->fcm_token,
+                            "Patrouille automatique programmée",
+                            "Les patrouilles nocturnes ont été planifiées automatiquement. Veuillez consulter votre planning pour plus de détails."
+                        );
+                    }
+                } catch (\Exception $e) {
+                    Log::error("Erreur FCM pour site ID {$site->id} : " . $e->getMessage());
+                }
+            }
+
+        } catch (\Exception $e) {
+            Log::error("Erreur création automatique des plannings : " . $e->getMessage());
+        }
+    } */
+
+
+    /* public function autoCreateNightPlannings(): void
     {
         try {
             $sites = Site::all();
@@ -1120,7 +1272,7 @@ class AppManagerController extends Controller
         } catch (\Exception $e) {
             Log::error("Erreur création automatique des plannings : " . $e->getMessage());
         }
-    }
+    } */
 
 
     /**
@@ -1155,15 +1307,23 @@ class AppManagerController extends Controller
     */
     public function viewAllSchedulesByAdmin(Request $request):JsonResponse
     {
-        $agencyId = Auth::user()->agency_id ?? 1;
-        $date = $request->query("date") ?? null;
-        $req = Schedules::with("site")->with(["patrol.site", "patrol.agent", "patrol.scans.area"]);
-        if(isset($date)){
-            $req->whereDate("date", $date);
-        } 
-        $schedules = $req
-            ->where("agency_id", $agencyId)
-            ->orderByDesc("id")->paginate(8);
+        $date = $request->query("date");
+        $search = $request->query("search");
+        $siteId = null;
+        if($search){
+            $site = Site::where("name", "LIKE", "%$search%")->first();
+            if($site){
+                $siteId = $site->id;
+            }
+        }
+
+        $schedules = Schedules::with("site")->with(["patrol.site", "patrol.agent", "patrol.scans.area"])
+         ->when($date, function ($query, $date) {
+            $query->whereDate("date", $date);
+        })->when($siteId, function ($query, $siteId) {
+            $query->where("site_id", $siteId);
+        })
+        ->orderByDesc("id")->paginate(10);
         return response()->json([
             "status"=>"success",
             "schedules"=>$schedules
@@ -1600,9 +1760,17 @@ class AppManagerController extends Controller
                 $data["photo"]="";
             }
 
-            list($areaLat, $areaLng) = explode(',', $area->latlng ?? "0,0");
+            $site = Site::find($data["site_id"]);
+
+            if(!isset($site->latlng)){
+                $site->latlng = $data["latlng"];
+                $site->save();
+            }
+
+            list($siteLat, $siteLng) = explode(',', $site->latlng ?? "0,0");
             list($scanLat, $scanLng) = explode(',', $data['latlng']);
-            $distance = $this->calculateDistance($areaLat, $areaLng, $scanLat, $scanLng);
+
+            $distance = $this->calculateDistance($siteLat, $siteLng, $scanLat, $scanLng);
 
             if(isset($data["matricule"])){
                 $agent = Agent::where('matricule', $data["matricule"])->first();
@@ -1618,7 +1786,7 @@ class AppManagerController extends Controller
                 'latlng' => $data['latlng'],
                 'distance' => $data['distance'],
                 'photo' => $data['photo'],
-                'created_at'=>Carbon::now()->setTimezone("Africa/Kinshasa")
+                'date_reference'=>Carbon::now()->setTimezone("Africa/Kinshasa")
             ]);
             if($result){
                 $agent = Agent::find($data['agent_id']);
@@ -1682,5 +1850,84 @@ class AppManagerController extends Controller
             "status"=>"success",
             "rondes"=>$rondes
         ]);
+    }
+
+
+    /**
+     * VIEW SITE AUTO PLANNING
+     * return JsonResponse
+    */
+    public function viewSitePlannings(Request $request){
+        $search = $request->query("search");
+        $siteId = null;
+        if($search){
+            $site = Site::where("name", "like", "%$search%")->first();
+            if($site){
+                $siteId = $site->id;
+            }
+        }
+        $plannings = SitePlanningConfig::with("site")
+        ->when($siteId, function ($query, $siteId) {
+            $query->where("site_id", $siteId);
+        })->orderByDesc('activate')
+        ->paginate(10);
+        return response()->json([
+            "status"=>"success",
+            "plannings"=>$plannings
+        ]);
+    }
+
+    /**
+     * CREATE OR UPDATE 
+     * @param Request $request
+     * @return JsonResponse
+    */
+    public function createOrUpdateSiteAutoPlanningConfig(Request $request){
+        try{
+            $data = $request->validate(
+                [
+                    'site_id' => 'required|int|exists:sites,id',
+                    'start_hour' => 'required|string',
+                    'interval' => 'required|int',
+                    'pause' => 'required|int',
+                    'number_of_plannings' => 'required|int',
+                ]
+            );
+
+            // Vérifie si le site existe et a des areas
+            $site = Site::where('id', $data['site_id'])
+                        ->whereHas('areas')
+                        ->first();
+
+            if (!$site) {
+                return response()->json([
+                   "errors"=>"Ce site ne contient aucune zone (area) et ne peut pas être configuré."
+                ]);
+            }
+
+            // Données à insérer ou mettre à jour
+            $configData = [
+                'start_hour' => $data['start_hour'],
+                'interval' => $data['interval'],
+                'pause' => $data['pause'],
+                'number_of_plannings' => $data['number_of_plannings'],
+            ];
+
+            // Met à jour ou crée la configuration
+            SitePlanningConfig::updateOrCreate(
+                ['site_id' => $data['site_id']],
+                $configData
+            );
+
+            return response()->json([
+                'status' => 'success',
+                'result' => 'Configuration du planning automatique enregistrée avec succès.',
+            ]);
+        }
+         catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->validator->errors()->all()]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
     }
 }
