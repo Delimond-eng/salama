@@ -51,6 +51,7 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     })->name('agents.list')->middleware('check.permission:agents,view');
 
     Route::view("/agents.history", "agent_history" )->name("agents.history")->middleware("check.permission:agents,view");
+    Route::view("/agent.histories.single", "agent_histories_single" )->name("agent.histories.single")->middleware("check.permission:agents,view");
 
     Route::get('/agents', [AdminController::class, 'fetchAgents'])->name('agents')->middleware('check.permission:agents,view');
     Route::get('/agents.histories', [AdminController::class, 'viewAgentHistories'])->name('agents.histories');

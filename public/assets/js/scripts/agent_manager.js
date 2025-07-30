@@ -14,6 +14,7 @@ new Vue({
             isDataLoading: false,
             pristine: null,
             agents: [],
+            agent: null,
             histories: [],
             groups: [],
             sites: [],
@@ -61,12 +62,16 @@ new Vue({
             );
         }
         this.viewAllSites();
-        if (location.pathname === "/agents.history") {
+
+        if (location.pathname == "/agents.history") {
             this.viewAllHistories();
+        } else if (location.pathname == "/agent.histories.single") {
         } else {
             this.viewAllAgents();
             this.viewAllGroups();
         }
+
+        this.refreshAgentCachedData();
     },
 
     methods: {
@@ -268,10 +273,22 @@ new Vue({
                 });
         },
 
+        getStory(data) {
+            localStorage.setItem("current-agent", JSON.stringify(data));
+            location.href = "/agent.histories.single";
+        },
+
+        refreshAgentCachedData() {
+            if (location.pathname === "/agent.histories.single") {
+                const agent = JSON.parse(localStorage.getItem("current-agent"));
+                this.agent = agent;
+            }
+        },
+
         viewAllHistories() {
             this.isDataLoading = true;
             get(
-                `/agents.histories?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&date=${this.filter_date}`
+                `/agents.histories?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&date=${this.filter_date}&site=${this.filter_by_site}&search=${this.search}`
             )
                 .then((res) => {
                     this.isDataLoading = false;
@@ -287,6 +304,11 @@ new Vue({
                     this.isDataLoading = false;
                     console.log("error");
                 });
+        },
+
+        onSearchInputed() {
+            this.pagination.current_page = 1;
+            this.viewAllHistories();
         },
 
         viewAllSites() {
@@ -368,49 +390,22 @@ new Vue({
 
             tom.on("change", (value) => {
                 this.filter_by_site = value;
-                this.viewAllAgents();
+                if (location.pathname == "/agents.history") {
+                    this.viewAllHistories();
+                } else {
+                    this.viewAllAgents();
+                }
             });
         },
     },
 
     computed: {
         allAgents() {
-            /* if (this.search && this.search.trim()) {
-                return this.agents.filter(
-                    (el) =>
-                        el.fullname
-                            .toLowerCase()
-                            .includes(this.search.toLowerCase()) ||
-                        el.matricule
-                            .toLowerCase()
-                            .includes(this.search.toLowerCase())
-                );
-            } else {
-                return this.agents;
-            } */
             return this.agents;
         },
 
         allHistories() {
-            if (this.search && this.search.trim()) {
-                return this.histories.filter(
-                    (el) =>
-                        el.agent.fullname
-                            .toLowerCase()
-                            .includes(this.search.toLowerCase()) ||
-                        el.agent.matricule
-                            .toLowerCase()
-                            .includes(this.search.toLowerCase())
-                );
-            } else if (this.filter_site) {
-                return this.histories.filter(
-                    (el) =>
-                        el.site_id === this.filter_site ||
-                        el.site_provenance_id === this.filter_site
-                );
-            } else {
-                return this.histories;
-            }
+            return this.histories;
         },
 
         getRole() {

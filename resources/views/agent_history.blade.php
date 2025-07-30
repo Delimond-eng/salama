@@ -32,99 +32,158 @@
 
             </div>
             <div class="mt-3 flex w-full items-center xl:mt-0 xl:w-auto">
-                <div class="relative w-56 text-slate-500">
-                    <input v-model="search" @input="filter_site=''" type="text" placeholder="Recherche..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
+                <div class="relative w-56 text-slate-500 mr-2">
+                    <input v-model="search" @input="onSearchInputed" type="text" placeholder="Matricule ou nom..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
                     <i data-lucide="search" class="stroke-1.5 absolute inset-y-0 right-0 my-auto mr-3 h-4 w-4"></i>
                 </div>
-                <select @change="search=''" v-model="filter_site" class="disabled:bg-slate-100 disabled:cursor-not-allowed disabled:dark:bg-darkmode-800/50 [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md py-2 px-3 pr-8 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 group-[.form-inline]:flex-1 !box ml-2 w-56 xl:w-auto">
-                    <option value="" selected hidden>Par site</option>
-                    <option value="">Tout</option>
-                    <option v-for="(site, index) in allSites" :value="site.id">@{{ site.code }} - @{{ site.name }}</option>
+                <select data-tw-merge="" class="tom-select select-site rounded-md bg-white w-48">
+                    <option value="" selected hidden>Site</option>
                 </select>
             </div>
         </div>
         <!-- BEGIN: Data List -->
-        <div class="col-span-12" v-if="allHistories.length">
-            <div class="relative intro-y before:box before:absolute before:inset-x-3 before:mt-3 before:h-full before:bg-slate-50 before:content-['']">
-                <div class="box intro-y">
-                    <div class="overflow-x-auto">
-                        <table
+        <!-- <div class="col-span-12 overflow-auto 2xl:overflow-visible intro-y" v-if="allHistories.length">
+            <div class="overflow-x-auto box">
+                <table
+                    data-tw-merge
+                    class="w-full text-left">
+                    <thead
+                        data-tw-merge
+                        class="">
+                        <tr
                             data-tw-merge
-                            class="w-full text-left">
-                            <thead
+                            class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
+                            <th
                                 data-tw-merge
-                                class="">
-                                <tr
-                                    data-tw-merge
-                                    class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
-                                    <th
-                                        data-tw-merge
-                                        class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
-                                        NOM & MATRICULE
-                                    </th>
-                                    <th
-                                        data-tw-merge
-                                        class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
-                                        DATE D'AFFECTATION
-                                    </th>
-                                    <th
-                                        data-tw-merge
-                                        class="uppercase font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
-                                        SITE AFFECTé
-                                    </th>
-                                    <th
-                                        data-tw-merge
-                                        class="uppercase font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
-                                        SITE PROVENANCE
-                                    </th>
-                                    <th
-                                        data-tw-merge
-                                        class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
-                                        STATUT
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(data, index) in allHistories" :key="index"
-                                    data-tw-merge
-                                    class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
-                                    <td
-                                        data-tw-merge
-                                        class="px-5 py-3 border-b dark:border-darkmode-300">
-                                        <span class="font-extrabold text-primary">@{{ data.agent.matricule }}</span> | @{{ data.agent.fullname }}
-                                    </td>
-                                    <td
-                                        data-tw-merge
-                                        class="px-5 py-3 border-b dark:border-darkmode-300">
-                                        @{{ data.created_at }}
-                                    </td>
-                                    <td
-                                        data-tw-merge
-                                        class="px-5 py-3 border-b dark:border-darkmode-300">
-                                        @{{ data.site.code }} | @{{ data.site.name }}
-                                    </td>
-                                    <td
-                                        data-tw-merge
-                                        class="px-5 py-3 border-b dark:border-darkmode-300">
-                                        <span v-if="data.from">
-                                            @{{ data.from.code }} | @{{ data.from.name }}
-                                        </span>
-                                        <span v-else class="text-decoration-underline">
-                                            Non défini
-                                        </span>
-                                    </td>
-                                    <td
-                                        data-tw-merge
-                                        class="px-5 py-3 border-b dark:border-darkmode-300">
+                                class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
+                                NOM & MATRICULE
+                            </th>
+                            <th
+                                data-tw-merge
+                                class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
+                                DATE D'AFFECTATION
+                            </th>
+                            <th
+                                data-tw-merge
+                                class="uppercase font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
+                                SITE AFFECTé
+                            </th>
+                            <th
+                                data-tw-merge
+                                class="uppercase font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
+                                SITE PROVENANCE
+                            </th>
+                            <th
+                                data-tw-merge
+                                class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap">
+                                STATUT
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(data, index) in allHistories" :key="index"
+                            data-tw-merge
+                            class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
+                            <td
+                                data-tw-merge
+                                class="px-5 py-3 border-b dark:border-darkmode-300">
+                                <span v-if="data.agent" class="font-extrabold text-primary">@{{ data.agent.matricule }}</span> | @{{ data.agent.fullname }}
+                            </td>
+                            <td
+                                data-tw-merge
+                                class="px-5 py-3 border-b dark:border-darkmode-300">
+                                @{{ data.created_at }}
+                            </td>
+                            <td
+                                data-tw-merge
+                                class="px-5 py-3 border-b dark:border-darkmode-300">
+                                @{{ data.site.code }} | @{{ data.site.name }}
+                            </td>
+                            <td
+                                data-tw-merge
+                                class="px-5 py-3 border-b dark:border-darkmode-300">
+                                <span v-if="data.from">
+                                    @{{ data.from.code }} | @{{ data.from.name }}
+                                </span>
+                                <span v-else class="text-decoration-underline">
+                                    Non défini
+                                </span>
+                            </td>
+                            <td
+                                data-tw-merge
+                                class="px-5 py-3 border-b dark:border-darkmode-300">
+                                @{{ data.status }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div> -->
+        <div class="col-span-12"  v-if="allHistories.length">
+            <div class="box rounded-md p-5">
+                <div class="-mt-3 overflow-auto lg:overflow-visible">
+                    <table data-tw-merge="" class="w-full text-left">
+                        <thead data-tw-merge="" class="">
+                            <tr data-tw-merge="" class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
+                                <th data-tw-merge="" class="font-extrabold px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap !py-5">
+                                    AGENT
+                                </th>
+                                <th data-tw-merge="" class="font-extrabold px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap text-right">
+                                   DATE
+                                </th>
+                                <th data-tw-merge="" class="uppercase font-extrabold px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap text-right">
+                                    SITE AFFECTé
+                                </th>
+                                <th data-tw-merge="" class="uppercase font-extrabold px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap text-right">
+                                    SITE PROVENANCE
+                                </th>
+                                <th data-tw-merge="" class="font-extrabold px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap text-right">
+                                    STATUS
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(data, index) in allHistories" :key="index" class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
+                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 !py-4">
+                                    <div class="flex items-center" v-if="data.agent">
+                                        <div class="image-fit zoom-in h-9 w-9">
+                                            <img v-if="data.agent.photo" data-action="zoom" data-placement="top" title="Photo" :src="data.agent.photo" alt="photo" class="tooltip cursor-pointer rounded-lg border-white shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]">
+                                            <img v-else data-placement="top" title="Avatar" src="{{ asset("assets/images/profil-2.png") }}" alt="avatar" class="tooltip cursor-pointer rounded-lg border-white shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]">
+                                        </div>
+                                        <div class="ml-4">
+                                            <a class="whitespace-nowrap font-medium" href="#">
+                                                @{{ data.agent.fullname }}
+                                            </a>
+                                            <div class="mt-0.5 whitespace-nowrap text-xs text-slate-500">
+                                                @{{ data.agent.matricule }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
+                                    @{{ data.date }}
+                                </td>
+                                <td data-tw-merge="" class="px-5 text-blue-500 font-bold py-3 border-b dark:border-darkmode-300 text-right">
+                                     @{{ data.site.name }}
+                                </td>
+                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
+                                    <span class="text-primary font-bold" v-if="data.from">
+                                     @{{ data.from.name }}
+                                    </span>
+                                    <span v-else class="text-decoration-underline">
+                                        Non défini
+                                    </span>
+                                </td>
+                                <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
+                                    <span class="ml-1 text-xs rounded bg-success/20 p-1 text-primary">
                                         @{{ data.status }}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-
         </div>
         <!-- END: Data List -->
 
@@ -132,7 +191,7 @@
             <div v-if="isDataLoading">
                 <x-dom-loader></x-dom-loader>
             </div>
-            <div v-else class="relative mt-5 intro-y before:box before:absolute before:inset-x-3 before:mt-3 before:h-full before:bg-slate-50 before:content-['']">
+            <div v-else>
                 <div class="box">
                     <x-empty-state message="Aucun agent répertorié !"></x-empty-state>
                 </div>
@@ -162,5 +221,4 @@
 
 @push("scripts")
 <script type="module" src="{{ asset("assets/js/scripts/agent_manager.js") }}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 @endpush

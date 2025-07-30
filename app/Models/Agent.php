@@ -97,4 +97,9 @@ class Agent extends Model
     public function groupe() : BelongsTo{
         return $this->belongsTo(AgentGroup::class, foreignKey:"groupe_id",);
     }
+
+
+    public function stories(){
+        return $this->hasMany(AgentHistory::class, "agent_id", "id");
+    }
 }

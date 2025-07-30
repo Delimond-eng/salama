@@ -129,7 +129,7 @@
 
          @if (Auth::user()->hasMenu("agents"))
          <li>
-             <a href="javascript:;" class="side-menu {{ Route::is("agent.create") || Route::is("agents.list") || Route::is("agents.history") ?  'side-menu--active' : '' }}">
+             <a href="javascript:;" class="side-menu @active(['agent.histories.single', 'agent.create', 'agents.list', 'agents.history'])">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="users" class="stroke-1.5 w-5 h-5"></i>
                  </div>

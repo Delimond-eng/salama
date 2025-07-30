@@ -522,9 +522,8 @@ class AdminController extends Controller
         $siteFilter = $request->query('site');
         $agencyId = Auth::user()->agency_id;
 
-        $agents = Agent::whereIn('status', ['actif', 'permenant', 'dispo'])
-            ->where('agency_id', $agencyId)
-            ->with(['site', 'groupe'])
+        $agents = Agent::where('agency_id', $agencyId)
+            ->with(['site', 'groupe', 'stories.site', 'stories.from'])
             ->when($statusFilter, function ($query, $statusFilter) {
                 $query->where('status', $statusFilter);
             })
@@ -570,13 +569,24 @@ class AdminController extends Controller
      * @return JsonResponse
     */
     public function viewAgentHistories(Request $request){
-        $date = $request->query("date") ?? null;
-        $datas = AgentHistory::with('agent')->with("site")->with("from");
-
-        if($date){
-            $datas->whereDate("date", $date);
-        }
-        $histories = $datas->orderByDesc('created_at')-> paginate(10);
+        $date = $request->query("date");
+        $siteId = $request->query("site");
+        $search = $request->query("search");
+        $histories = AgentHistory::with('agent')->with("site")
+        ->with("from")
+        ->when($date, function ($query, $date) {
+                $query->whereDate("date", $date);
+            })
+        ->when($siteId, function ($query, $siteId) {
+                $query->where("site_id", $siteId)
+                ->orWhere("site_provenance_id", $siteId);
+            })
+        ->when($search, function ($query) use ($search) {
+                $query->whereHas("agent", function ($agentQuery) use ($search) {
+                    $agentQuery->where("matricule", "LIKE", "%$search%")
+                    ->orWhere("fullname", "LIKE", "%$search%");
+                });
+            })->orderByDesc('created_at')-> paginate(10);
 
         return response()->json([
             "status"=>"success",
