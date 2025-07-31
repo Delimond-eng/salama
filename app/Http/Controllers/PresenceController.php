@@ -3,6 +3,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Agent;
 use App\Models\AgentGroup;
+use App\Models\AgentGroupAssignment;
+use App\Models\AgentGroupPlanning;
 use App\Models\Cessation;
 use App\Models\Conge;
 use App\Models\PresenceAgents;
@@ -267,7 +269,7 @@ class PresenceController extends Controller
      *16:10/15-05-2025
      */
 
-    public function createPresenceAgent(Request $request)
+    /* public function createPresenceAgent(Request $request)
     {
         try {
             $data = $request->validate([
@@ -446,7 +448,222 @@ class PresenceController extends Controller
         } catch (\Exception $e) {
             return response()->json(['errors' => $e->getMessage()]);
         }
+    } */
+
+
+
+    public function createPresenceAgent(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                "matricule"    => "required|string|exists:agents,matricule",
+                "key"          => "required|string|in:check-in,check-out",
+                "coordonnees"  => "required|string",
+            ]);
+
+            $now = Carbon::now()->setTimezone("Africa/Kinshasa");
+            $photoUrl = null;
+
+            $agent = Agent::with("site")->where('matricule', $data['matricule'])->firstOrFail();
+            $site = $agent->site;
+
+            // Détection du site à proximité
+            [$lat1, $lng1] = array_pad(explode(',', $data['coordonnees']), 2, null);
+            $distance = null;
+            $commentaire_distance = "Pas de site défini.";
+            $siteProcheId = null;
+
+            if ($site && $site->latlng && $lat1 && $lng1) {
+                [$lat2, $lng2] = explode(',', $site->latlng);
+                $distance = app(AppManagerController::class)->calculateDistance($lat1, $lng1, $lat2, $lng2);
+                $commentaire_distance = "Présence à environ " . round($distance) . " mètres du site.";
+            }
+
+            $siteProche = Site::whereNotNull("latlng")
+                ->get()
+                ->map(function ($s) use ($lat1, $lng1) {
+                    [$lat2, $lng2] = explode(',', $s->latlng);
+                    $s->distance = app(AppManagerController::class)->calculateDistance($lat1, $lng1, $lat2, $lng2);
+                    return $s;
+                })
+                ->filter(fn($s) => $s->distance <= 500)
+                ->sortBy('distance')
+                ->first();
+
+            if ($siteProche) {
+                $siteProcheId = $siteProche->id;
+            }
+
+            // Recherche du groupe de l'agent
+            $assignment = AgentGroupAssignment::where('agent_id', $agent->id)
+                ->whereDate('start_date', '<=', $now)
+                ->where(function ($q) use ($now) {
+                    $q->whereNull('end_date')->orWhere('end_date', '>=', $now);
+                })
+                ->first();
+
+            if (!$assignment) {
+                return response()->json(['errors' => ['Aucune assignation de groupe active trouvée.']]);
+            }
+
+            // Recherche du planning du jour
+            $planning = AgentGroupPlanning::where('agent_group_id', $assignment->agent_group_id)
+                ->where('date', $now->toDateString())
+                ->with('horaire')
+                ->first();
+
+            if (!$planning) {
+                return response()->json(['errors' => ['Aucun planning défini pour cet agent aujourd\'hui.']]);
+            }
+
+            if ($planning->is_rest_day) {
+                return response()->json(['errors' => ['Ce jour est prévu comme jour de repos pour cet agent.']]);
+            }
+
+            if (!$planning->horaire) {
+                return response()->json(['errors' => ['Aucun horaire associé au planning du jour pour cet agent.']]);
+            }
+
+            $horaire = $planning->horaire;
+            $dateReference = $this->getDateReference($now, $horaire);
+
+            // Upload de la photo
+            if ($request->hasFile('photo')) {
+                $photo = $request->file('photo');
+                $filename = time() . '_' . $photo->getClientOriginalName();
+                $photo->move(public_path('uploads/presence_photos'), $filename);
+                $photoUrl = url('uploads/presence_photos/' . $filename);
+            }
+
+            $presence = PresenceAgents::where('agent_id', $agent->id)
+                ->whereDate('date_reference', $dateReference->toDateString())
+                ->latest()
+                ->first();
+
+            if ($data['key'] === 'check-in') {
+                if ($presence && $presence->started_at) {
+                    return response()->json(['errors' => ['L\'agent a déjà effectué un pointage d\'entrée pour ce jour.']]);
+                }
+
+                // Vérifier le retard
+                $heureRef = $dateReference->copy()->setTimeFromTimeString($horaire->started_at);
+                $retard = $now->gt($heureRef->copy()->addMinutes(30)) ? 'oui' : 'non';
+
+                $presence = PresenceAgents::create([
+                    'agent_id'           => $agent->id,
+                    'site_id'            => $agent->site_id ?? 0,
+                    'gps_site_id'        => $siteProcheId,
+                    'horaire_id'         => $horaire->id,
+                    'date_reference'     => $dateReference,
+                    'started_at'         => $now,
+                    'photos_debut'       => $photoUrl,
+                    'status_photo_debut' => $data['status_photo'] ?? null,
+                    'retard'             => $retard,
+                    'commentaires'       => $commentaire_distance,
+                    'status'             => 'debut',
+                ]);
+                $message = "Présence d'entrée enregistrée.";
+            }
+            elseif ($data['key'] === 'check-out') {
+                if (!$presence) {
+                    return response()->json(['errors' => ['Aucun pointage d\'entrée trouvé pour cet agent à cette date.']]);
+                }
+
+                if ($presence->ended_at) {
+                    return response()->json(['errors' => ['L\'agent a déjà effectué un pointage de sortie pour ce jour.']]);
+                }
+
+                $startedAt = Carbon::parse($presence->started_at);
+                $duree = $startedAt->diff($now);
+
+                $dureeFormat = '';
+                if ($duree->h > 0) $dureeFormat .= $duree->h . 'h';
+                if ($duree->i > 0) $dureeFormat .= $duree->i . 'min';
+                if ($dureeFormat === '') $dureeFormat = '0min';
+
+                $presence->update([
+                    'ended_at'         => $now,
+                    'duree'            => $dureeFormat,
+                    'photos_fin'       => $photoUrl,
+                    'gps_site_id'      => $siteProcheId,
+                    'status_photo_fin' => $data['status_photo'] ?? null,
+                    'commentaires'     => $presence->commentaires . " | Sortie à " . $now->format("H:i"),
+                    'status'           => 'fin',
+                ]);
+
+                $message = "Présence sortie enregistrée.";
+            }
+
+            // Envoi de mail au site si défini
+            if ($site && $site->emails) {
+                (new EmailController())->sendMail([
+                    "emails" => $site->emails,
+                    "title"  => "Mise à jour de présence",
+                    "photo"  => $photoUrl,
+                    "agent"  => $agent->matricule . ' - ' . $agent->fullname,
+                    "site"   => $site->code . ' - ' . $site->name,
+                    "date"   => $now->format("d/m/Y H:i"),
+                ]);
+            }
+
+            // Alerte si hors site
+            try {
+                if ($presence->gps_site_id && $presence->gps_site_id != $presence->site_id) {
+                    $siteDetecte = Site::find($presence->gps_site_id);
+                    $emails = array_map('trim', explode(';', $site->emails));
+
+                    Mail::send('emails.alert', [
+                        "agent"        => $agent->matricule . ' - ' . $agent->fullname,
+                        "site"         => $site->code . ' - ' . $site->name,
+                        "site_detecte" => $siteDetecte ? $siteDetecte->code . ' - ' . $siteDetecte->name : 'Inconnu',
+                        "date"         => $now->format("d/m/Y H:i"),
+                        "photo"        => $photoUrl,
+                    ], function ($message) use ($emails) {
+                        $message->to($emails)->subject("Présence détectée hors site assigné");
+                    });
+                }
+            } catch (\Exception $e) {
+                Log::warning($e->getMessage());
+            }
+
+            return response()->json([
+                "status"  => "success",
+                "message" => $message,
+                "result"  => $presence,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->validator->errors()->all()]);
+        } catch (\Exception $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
     }
+
+
+    /**
+     * Calcule la date de référence de présence selon l'horaire et l'heure actuelle.
+     */
+    private function getDateReference(Carbon $now, $horaire): Carbon
+    {
+        $heureDebut = Carbon::createFromTimeString($horaire->started_at);
+        $heureFin = Carbon::createFromTimeString($horaire->ended_at);
+
+        $isHoraireNuit = $heureFin->lt($heureDebut);
+        $isHoraire24h = $heureDebut->eq($heureFin);
+
+        $dateReference = $now->copy()->startOfDay();
+
+        if ($isHoraireNuit && $now->lt($now->copy()->startOfDay()->setTimeFrom($heureFin))) {
+            $dateReference = $now->copy()->subDay()->startOfDay();
+        } elseif ($isHoraire24h) {
+            $seuil = $now->copy()->startOfDay()->setTimeFrom($heureDebut);
+            $dateReference = $now->lt($seuil) ? $now->copy()->subDay()->startOfDay() : $now->copy()->startOfDay();
+        }
+
+        return $dateReference;
+    }
+
+
+
 
 
 

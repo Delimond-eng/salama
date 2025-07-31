@@ -14,24 +14,24 @@ return new class extends Migration
     public function up()
     {
         if (!Schema::hasTable('presence_agents')) {
-    Schema::create('presence_agents', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger("agent_id");
-            $table->unsignedBigInteger("site_id");
-            $table->unsignedBigInteger("horaire_id");
-            $table->string("started_at")->nullable();
-            $table->string("ended_at")->nullable();
-            $table->string("duree")->nullable();
-            $table->string("retard")->nullable();
-            $table->string("photos_debut")->nullable();
-            $table->string("photos_fin")->nullable();
-            $table->string("status_photo_debut")->nullable();
-            $table->string("status_photo_fin")->nullable();
-            $table->string("commentaires")->nullable();
-            $table->string("status")->default("arrive");
-            $table->date('date_reference')->nullable();
-            $table->timestamps();
-        });
+            Schema::create('presence_agents', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger("agent_id");
+                $table->unsignedBigInteger("site_id");
+                $table->unsignedBigInteger("horaire_id");
+                $table->string("started_at")->nullable();
+                $table->string("ended_at")->nullable();
+                $table->string("duree")->nullable();
+                $table->string("retard")->nullable();
+                $table->string("photos_debut")->nullable();
+                $table->string("photos_fin")->nullable();
+                $table->string("status_photo_debut")->nullable();
+                $table->string("status_photo_fin")->nullable();
+                $table->string("commentaires")->nullable();
+                $table->string("status")->default("arrive");
+                $table->date('date_reference')->nullable();
+                $table->timestamps();
+            });
         }
     }
 

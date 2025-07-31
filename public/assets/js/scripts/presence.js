@@ -409,7 +409,6 @@ new Vue({
                     agent.fullname,
                     agent.poste,
                 ];
-
                 for (let day = 1; day <= this.daysInMonth; day++) {
                     row.push(agent.days[day] || "");
                 }

@@ -91,8 +91,8 @@
         </div>
 
         <div class="mt-3" v-if="agent">
-            <div class="box rounded-md overflow-auto lg:overflow-visible">
-                <table data-tw-merge="" class="w-full text-left" v-if="agent.stories.length">
+            <div class="box rounded-mg overflow-auto lg:overflow-visible" v-if="agent.stories.length">
+                <table data-tw-merge="" class="w-full text-left">
                     <thead data-tw-merge="" class="">
                         <tr data-tw-merge="" class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
                             <th data-tw-merge="" class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap !py-5">
@@ -127,9 +127,9 @@
                         </tr>
                     </tbody>
                 </table>
-                <div class="box" v-else>
-                    <x-empty-state message="Aucune historique répertoriée !"></x-empty-state>
-                </div>
+            </div>
+            <div class="box rounded-lg" v-else>
+                <x-empty-state message="Aucune historique répertoriée !"></x-empty-state>
             </div>
         </div>
     </div>
