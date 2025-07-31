@@ -317,19 +317,20 @@ class PresenceController extends Controller
     /**
      * Permet de bloquer le check-in pour les horaires du soir
     */
-    private function checkInCancelByPresence(Carbon $now, $horaire, $agentId): bool
+   private function checkInCancelByPresence(Carbon $now, $horaire, $agentId): bool
     {
         $heureDebut = Carbon::createFromTimeString($horaire->started_at);
         $heureFin = Carbon::createFromTimeString($horaire->ended_at);
 
+        // Détection du type d’horaire
         $isHoraireNuit = $heureFin->lt($heureDebut);
         $isHoraire24h = $heureDebut->eq($heureFin);
 
-        // Temps de repos en heures (configurable)
-        $tempsReposNuit = 8;  // ex: 8h après shift nuit
-        $tempsRepos24h = 24;  // ex: 24h après shift 24h
+        // Temps de repos constants
+        $tempsReposNuit = 8;   // en heures
+        $tempsRepos24h = 24;  // en heures
 
-        // On récupère la dernière présence check-in sans check-out (présence ouverte)
+        // Dernière présence ouverte (check-in sans check-out)
         $lastPresence = PresenceAgents::where('agent_id', $agentId)
             ->whereNotNull('started_at')
             ->whereNull('ended_at')
@@ -338,57 +339,65 @@ class PresenceController extends Controller
 
         if (!$lastPresence) {
             Log::info("Aucune présence ouverte trouvée → check-in autorisé.");
-            return false; // Pas de présence ouverte = pas de blocage
+            return false;
         }
 
         $lastCheckIn = Carbon::parse($lastPresence->started_at);
         Log::info("Dernier check-in: " . $lastCheckIn->toDateTimeString());
         Log::info("Now: " . $now->toDateTimeString());
 
+        // Cas 24h
         if ($isHoraire24h) {
             Log::info("Horaires 24h détectés.");
-            $finRepos = $lastCheckIn->copy()->addHours($tempsRepos24h);
-            Log::info("Fin du repos (last check-in + $tempsRepos24h heures): " . $finRepos->toDateTimeString());
+            $finShift = $lastCheckIn->copy()->addHours(24);
+            $finRepos = $finShift->copy()->addHours($tempsRepos24h);
+
+            Log::info("Fin shift 24h : " . $finShift->toDateTimeString());
+            Log::info("Fin repos 24h : " . $finRepos->toDateTimeString());
 
             if ($now->lt($finRepos)) {
-                Log::info("Check-in bloqué : temps de repos 24h non terminé.");
+                Log::info("Check-in bloqué : repos 24h non terminé.");
                 return true;
             }
+
             Log::info("Check-in autorisé : repos 24h terminé.");
             return false;
         }
 
+        // Cas horaire de nuit
         if ($isHoraireNuit) {
             Log::info("Horaires de nuit détectés.");
 
-            // Calcul du début du shift basé sur lastCheckIn et heureDebut
-            $shiftStartDate = $lastCheckIn->copy()->startOfDay()->setTimeFromTimeString($horaire->started_at);
-            if ($lastCheckIn->lt($shiftStartDate)) {
-                $shiftStartDate->subDay();
+            $shiftStart = $lastCheckIn->copy()->setTimeFromTimeString($horaire->started_at);
+            if ($lastCheckIn->lt($shiftStart)) {
+                $shiftStart->subDay();
             }
-            $shiftEnd = $shiftStartDate->copy()->addDay()->setTimeFromTimeString($horaire->ended_at);
 
-            Log::info("Début du shift (jour du dernier check-in): " . $shiftStartDate->toDateTimeString());
-            Log::info("Fin théorique du shift nuit : " . $shiftEnd->toDateTimeString());
+            // Correction ici pour gérer le passage à minuit
+            $shiftEnd = $shiftStart->copy()->setTimeFromTimeString($horaire->ended_at);
+            if ($shiftEnd->lte($shiftStart)) {
+                $shiftEnd->addDay();
+            }
 
             $finRepos = $shiftEnd->copy()->addHours($tempsReposNuit);
-            Log::info("Fin du repos (fin shift + $tempsReposNuit heures): " . $finRepos->toDateTimeString());
+
+            Log::info("Début shift nuit : " . $shiftStart->toDateTimeString());
+            Log::info("Fin shift nuit : " . $shiftEnd->toDateTimeString());
+            Log::info("Fin repos nuit : " . $finRepos->toDateTimeString());
 
             if ($now->lt($finRepos)) {
-                Log::info("Check-in bloqué : temps de repos post-shift nuit non terminé.");
+                Log::info("Check-in bloqué : repos après horaire nuit non terminé.");
                 return true;
             }
-            Log::info("Check-in autorisé : temps de repos post-shift nuit terminé.");
+
+            Log::info("Check-in autorisé : repos après horaire nuit terminé.");
             return false;
         }
 
+        // Cas horaire normal
         Log::info("Horaires normales, pas de blocage.");
         return false;
     }
-
-
-
-
 
 
     public function getPresenceReport(Request $request)
