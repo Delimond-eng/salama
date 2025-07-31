@@ -40,7 +40,6 @@ class GenerateFlexiblePlanning extends Command
 
         foreach ($assignments as $assign) {
             $groupId = $assign->agent_group_id;
-
             for ($i = 0; $i < $days; $i++) {
                 $date = $now->copy()->addDays($i);
                 $dayIndex = $date->dayOfWeekIso - 1; // ISO: Lundi = 1 → 0
