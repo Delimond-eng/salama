@@ -220,11 +220,13 @@ class PresenceController extends Controller
                 }
 
                 $startedAt = Carbon::parse($presence->started_at);
-                $duree = $startedAt->diff($now);
+                $totalMinutes = $startedAt->diffInMinutes($now);
+                $heures = floor($totalMinutes / 60);
+                $minutes = $totalMinutes % 60;
 
                 $dureeFormat = '';
-                if ($duree->h > 0) $dureeFormat .= $duree->h . 'h';
-                if ($duree->i > 0) $dureeFormat .= $duree->i . 'min';
+                if ($heures > 0) $dureeFormat .= $heures . 'h';
+                if ($minutes > 0) $dureeFormat .= $minutes . 'min';
                 if ($dureeFormat === '') $dureeFormat = '0min';
 
                 $presence->update([
@@ -653,7 +655,7 @@ class PresenceController extends Controller
                     $targetDate->toDateString(),
                     $targetDate->copy()->subDay()->toDateString()
                 ])
-                ->whereNull("ended_at")
+
                 ->orderByRaw("
                     CASE
                         WHEN retard = 'no' THEN 0

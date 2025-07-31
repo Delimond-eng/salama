@@ -75,6 +75,8 @@ class Kernel extends HttpKernel
         \App\Console\Commands\VerifySchedulesCommand::class,
         \App\Console\Commands\SendDatabaseBackup::class,
         \App\Console\Commands\GenerateSitePlanningConfigs::class,
+        \App\Console\Commands\GenerateFillCycle::class,
+        \App\Console\Commands\GenerateFlexiblePlanning::class
     ];
 
 

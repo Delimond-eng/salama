@@ -9,7 +9,7 @@ class AgentGroupPlanning extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['agent_group_id', 'horaire_id', 'day_index', 'is_rest_day'];
+    protected $fillable = ['agent_group_id', 'horaire_id', 'date', 'day_index', 'is_rest_day'];
 
     public function group()
     {
