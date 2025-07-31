@@ -47,7 +47,10 @@
                             <a class="font-bold" href="#">
                                 @{{ data.libelle }}
                             </a>
-                            <div class="text-slate-500">Horaire : <strong class="text-blue-500" v-if="data.horaire">@{{ data.horaire.libelle }}</strong> </div>
+                            <div class="text-slate-500" v-if="data.horaire">Horaire : <strong class="text-blue-500">@{{ data.horaire.libelle }}</strong> </div>
+                           <div>
+                            <small class="text-slate-500" v-else>Permutation des horaires Jour & soir </small>
+                           </div>
                         </div>
                         <div class="flex items-center font-medium">
                             <button @click="formGroup.libelle=data.libelle; formGroup.horaire_id=data.horaire_id; formGroup.id=data.id;" class="text-blue-500 border border-slate-400 ml-3 rounded-lg px-2 py-2 text-sm hover:bg-red-200 hover:border-red-400">

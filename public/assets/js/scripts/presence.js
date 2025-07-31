@@ -60,6 +60,9 @@ new Vue({
             document.getElementById("loader").style.display = "none";
         }
 
+        this.loadPresenceReports();
+        this.refreshDatas();
+
         if ($(".form-horaire").length) {
             this.pristine = new Pristine(
                 document.querySelector(".form-horaire"),
@@ -85,9 +88,6 @@ new Vue({
                 console.log("Agent selected : ", value);
             });
         }
-
-        this.loadPresenceReports();
-        this.refreshDatas();
     },
     watch: {
         searchMatricule: "applyFilters",

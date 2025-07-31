@@ -6,6 +6,7 @@ use App\Models\Action;
 use App\Models\Agencie;
 use App\Models\Agent;
 use App\Models\AgentHistory;
+use App\Models\AgentGroupAssignment;
 use App\Models\Area;
 use App\Models\Conge;
 use App\Models\Menu;
@@ -383,6 +384,14 @@ class AdminController extends Controller
             $response->save();
 
             if ($response) {
+                AgentGroupAssignment::updateOrCreate(
+                    ["agent_id"=>$response->id],
+                    [
+                        "agent_id" => $response->id,
+                        "agent_group_id" => $response->groupe_id, 
+                        "start_date" => Carbon::today()->setTimezone("Africa/Kinshasa"),
+                    ]
+                );
                 if($agent && $agent->site_id){
                     $this->createAgentHistory($response, $agent->site_id);
                 }

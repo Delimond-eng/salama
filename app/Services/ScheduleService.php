@@ -128,12 +128,18 @@ class ScheduleService
                 $start = $this->parseDateTime($schedule->date, $schedule->start_time);
                 $end = $schedule->end_time
                     ? $this->parseDateTime($schedule->date, $schedule->end_time)
-                    : $now;
+                    : $start->copy()->addHours(2); // ✅ end par défaut si absent
 
                 $toleranceStart = $start->copy()->subMinutes($toleranceMinutes);
                 $toleranceEnd = $end->copy()->addMinutes($toleranceMinutes);
 
                 Log::info("Plage tolérée : {$toleranceStart} → {$toleranceEnd}");
+
+                // ✅ On ignore les plannings pas encore commencés
+                if ($now->lt($toleranceStart)) {
+                    Log::info("⏳ Le planning ID {$schedule->id} n’a pas encore commencé. On attend (start = {$start}).");
+                    continue;
+                }
 
                 $patrol = Patrol::with('agent')
                     ->where('site_id', $schedule->site_id)
@@ -170,8 +176,8 @@ class ScheduleService
                 $totalAreas = count($allAreas);
                 $scannedCount = count($scannedAreas);
                 $ratio = $totalAreas > 0 ? ($scannedCount / $totalAreas) : 0;
-
                 $newStatus = 'fail';
+
                 if ($scannedCount > 0) {
                     $newStatus = ($ratio < 1.0 && $ratio >= 0.5) ? 'partial' : 'success';
                 } else {
@@ -191,9 +197,9 @@ class ScheduleService
             } catch (\Exception $e) {
                 Log::error("💥 Erreur sur le planning ID {$schedule->id} : " . $e->getMessage());
             }
-            
         }
     }
+
 
 
     protected function parseDateTime($date, $time)

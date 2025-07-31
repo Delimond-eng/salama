@@ -57,7 +57,7 @@ class PresenceController extends Controller
         try {
             $data = $request->validate([
                 "libelle"    => "required|string",
-                "horaire_id" => "required|int|exists:presence_horaires,id",
+                "horaire_id" => "nullable|int|exists:presence_horaires,id",
             ]);
             $response = AgentGroup::updateOrCreate(
                 [
@@ -79,379 +79,10 @@ class PresenceController extends Controller
     }
 
     /*
-     *Lionnel nawej
+     *Lionnel nawej | updated by Gaston 
      *Creation de la presence des agents
      *16:10/15-05-2025
      */
-    /* public function createPresenceAgent(Request $request)
-    {
-        try {
-            $data = $request->validate([
-                "matricule"    => "required|string|exists:agents,matricule",
-                "heure"        => "required|string",
-                "status_photo" => "nullable|string",
-                "coordonnees"  => "required|string",
-            ]);
-
-            $agent = Agent::with("groupe.horaire")->where('matricule', $data['matricule'])->firstOrFail();
-
-            if ($agent) {
-                $now = Carbon::today()->setTimezone('Africa/Kinshasa');
-                $lat1                 = null;
-                $lng1                 = null;
-                $commentaire_distance = "Pas de site défini.";
-                $distance             = null;
-                $site                 = null;
-
-                // Extraire les coordonnées de l'agent
-                if (! empty($data['coordonnees'])) {
-                    list($lat1, $lng1) = explode(',', $data['coordonnees']);
-                }
-
-                // Si agent a un site assigné
-                if ($agent->site_id) {
-                    $site = Site::find($agent->site_id);
-                }
-                // Sinon, on essaie de deviner à partir des coordonnées
-                else if ($lat1 && $lng1) {
-                    $sites       = Site::all();
-                    $siteProche  = null;
-                    $minDistance = PHP_INT_MAX;
-                    foreach ($sites as $s) {
-                        if (! $s->latlng) {
-                            continue;
-                        }
-
-                        list($lat2, $lng2) = explode(',', $s->latlng);
-                        $d                 = (new AppManagerController())->calculateDistance($lat1, $lng1, $lat2, $lng2);
-                        if ($d < $minDistance) {
-                            $minDistance = $d;
-                            $siteProche  = $s;
-                        }
-                    }
-                    // Si on trouve un site proche à moins de 200m
-                    if ($siteProche && $minDistance <= 400) {
-                        $site           = $siteProche;
-                        $agent->site_id = $siteProche->id;
-                    } else {
-                        $agent->site_id = 0; // ou null selon ta base
-                    }
-
-                }
-
-                // Gestion de la distance et du commentaire
-                if ($site) {
-                    list($lat2, $lng2)     = explode(',', $site->latlng);
-                    $distance              = app(AppManagerController::class)->calculateDistance($lat1, $lng1, $lat2, $lng2);
-                    $proximite             = $distance <= 100 ? "dans le site" : "hors du site";
-                    $commentaire_proximite = request('is_sortie') ?
-                    ($distance <= 400 ? "sorti du site" : "pas dans le site à la sortie") :
-                    ($distance <= 400 ? "arrivé dans le site" : "pas arrivé dans le site");
-                    $commentaire_distance = "$commentaire_proximite - " . round($distance) . " mètres du site";
-                }
-
-                $horaire = $agent->groupe->horaire ? PresenceHoraire::find($agent->groupe->horaire_id) : null;
-
-                $photoField       = request('is_sortie') ? 'photos_fin' : 'photos_debut';
-                $statusPhotoField = request('is_sortie') ? 'status_photo_fin' : 'status_photo_debut';
-                $timeField        = request('is_sortie') ? 'ended_at' : 'started_at';
-
-                $filename = null;
-                if ($request->hasFile('photo')) {
-                    $photo    = $request->file('photo');
-                    $filename = time() . '_' . $photo->getClientOriginalName();
-                    $photo->move(public_path('uploads/presence_photos'), $filename);
-                    $photoUrl = url('uploads/presence_photos/' . $filename);
-                }
-
-                $presence = PresenceAgents::where('agent_id', $agent->id)
-                    ->whereDate('created_at', $now)->latest()->first();
-
-                if (!$presence) {
-                    $retard = 'non';
-                    if ($horaire) {
-                        $retard = (strtotime($data['heure']) - strtotime($horaire->started_at)) > 900 ? 'oui' : 'non';
-                    } else {
-                        $commentaire_distance .= " | Sans horaire précis.";
-                    }
-
-                    $presence = PresenceAgents::create([
-                        'agent_id'           => $agent->id,
-                        'site_id'            => $agent->site_id ?? 0,
-                        'horaire_id'         => $agent->groupe->horaire_id,
-                        'started_at'         => $data['heure'],
-                        'photos_debut'       => $photoUrl ?? null,
-                        'status_photo_debut' => $data['status_photo'] ?? null,
-                        'retard'             => $retard,
-                        'commentaires'       => $commentaire_distance,
-                        'status'             => 'debut',
-                    ]);
-
-                    if ($site->emails) {
-                        (new EmailController())->sendMail([
-                            "emails" => $site->emails,
-                            "title"  => "Présence signalée",
-                            "photo"  => $photoUrl,
-                            "agent"  => $agent->matricule . ' - ' . $agent->fullname,
-                            "site"   => $site->code . ' - ' . $site->name,
-                            "date"   => $now->format("d/m/y H:i"),
-                        ]);
-                    }
-
-                    return response()->json([
-                        "status"  => "success",
-                        "message" => "Présence début enregistrée.",
-                        "result"  => $presence,
-                    ]);
-                } else {
-                    $start = new \DateTime($presence->started_at);
-                    $end   = new \DateTime($data['heure']);
-                    if ($end < $start) {
-                        $end->modify('+1 day');
-                    }
-
-                    $interval        = $start->diff($end);
-                    $duree_formattee = $interval->h + ($interval->days * 24) . 'h' . $interval->i . 'min';
-
-                    $extra_comment = "";
-                    if ($horaire) {
-                        $expected_end   = new \DateTime($horaire->ended_at);
-                        $expected_start = new \DateTime($horaire->started_at);
-                        if ($expected_end < $expected_start) {
-                            $expected_end->modify('+1 day');
-                        }
-                        $extra_comment = ($end < $expected_end) ? " | Parti tôt." : " | Parti à l'heure.";
-                    } else {
-                        $extra_comment = " | Sans horaire précis.";
-                    }
-
-                    $presence->update([
-                        'ended_at'         => $data['heure'],
-                        'photos_fin'       => $photoUrl ?? null,
-                        'status_photo_fin' => $data['status_photo'] ?? null,
-                        'duree'            => $duree_formattee,
-                        'status'           => 'sortie',
-                        'commentaires'     => $presence->commentaires . ' - ' . $commentaire_distance . $extra_comment,
-                    ]);
-
-                    if ($site->emails) {
-                        (new EmailController())->sendMail([
-                            "emails" => $site->emails,
-                            "title"  => "Départ signalée",
-                            "photo"  => $photoUrl,
-                            "agent"  => $agent->matricule . ' - ' . $agent->fullname,
-                            "site"   => $site->code . ' - ' . $site->name,
-                            "date"   => $now->format("d/m/y H:i"),
-                        ]);
-                    }
-
-                    return response()->json([
-                        "status"  => "success",
-                        "message" => "Présence sortie enregistrée.",
-                        "result"  => $presence,
-                    ]);
-                }
-            }
-            else{
-                return response()->json(['errors' => "Agent non reconnu !"]);
-            }
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json(['errors' => $e->validator->errors()->all()]);
-        } catch (\Exception $e) {
-            return response()->json(['errors' => $e->getMessage()]);
-        }
-    } */
-
-    /*
-     *Lionnel nawej | updated by Gaston
-     *Creation de la presence des agents
-     *16:10/15-05-2025
-     */
-
-    /* public function createPresenceAgent(Request $request)
-    {
-        try {
-            $data = $request->validate([
-                "matricule"    => "required|string|exists:agents,matricule",
-                "key"          => "required|string|in:check-in,check-out",
-                "heure"        => "nullable|string",
-                "coordonnees"  => "required|string",
-            ]);
-
-            $agent = Agent::with("groupe.horaire", "site")->where('matricule', $data['matricule'])->firstOrFail();
-            $now = Carbon::now()->setTimezone("Africa/Kinshasa");
-            $photoUrl = null;
-
-            [$lat1, $lng1] = array_pad(explode(',', $data['coordonnees']), 2, null);
-            $site = $agent->site;
-            $distance = null;
-            $commentaire_distance = "Pas de site défini.";
-            $siteProcheId = null;
-
-            // Distance entre agent et site assigné
-            if ($site && $site->latlng && $lat1 && $lng1) {
-                [$lat2, $lng2] = explode(',', $site->latlng);
-                $distance = app(AppManagerController::class)->calculateDistance($lat1, $lng1, $lat2, $lng2);
-                $commentaire_distance = "Présence à environ " . round($distance) . " mètres du site.";
-            }
-
-            $siteProche = Site::whereNotNull("latlng")
-                ->get()
-                ->map(function ($s) use ($lat1, $lng1) {
-                    [$lat2, $lng2] = explode(',', $s->latlng);
-                    $s->distance = app(AppManagerController::class)->calculateDistance($lat1, $lng1, $lat2, $lng2);
-                    return $s;
-                })
-                ->filter(fn($s) => $s->distance <= 500)
-                ->sortBy('distance')
-                ->first();
-
-            if ($siteProche) {
-                $siteProcheId = $siteProche->id;
-            }
-
-            // Vérification de l'horaire
-            $horaire = $agent->groupe->horaire ?? null;
-            $heureDebut = $horaire ? Carbon::createFromTimeString($horaire->started_at) : null;
-            $heureFin = $horaire ? Carbon::createFromTimeString($horaire->ended_at) : null;
-            $isHoraireNuit = $horaire && $heureFin->lt($heureDebut);
-            $isHoraire24h = $horaire && $heureDebut->eq($heureFin);
-
-            // Date de référence
-            $dateReference = Carbon::today()->setTimezone("Africa/Kinshasa");
-            if ($isHoraireNuit && $now->lt(Carbon::today()->setTimezone("Africa/Kinshasa")->setTimeFrom($heureFin))) {
-                $dateReference = Carbon::yesterday()->setTimezone("Africa/Kinshasa");
-            }
-            if ($isHoraire24h) {
-                $seuil = Carbon::today()->setTimezone("Africa/Kinshasa")->setTimeFrom($heureDebut);
-                $dateReference = $now->lt($seuil) ? Carbon::yesterday()->setTimezone("Africa/Kinshasa") : Carbon::today()->setTimezone("Africa/Kinshasa");
-            }
-
-            // Upload photo
-            if ($request->hasFile('photo')) {
-                $photo = $request->file('photo');
-                $filename = time() . '_' . $photo->getClientOriginalName();
-                $photo->move(public_path('uploads/presence_photos'), $filename);
-                $photoUrl = url('uploads/presence_photos/' . $filename);
-            }
-
-            // Vérifier présence existante
-            $presence = PresenceAgents::where('agent_id', $agent->id)
-                ->whereDate('date_reference', $dateReference->toDateString())
-                ->latest()
-                ->first();
-
-            if ($data['key'] === 'check-in') {
-                if ($presence && $presence->started_at) {
-                    return response()->json(['errors' => ['Présence d\'entrée déjà effectuée pour cette date.']]);
-                }
-
-                $retard = 'non';
-                if ($horaire) {
-                    $heureRef = Carbon::today()->setTimeFromTimeString($horaire->started_at);
-                    $retard = $now->gt($heureRef->addMinutes(30)) ? 'oui' : 'non';
-                }
-
-                $presence = PresenceAgents::create([
-                    'agent_id'           => $agent->id,
-                    'site_id'            => $agent->site_id ?? 0,
-                    'gps_site_id'        => $siteProcheId,
-                    'horaire_id'         => $agent->groupe->horaire_id ?? null,
-                    'date_reference'     => $dateReference,
-                    'started_at'         => $now,
-                    'photos_debut'       => $photoUrl,
-                    'status_photo_debut' => $data['status_photo'] ?? null,
-                    'retard'             => $retard,
-                    'commentaires'       => $commentaire_distance,
-                    'status'             => 'debut',
-                ]);
-
-                $message = "Présence d'entrée enregistrée.";
-            } elseif ($data['key'] === 'check-out') {
-                if (!$presence || $presence->ended_at) {
-                    return response()->json(['errors' => ['Aucune présence à compléter ou déjà terminée.']]);
-                }
-
-                $startedAt = Carbon::parse($presence->started_at);
-                $duree = $startedAt->diff($now);
-
-                $dureeFormat = '';
-                if ($duree->h > 0) {
-                    $dureeFormat .= $duree->h . 'h';
-                }
-                if ($duree->i > 0) {
-                    $dureeFormat .= $duree->i . 'min';
-                }
-                if ($dureeFormat === '') {
-                    $dureeFormat = '0min';
-                }
-
-                $presence->update([
-                    'ended_at'         => $now,
-                    'duree'            => $dureeFormat,
-                    'photos_fin'       => $photoUrl,
-                    'gps_site_id'      => $siteProcheId,
-                    'status_photo_fin' => $data['status_photo'] ?? null,
-                    'commentaires'     => $presence->commentaires . " | Sortie à " . $now->format("H:i"),
-                    'status'           => 'fin',
-                ]);
-
-                $message = "Présence sortie enregistrée.";
-            }
-
-            // Envoi email
-            if ($site && $site->emails) {
-                (new EmailController())->sendMail([
-                    "emails" => $site->emails,
-                    "title"  => "Mise à jour de présence",
-                    "photo"  => $photoUrl,
-                    "agent"  => $agent->matricule . ' - ' . $agent->fullname,
-                    "site"   => $site->code . ' - ' . $site->name,
-                    "date"   => $now->format("d/m/Y H:i"),
-                ]);
-            }
-
-            try{
-                if ($presence->gps_site_id && $presence->gps_site_id != $presence->site_id) {
-                    $siteAssigne = $site;
-                    $siteDetecte = Site::find($presence->gps_site_id);
-
-                    if ($siteAssigne && $siteAssigne->emails) {
-                        // Séparer la chaîne emails en tableau, enlever les espaces éventuels
-                        $emails = array_map('trim', explode(';', $siteAssigne->emails));
-                        Mail::send('emails.alert', [
-                            "agent"        => $agent->matricule . ' - ' . $agent->fullname,
-                            "site"         => $siteAssigne->code . ' - ' . $siteAssigne->name,
-                            "site_detecte" => $siteDetecte ? $siteDetecte->code . ' - ' . $siteDetecte->name : 'Inconnu',
-                            "date"         => $now->format("d/m/Y H:i"),
-                            "photo"        => $photoUrl,
-                        ], function ($message) use ($emails) {
-                            $message->to($emails)
-                                    ->subject("Présence détectée hors site assigné");
-                        });
-                    }
-                }
-            }
-            catch(\Exception $e){
-                Log::warning($e->getMessage());
-            }   
-
-            return response()->json([
-                "status"  => "success",
-                "message" => $message,
-                "result"  => $presence,
-            ]);
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json(['errors' => $e->validator->errors()->all()]);
-        } catch (\Exception $e) {
-            return response()->json(['errors' => $e->getMessage()]);
-        }
-    } */
-
-
-
     public function createPresenceAgent(Request $request)
     {
         try {
@@ -461,7 +92,8 @@ class PresenceController extends Controller
                 "coordonnees"  => "required|string",
             ]);
 
-            $now = Carbon::now()->setTimezone("Africa/Kinshasa");
+            $dateManuelle = $request->input('date'); // Date envoyée manuellement
+            $now = Carbon::parse($dateManuelle)->setTimezone("Africa/Kinshasa");
             $photoUrl = null;
 
             $agent = Agent::with("site")->where('matricule', $data['matricule'])->firstOrFail();
@@ -506,26 +138,31 @@ class PresenceController extends Controller
                 return response()->json(['errors' => ['Aucune assignation de groupe active trouvée.']]);
             }
 
-            // Recherche du planning du jour
-            $planning = AgentGroupPlanning::where('agent_group_id', $assignment->agent_group_id)
-                ->where('date', $now->toDateString())
-                ->with('horaire')
-                ->first();
+            $groupe = AgentGroup::with('horaire')->find($assignment->agent_group_id);
 
-            if (!$planning) {
-                return response()->json(['errors' => ['Aucun planning défini pour cet agent aujourd\'hui.']]);
+            if ($groupe && $groupe->horaire) {
+                $horaire = $groupe->horaire;
+                $dateReference = $this->getDateReference($now, $horaire);
+            } else {
+                $planning = AgentGroupPlanning::where('agent_group_id', $assignment->agent_group_id)
+                    ->where('date', $now->toDateString())
+                    ->with('horaire')
+                    ->first();
+
+                if (!$planning) {
+                    return response()->json(['errors' => ['Aucun planning défini pour cet agent aujourd\'hui.']]);
+                }
+
+                if ($planning->is_rest_day) {
+                    return response()->json(['errors' => ['Ce jour est prévu comme jour de repos pour cet agent.']]);
+                }
+
+                if (!$planning->horaire) {
+                    return response()->json(['errors' => ['Aucun horaire associé au planning du jour pour cet agent.']]);
+                }
+                $horaire = $planning->horaire;
+                $dateReference = $this->getDateReference($now, $horaire);
             }
-
-            if ($planning->is_rest_day) {
-                return response()->json(['errors' => ['Ce jour est prévu comme jour de repos pour cet agent.']]);
-            }
-
-            if (!$planning->horaire) {
-                return response()->json(['errors' => ['Aucun horaire associé au planning du jour pour cet agent.']]);
-            }
-
-            $horaire = $planning->horaire;
-            $dateReference = $this->getDateReference($now, $horaire);
 
             // Upload de la photo
             if ($request->hasFile('photo')) {
@@ -535,19 +172,28 @@ class PresenceController extends Controller
                 $photoUrl = url('uploads/presence_photos/' . $filename);
             }
 
-            $presence = PresenceAgents::where('agent_id', $agent->id)
-                ->whereDate('date_reference', $dateReference->toDateString())
-                ->latest()
-                ->first();
-
+            // Recherche de la présence existante selon le type d'opération
             if ($data['key'] === 'check-in') {
+                $presence = PresenceAgents::where('agent_id', $agent->id)
+                    ->whereDate('date_reference', $dateReference->toDateString())
+                    ->latest()
+                    ->first();
+            } else { // check-out
+                $presence = PresenceAgents::where('agent_id', $agent->id)
+                    ->whereNotNull('started_at')
+                    ->whereNull('ended_at')
+                    ->orderByDesc('created_at')
+                    ->first();
+            }
+            if ($data['key'] === 'check-in') {
+                if ($this->checkInCancelByPresence($now, $horaire, $agent->id)) {
+                    return response()->json(['errors' => ['Check-in refusé : ce pointage est trop tardif pour un horaire de nuit.']]);
+                }
                 if ($presence && $presence->started_at) {
                     return response()->json(['errors' => ['L\'agent a déjà effectué un pointage d\'entrée pour ce jour.']]);
                 }
-
-                // Vérifier le retard
                 $heureRef = $dateReference->copy()->setTimeFromTimeString($horaire->started_at);
-                $retard = $now->gt($heureRef->copy()->addMinutes(30)) ? 'oui' : 'non';
+                $retard = $now->gt($heureRef->addMinutes(30)) ? 'oui' : 'non';
 
                 $presence = PresenceAgents::create([
                     'agent_id'           => $agent->id,
@@ -563,10 +209,10 @@ class PresenceController extends Controller
                     'status'             => 'debut',
                 ]);
                 $message = "Présence d'entrée enregistrée.";
-            }
-            elseif ($data['key'] === 'check-out') {
+
+            } elseif ($data['key'] === 'check-out') {
                 if (!$presence) {
-                    return response()->json(['errors' => ['Aucun pointage d\'entrée trouvé pour cet agent à cette date.']]);
+                    return response()->json(["errors" => ["Aucun pointage d'entrée trouvé pour cet agent."]]);
                 }
 
                 if ($presence->ended_at) {
@@ -594,7 +240,7 @@ class PresenceController extends Controller
                 $message = "Présence sortie enregistrée.";
             }
 
-            // Envoi de mail au site si défini
+            // Envoi de mail au site
             if ($site && $site->emails) {
                 (new EmailController())->sendMail([
                     "emails" => $site->emails,
@@ -639,6 +285,7 @@ class PresenceController extends Controller
     }
 
 
+
     /**
      * Calcule la date de référence de présence selon l'horaire et l'heure actuelle.
      */
@@ -652,16 +299,92 @@ class PresenceController extends Controller
 
         $dateReference = $now->copy()->startOfDay();
 
-        if ($isHoraireNuit && $now->lt($now->copy()->startOfDay()->setTimeFrom($heureFin))) {
-            $dateReference = $now->copy()->subDay()->startOfDay();
+        if ($isHoraireNuit) {
+            // Si l'heure actuelle est entre minuit et l'heure de fin → on est encore dans le shift de la veille
+            $limiteFin = $now->copy()->startOfDay()->setTimeFromTimeString($horaire->ended_at);
+            if ($now->lt($limiteFin)) {
+                $dateReference = $now->copy()->subDay()->startOfDay();
+            }
         } elseif ($isHoraire24h) {
-            $seuil = $now->copy()->startOfDay()->setTimeFrom($heureDebut);
+            $seuil = $now->copy()->startOfDay()->setTimeFromTimeString($horaire->started_at);
             $dateReference = $now->lt($seuil) ? $now->copy()->subDay()->startOfDay() : $now->copy()->startOfDay();
         }
-
         return $dateReference;
     }
 
+
+
+    /**
+     * Permet de bloquer le check-in pour les horaires du soir
+    */
+    private function checkInCancelByPresence(Carbon $now, $horaire, $agentId): bool
+    {
+        $heureDebut = Carbon::createFromTimeString($horaire->started_at);
+        $heureFin = Carbon::createFromTimeString($horaire->ended_at);
+
+        $isHoraireNuit = $heureFin->lt($heureDebut);
+        $isHoraire24h = $heureDebut->eq($heureFin);
+
+        // Temps de repos en heures (configurable)
+        $tempsReposNuit = 8;  // ex: 8h après shift nuit
+        $tempsRepos24h = 24;  // ex: 24h après shift 24h
+
+        // On récupère la dernière présence check-in sans check-out (présence ouverte)
+        $lastPresence = PresenceAgents::where('agent_id', $agentId)
+            ->whereNotNull('started_at')
+            ->whereNull('ended_at')
+            ->orderByDesc('started_at')
+            ->first();
+
+        if (!$lastPresence) {
+            Log::info("Aucune présence ouverte trouvée → check-in autorisé.");
+            return false; // Pas de présence ouverte = pas de blocage
+        }
+
+        $lastCheckIn = Carbon::parse($lastPresence->started_at);
+        Log::info("Dernier check-in: " . $lastCheckIn->toDateTimeString());
+        Log::info("Now: " . $now->toDateTimeString());
+
+        if ($isHoraire24h) {
+            Log::info("Horaires 24h détectés.");
+            $finRepos = $lastCheckIn->copy()->addHours($tempsRepos24h);
+            Log::info("Fin du repos (last check-in + $tempsRepos24h heures): " . $finRepos->toDateTimeString());
+
+            if ($now->lt($finRepos)) {
+                Log::info("Check-in bloqué : temps de repos 24h non terminé.");
+                return true;
+            }
+            Log::info("Check-in autorisé : repos 24h terminé.");
+            return false;
+        }
+
+        if ($isHoraireNuit) {
+            Log::info("Horaires de nuit détectés.");
+
+            // Calcul du début du shift basé sur lastCheckIn et heureDebut
+            $shiftStartDate = $lastCheckIn->copy()->startOfDay()->setTimeFromTimeString($horaire->started_at);
+            if ($lastCheckIn->lt($shiftStartDate)) {
+                $shiftStartDate->subDay();
+            }
+            $shiftEnd = $shiftStartDate->copy()->addDay()->setTimeFromTimeString($horaire->ended_at);
+
+            Log::info("Début du shift (jour du dernier check-in): " . $shiftStartDate->toDateTimeString());
+            Log::info("Fin théorique du shift nuit : " . $shiftEnd->toDateTimeString());
+
+            $finRepos = $shiftEnd->copy()->addHours($tempsReposNuit);
+            Log::info("Fin du repos (fin shift + $tempsReposNuit heures): " . $finRepos->toDateTimeString());
+
+            if ($now->lt($finRepos)) {
+                Log::info("Check-in bloqué : temps de repos post-shift nuit non terminé.");
+                return true;
+            }
+            Log::info("Check-in autorisé : temps de repos post-shift nuit terminé.");
+            return false;
+        }
+
+        Log::info("Horaires normales, pas de blocage.");
+        return false;
+    }
 
 
 
@@ -894,7 +617,7 @@ class PresenceController extends Controller
     public function getPresencesBySiteAndDate(Request $request)
     {
         try {
-            // 📅 Récupération de la date cible (par défaut aujourd'hui à Kinshasa)
+            //Récupération de la date cible (par défaut aujourd'hui à Kinshasa)
             $targetDate = $request->query('date')
                 ? Carbon::parse($request->query('date'))->startOfDay()
                 : Carbon::today('Africa/Kinshasa')->startOfDay();
@@ -902,7 +625,7 @@ class PresenceController extends Controller
             $siteId = $request->query('site_id');
             $search = $request->query('search');
 
-            // 🔍 Recherche par nom ou matricule
+            // Recherche par nom ou matricule
             $agentId = null;
             if ($search) {
                 $agent = Agent::where('matricule', 'LIKE', "%$search%")
@@ -912,14 +635,16 @@ class PresenceController extends Controller
                 $agentId = $agent?->id;
             }
 
-            // 📥 Requête principale avec relations et conditions
+            // Requête principale avec relations et conditions
             $presences = PresenceAgents::with(['agent.groupe.horaire', 'agent.site', 'site'])
                 ->when($siteId, fn($query) => $query->where('gps_site_id', $siteId))
                 ->when($agentId, fn($query) => $query->where('agent_id', $agentId))
+                
                 ->whereIn('date_reference', [
                     $targetDate->toDateString(),
                     $targetDate->copy()->subDay()->toDateString()
                 ])
+                ->whereNull("ended_at")
                 ->orderByRaw("
                     CASE
                         WHEN retard = 'no' THEN 0
@@ -931,7 +656,7 @@ class PresenceController extends Controller
                 ->orderByDesc('created_at')
                 ->get();
 
-            // 🧠 Filtrage intelligent selon l'horaire de travail
+            //Filtrage intelligent selon l'horaire de travail
             $filtered = $presences->filter(function ($presence) use ($targetDate) {
                 $horaire = optional($presence->agent->groupe)->horaire;
                 if (!$horaire) return false;
@@ -953,7 +678,7 @@ class PresenceController extends Controller
                     : $presenceDate->equalTo($targetDate);
             })->values();
 
-            // 📦 Pagination manuelle
+            // Pagination manuelle
             $perPage = 5;
             $currentPage = LengthAwarePaginator::resolveCurrentPage();
             $paginated = new LengthAwarePaginator(
