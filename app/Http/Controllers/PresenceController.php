@@ -273,7 +273,6 @@ class PresenceController extends Controller
             } catch (\Exception $e) {
                 Log::warning($e->getMessage());
             }
-
             return response()->json([
                 "status"  => "success",
                 "message" => $message,

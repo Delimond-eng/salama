@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::create('agent_group_plannings', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('agent_id')->constrained("agents")->cascadeOnDelete();
             $table->foreignId('agent_group_id')->constrained("agent_groups")->cascadeOnDelete(); // Groupe concerné
             $table->foreignId('horaire_id')->nullable()->constrained("presence_horaires")->nullOnDelete(); 
             $table->date("date");

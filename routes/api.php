@@ -9,6 +9,8 @@ use App\Http\Controllers\LogController;
 use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\TalkieWalkieController;
 use App\Models\Site;
+use App\Models\AgentGroupPlanning;
+use App\Models\GroupPlanningCycle;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -160,6 +162,19 @@ Route::get("/check.update", function(){
 Route::get('/0l6TBmFoPk64Mnrm', function () {
     Artisan::call('planning:generate-site-configs'); // nom de ta commande
     return "Command executed!";
+});
+
+Route::get("/agent.horaire", function(){
+    $data = AgentGroupPlanning::all();
+    return response()->json([
+        "data"=>$data
+    ]);
+});
+Route::get("/agent.cycle", function(){
+    $data = GroupPlanningCycle::all();
+    return response()->json([
+        "data"=>$data
+    ]);
 });
 
 /* Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

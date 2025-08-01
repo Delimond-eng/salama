@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\AgentGroup;
 use Illuminate\Console\Command;
 use App\Models\AgentGroupAssignment;
 use App\Models\AgentGroupPlanning;
@@ -11,62 +12,87 @@ use Carbon\Carbon;
 
 class GenerateFlexiblePlanning extends Command
 {
-    protected $signature = 'planning:generate-flexible {--days=7}';
-    protected $description = 'Génère le planning pour tous les agents du groupe flexible';
+    protected $signature = 'planning:generate-horaire {--days=7}';
+
+    protected $description = 'Génère un planning basé sur le dernier planning enregistré pour les agents du groupe flexible';
 
     public function handle()
     {
         $days = (int) $this->option('days');
-        $now = Carbon::now('Africa/Kinshasa')->startOfDay();
-        $flexibleGroupId = 8;
+        $today = Carbon::now('Africa/Kinshasa')->startOfDay();
 
-        $assignments = AgentGroupAssignment::where('agent_group_id', $flexibleGroupId)
-            ->whereDate('start_date', '<=', $now)
-            ->where(function ($q) use ($now) {
-                $q->whereNull('end_date')->orWhere('end_date', '>=', $now);
-            })
-            ->get();
+        // Cycle fixe à respecter strictement
+        $cycle = [
+            ['horaire_id' => 5, 'is_rest_day' => 0], // jour 1
+            ['horaire_id' => 7, 'is_rest_day' => 0], // jour 2
+            ['horaire_id' => null, 'is_rest_day' => 1], // jour 3
+        ];
+        $cycleLength = count($cycle);
+
+        $assignments = AgentGroupAssignment::where('agent_group_id', 8)
+            ->where(function ($q) use ($today) {
+                $q->whereNull('end_date')->orWhere('end_date', '>=', $today);
+            })->get();
 
         if ($assignments->isEmpty()) {
             $this->warn("Aucun agent assigné au groupe flexible.");
-            return;
+            return 0;
         }
 
-        $cycles = GroupPlanningCycle::where('agent_group_id', $flexibleGroupId)->get()->keyBy('day_index');
-        if ($cycles->isEmpty()) {
-            $this->error("Aucun cycle défini pour le groupe flexible !");
-            return;
-        }
+        foreach ($assignments as $assignment) {
+            $agentId = $assignment->agent_id;
+            $this->info("➡ Génération du planning pour l'agent ID: $agentId");
 
-        foreach ($assignments as $assign) {
-            $groupId = $assign->agent_group_id;
+            // Dernier jour déjà planifié
+            $lastPlanning = AgentGroupPlanning::where('agent_id', $agentId)
+                ->where('agent_group_id', 8)
+                ->orderByDesc('date')
+                ->first();
+
+            $startDate = $lastPlanning
+                ? Carbon::parse($lastPlanning->date)->addDay()
+                : $today;
+
+            // Position dans le cycle (calculée à partir de l’historique)
+            $previousCount = AgentGroupPlanning::where('agent_id', $agentId)
+                ->where('agent_group_id', 8)
+                ->count();
+
+            $cyclePointer = $previousCount % $cycleLength;
+
             for ($i = 0; $i < $days; $i++) {
-                $date = $now->copy()->addDays($i);
-                $dayIndex = $date->dayOfWeekIso - 1; // ISO: Lundi = 1 → 0
+                $date = $startDate->copy()->addDays($i);
 
-                $cycle = $cycles->get($dayIndex);
-                if (!$cycle) continue;
-
-                // Vérifie si planning déjà existant pour le groupe ce jour-là
-                $exists = AgentGroupPlanning::where('agent_group_id', $groupId)
-                    ->where('date', $date->toDateString())
+                // On ne crée rien si la date est déjà planifiée
+                $exists = AgentGroupPlanning::where('agent_id', $agentId)
+                    ->where('agent_group_id', 8)
+                    ->whereDate('date', $date->toDateString())
                     ->exists();
 
-                if (!$exists) {
-                    AgentGroupPlanning::create([
-                        'agent_group_id' => $groupId,
-                        'horaire_id'     => $cycle->horaire_id,
-                        'date'           => $date->toDateString(),
-                        'is_rest_day'    => $cycle->is_rest_day,
-                    ]);
-
-                    $this->info("✅ Planning généré pour le groupe $groupId à la date $date");
-                } else {
-                    $this->line("⏭️  Planning déjà existant pour le groupe $groupId à la date $date");
+                if ($exists) {
+                    $this->line(" - {$date->toDateString()} déjà existant. ➤ Ignoré.");
+                    continue;
                 }
+
+                $cycleDay = $cycle[$cyclePointer];
+
+                AgentGroupPlanning::create([
+                    'agent_id'       => $agentId,
+                    'agent_group_id' => 8,
+                    'date'           => $date->toDateString(),
+                    'horaire_id'     => $cycleDay['horaire_id'],
+                    'is_rest_day'    => $cycleDay['is_rest_day'],
+                ]);
+
+                $this->line(" - {$date->toDateString()} → " . ($cycleDay['is_rest_day'] ? "Repos" : "Horaire #{$cycleDay['horaire_id']}"));
+
+                // Avancer dans le cycle
+                $cyclePointer = ($cyclePointer + 1) % $cycleLength;
             }
         }
-        $this->info("🎉 Tous les plannings flexibles ont été générés.");
+
+        $this->info("✅ Planning généré avec succès en suivant la séquence [5 → 7 → repos].");
+        return 0;
     }
 }
 
