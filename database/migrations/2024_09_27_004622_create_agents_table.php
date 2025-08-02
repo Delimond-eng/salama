@@ -14,19 +14,19 @@ return new class extends Migration
     public function up()
     {
         if (!Schema::hasTable('agents')) {
-    Schema::create('agents', function (Blueprint $table) {
-            $table->id();
-            $table->string("matricule")->unique();
-            $table->string("photo")->nullable();
-            $table->string("fullname");
-            $table->string("password");
-            $table->string("role")->default("guard");
-            $table->unsignedBigInteger("agency_id");
-            $table->unsignedBigInteger("site_id")->nullable();
-            $table->unsignedBigInteger("groupe_id")->nullable();
-            $table->string("status")->default("actif");
-            $table->timestamps();
-        });
+            Schema::create('agents', function (Blueprint $table) {
+                $table->id();
+                $table->string("matricule")->unique();
+                $table->string("photo")->nullable();
+                $table->string("fullname");
+                $table->string("password");
+                $table->string("role")->default("guard");
+                $table->unsignedBigInteger("agency_id");
+                $table->unsignedBigInteger("site_id")->nullable();
+                $table->unsignedBigInteger("groupe_id")->nullable();
+                $table->string("status")->default("actif");
+                $table->timestamps();
+            });
         }
     }
 

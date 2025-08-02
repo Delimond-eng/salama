@@ -259,7 +259,7 @@
 
          @if (Auth::user()->hasMenu("presences"))
          <li>
-             <a href="javascript:;" class="side-menu {{ Route::is("presence.horaires") || Route::is("reports.presences") || Route::is("agent.groupe") || Route::is("reports.presences.filter") ? 'side-menu--active' : ''}} ">
+             <a href="javascript:;" class="side-menu @active(['presence.horaires','reports.presences', 'agent.groupe', 'presence.planning' ])">
                  <div class="side-menu__icon">
                      <i data-tw-merge="" data-lucide="calendar" class="stroke-1.5 w-5 h-5"></i>
                  </div>
@@ -271,28 +271,7 @@
                  </div>
              </a>
              <ul class="">
-                 @if (Auth::user()->hasPermission("presences", "create"))
-                 <li>
-                     <a href="{{ url("/presence.horaires") }}" class="side-menu">
-                         <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
-                         </div>
-                         <div class="side-menu__title">
-                             Horaires
-                         </div>
-                     </a>
-                 </li>
-                 <li>
-                     <a href="{{ url("agent.groupe") }}" class="side-menu">
-                         <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
-                         </div>
-                         <div class="side-menu__title">
-                             Groupes
-                         </div>
-                     </a>
-                 </li>
-                 @endif
+                
                  @if (Auth::user()->hasPermission("presences", "view"))
                  <li>
                      <a href="{{ url("/reports.presences") }}" class="side-menu">
@@ -305,16 +284,53 @@
                      </a>
                  </li>
                  @endif
-                 <!-- <li>
-                     <a href="{{ url("/reports.presences.filter") }}" class="side-menu">
+                 <li>
+                     <a href="javascript:;" class="side-menu">
                          <div class="side-menu__icon">
                              <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
                          </div>
                          <div class="side-menu__title">
-                             Rapport filtré
+                             Paramètres
+                             <div class="side-menu__sub-icon ">
+                                 <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-5 h-5"></i>
+                             </div>
                          </div>
                      </a>
-                 </li> -->
+                     <ul class="">
+                        @if (Auth::user()->hasPermission("presences", "create"))
+                        <li>
+                            <a href="{{ url("/presence.horaires") }}" class="side-menu">
+                                <div class="side-menu__icon">
+                                    <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
+                                </div>
+                                <div class="side-menu__title">
+                                    Horaires
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url("agent.groupe") }}" class="side-menu">
+                                <div class="side-menu__icon">
+                                    <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
+                                </div>
+                                <div class="side-menu__title">
+                                    Groupes
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url('/presence.plannings') }}" class="side-menu">
+                                <div class="side-menu__icon">
+                                    <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
+                                </div>
+                                <div class="side-menu__title">
+                                    Plannings rotatifs
+                                </div>
+                            </a>
+                        </li>
+                        @endif
+                     </ul>
+                 </li>
              </ul>
          </li>
          @endif
@@ -366,41 +382,7 @@
                          </div>
                      </a>
                  </li>
-                 <!--  <li>
-                     <a href="javascript:;" class="side-menu">
-                         <div class="side-menu__icon">
-                             <i data-tw-merge="" data-lucide="arrow-right-circle" class="stroke-1.5 w-2 h-2"></i>
-                         </div>
-                         <div class="side-menu__title">
-                             Rapports
-                             <div class="side-menu__sub-icon ">
-                                 <i data-tw-merge="" data-lucide="chevron-down" class="stroke-1.5 w-5 h-5"></i>
-                             </div>
-                         </div>
-                     </a>
-                     <ul class="">
-                         <li>
-                             <a href="#" class="side-menu">
-                                 <div class="side-menu__icon">
-                                     <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-2 h-2"></i>
-                                 </div>
-                                 <div class="side-menu__title">
-                                    Rapport agents
-                                 </div>
-                             </a>
-                         </li>
-                         <li>
-                             <a href="{{ url("/schedules.report") }}" class="side-menu">
-                                 <div class="side-menu__icon">
-                                     <i data-tw-merge="" data-lucide="zap" class="stroke-1.5 w-2 h-2"></i>
-                                 </div>
-                                 <div class="side-menu__title">
-                                    Rapport superviseurs
-                                 </div>
-                             </a>
-                         </li>
-                     </ul>
-                 </li> -->
+                  
                  <!-- <li>
                      <a href="{{ url("/schedules.report") }}" class="side-menu">
                          <div class="side-menu__icon">

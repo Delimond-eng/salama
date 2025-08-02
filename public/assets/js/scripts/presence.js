@@ -1,5 +1,6 @@
 import { get, postJson } from "../modules/http.js";
 import Pagination from "../components/pagination.js";
+import { offset } from "@popperjs/core/index.js";
 new Vue({
     el: "#App",
     components: {
@@ -17,6 +18,17 @@ new Vue({
             currentMonth: new Date().getMonth() + 1,
             currentYear: new Date().getFullYear(),
             horaires: [],
+            weeklyPlannings: [],
+            jours: [
+                "lundi",
+                "mardi",
+                "mercredi",
+                "jeudi",
+                "vendredi",
+                "samedi",
+                "dimanche",
+            ],
+            offset: 0,
             sites: [],
             groups: [],
             delete_id: "",
@@ -28,7 +40,6 @@ new Vue({
             filterRetards: "",
             years: [2023, 2024, 2025],
             activeRowIndex: null,
-
             form: {
                 id: "",
                 libelle: "",
@@ -59,34 +70,38 @@ new Vue({
         if ($("#loader").length) {
             document.getElementById("loader").style.display = "none";
         }
+        if (location.pathname == "/presence.plannings") {
+            this.viewAllSites();
+            this.viewWeeklyPlannings();
+        } else {
+            if ($(".form-horaire").length) {
+                this.pristine = new Pristine(
+                    document.querySelector(".form-horaire"),
+                    {
+                        classTo: "input-form",
+                        errorClass: "has-error",
+                        errorTextParent: "input-form",
+                        errorTextClass: "text-danger mt-2",
+                    }
+                );
+            }
 
-        this.loadPresenceReports();
-        this.refreshDatas();
+            if ($(".tom-select").length) {
+                const self = this;
+                const tom = new TomSelect(".tom-select", {
+                    plugins: {
+                        dropdown_input: {},
+                    },
+                    create: false,
+                    placeholder: "Séléctionnez un agent",
+                });
+                tom.on("change", function (value) {
+                    console.log("Agent selected : ", value);
+                });
+            }
 
-        if ($(".form-horaire").length) {
-            this.pristine = new Pristine(
-                document.querySelector(".form-horaire"),
-                {
-                    classTo: "input-form",
-                    errorClass: "has-error",
-                    errorTextParent: "input-form",
-                    errorTextClass: "text-danger mt-2",
-                }
-            );
-        }
-
-        if ($(".tom-select").length) {
-            const self = this;
-            const tom = new TomSelect(".tom-select", {
-                plugins: {
-                    dropdown_input: {},
-                },
-                create: false,
-                placeholder: "Séléctionnez un agent",
-            });
-            tom.on("change", function (value) {
-                console.log("Agent selected : ", value);
-            });
+            this.loadPresenceReports();
+            this.refreshDatas();
         }
     },
     watch: {
@@ -94,8 +109,56 @@ new Vue({
         searchName: "applyFilters",
         filterStatus: "applyFilters",
         filterRetards: "applyFilters",
+        allSites() {
+            const options = [
+                { value: "", text: "Tous les agents" },
+                ...this.allSites.map((site) => ({
+                    value: String(site.id),
+                    text: site.name,
+                })),
+            ];
+            const tom = new TomSelect(".select-site", {
+                plugins: {
+                    dropdown_input: {},
+                },
+                create: false,
+                placeholder: "Filtrez par site",
+                options: options,
+            });
+
+            tom.on("change", (value) => {
+                this.filter_by_site = value;
+                if (location.pathname == "/agents.history") {
+                    this.viewAllHistories();
+                } else {
+                    this.viewAllAgents();
+                }
+            });
+        },
     },
     methods: {
+        viewAllSites() {
+            this.isDataLoading = true;
+            get(`/sites`)
+                .then((res) => {
+                    this.sites = res.data.sites;
+                })
+                .catch((err) => {
+                    console.log("error");
+                });
+        },
+
+        viewWeeklyPlannings() {
+            this.isDataLoading = true;
+            get(`/weekly.plannings`)
+                .then((res) => {
+                    this.weeklyPlannings = res.data;
+                })
+                .catch((err) => {
+                    console.log("error");
+                });
+        },
+
         viewAllHoraires() {
             this.isDataLoading = true;
             let isAll = location.pathname === "/agent.groupe";
@@ -536,6 +599,59 @@ new Vue({
             this.currentYear = annee;
             this.loadPresenceReports();
         },
+
+        pickExcelFile() {
+            this.$refs.excelInput.click();
+        },
+        handleExcelFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            console.log("Fichier sélectionné :", file.name);
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            /* this.isLoading = true;
+            post("/agents.import.excel", formData).then(({ status, data }) => {
+                this.isLoading = false;
+                if (data.status === "success") {
+                    new Toastify({
+                        node: $("#success-notification-content")
+                            .clone()
+                            .removeClass("hidden")[0],
+                        duration: 3000,
+                        newWindow: true,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        stopOnFocus: true,
+                    }).showToast();
+                    this.viewAllAgents();
+                }
+            }); */
+        },
+
+        getJourName(dateStr) {
+            const date = new Date(dateStr);
+            return date
+                .toLocaleDateString("fr-FR", { weekday: "long" })
+                .toLowerCase();
+        },
+
+        mapPlanningsByDay(plannings) {
+            const map = {};
+            for (let p of plannings) {
+                const jour = this.getJourName(p.date);
+                map[jour] = p;
+            }
+            return map;
+        },
+
+        formatHoraire(planning) {
+            if (!planning) return "-";
+            if (planning.is_rest_day || !planning.horaire) return "OFF";
+            return `${planning.horaire.started_at} - ${planning.horaire.ended_at}`;
+        },
     },
 
     computed: {
@@ -594,6 +710,10 @@ new Vue({
 
         allPresenceReports() {
             return [];
+        },
+
+        plannings() {
+            return this.weeklyPlannings;
         },
     },
 });

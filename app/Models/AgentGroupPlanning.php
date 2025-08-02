@@ -20,4 +20,10 @@ class AgentGroupPlanning extends Model
     {
         return $this->belongsTo(PresenceHoraire::class, 'horaire_id');
     }
+
+    public function agent()
+    {
+        return $this->belongsTo(Agent::class, "agent_id");
+    }
+
 }

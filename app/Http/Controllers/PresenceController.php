@@ -841,4 +841,36 @@ class PresenceController extends Controller
         ]);
     }
 
+
+
+    public function getWeeklyPlannings()
+    {
+         $startDate = Carbon::now()->startOfWeek(); // lundi
+        $endDate = Carbon::now()->endOfWeek();     // dimanche 
+
+        /* $startDate = Carbon::now()->addWeek()->startOfWeek(); // Lundi prochain
+        $endDate = Carbon::now()->addWeek()->endOfWeek();   */ 
+
+        $sites = Site::whereHas('agents', function ($query) use ($startDate, $endDate) {
+            $query
+                ->whereHas('plannings', function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('date', [$startDate, $endDate]);
+                });
+        })
+        ->with(['agents' => function ($query) use ($startDate, $endDate) {
+            $query
+                ->whereHas('plannings', function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('date', [$startDate, $endDate]);
+                })
+                ->with(['plannings' => function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('date', [$startDate, $endDate])
+                        ->with('horaire');
+                }]);
+        }])
+        ->get();
+
+        return response()->json($sites);
+    }
+
+
 }

@@ -102,4 +102,9 @@ class Agent extends Model
     public function stories(){
         return $this->hasMany(AgentHistory::class, "agent_id", "id");
     }
+
+    public function plannings()
+    {
+        return $this->hasMany(AgentGroupPlanning::class, "agent_id", "id");
+    }
 }

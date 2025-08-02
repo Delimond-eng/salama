@@ -292,6 +292,8 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     
     Route::post('/presence.create', [PresenceController::class, 'createPresenceAgent'])->name('presence.create')->middleware('check.permission:presences,create');
     Route::get('/presences', [PresenceController::class, 'getPresencesBySiteAndDate'])->name('presences')->middleware('check.permission:presences,view');
+    Route::view('/presence.plannings', 'presence_planning')->name("presence.planning")->middleware('check.permission:presences,create');
+    Route::get("/weekly.plannings", [PresenceController::class, 'getWeeklyPlannings'])->name("weekly.plannings");
 
      /*
     |--------------------------------------------------------------------------
