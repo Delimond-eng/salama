@@ -1,4 +1,4 @@
-import { get, postJson } from "../modules/http.js";
+import {get, postJson } from "../modules/http.js";
 import Pagination from "../components/pagination.js";
 new Vue({
     el: "#App",
@@ -99,11 +99,12 @@ new Vue({
         viewAllReports() {
             this.isDataLoading = true;
             get(
-                `/patrols.reports?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&site=${this.filter_site}&date=${this.filter_date}`
-            )
+                    `/patrols.reports?page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&site=${this.filter_site}&date=${this.filter_date}`
+                )
                 .then((res) => {
                     this.isDataLoading = false;
                     this.reports = res.data.patrols.data;
+                    console.log(es.data.patrols.data);
 
                     this.pagination = {
                         current_page: res.data.patrols.current_page,
@@ -158,21 +159,19 @@ new Vue({
                     type: "doughnut",
                     data: {
                         labels: ["Zones scannées", "Non scannées"],
-                        datasets: [
-                            {
-                                data: [
-                                    scanned,
-                                    notScanned > 0 ? notScanned : 0,
-                                ],
-                                backgroundColor: colors,
-                                hoverBackgroundColor: colors,
-                                borderWidth: 5,
-                                borderColor: () =>
-                                    $("html").hasClass("dark")
-                                        ? getColor("darkmode.700")
-                                        : getColor("white"),
-                            },
-                        ],
+                        datasets: [{
+                            data: [
+                                scanned,
+                                notScanned > 0 ? notScanned : 0,
+                            ],
+                            backgroundColor: colors,
+                            hoverBackgroundColor: colors,
+                            borderWidth: 5,
+                            borderColor: () =>
+                                $("html").hasClass("dark") ?
+                                getColor("darkmode.700") :
+                                getColor("white"),
+                        }, ],
                     },
                     options: {
                         maintainAspectRatio: false,
@@ -180,7 +179,7 @@ new Vue({
                             legend: { display: false },
                             tooltip: {
                                 callbacks: {
-                                    label: function (context) {
+                                    label: function(context) {
                                         return (
                                             context.label +
                                             ": " +
@@ -222,7 +221,7 @@ new Vue({
                     }
                 });
             } else {
-               
+
             } */
             return this.reports;
         },
