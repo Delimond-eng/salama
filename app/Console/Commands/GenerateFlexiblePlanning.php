@@ -2,32 +2,32 @@
 
 namespace App\Console\Commands;
 
-use App\Models\AgentGroup;
-use Illuminate\Console\Command;
 use App\Models\AgentGroupAssignment;
 use App\Models\AgentGroupPlanning;
-use App\Models\GroupPlanningCycle;
-use App\Models\Agent;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 
 class GenerateFlexiblePlanning extends Command
 {
-    protected $signature = 'planning:generate-horaire {--days=7}';
+   protected $signature = 'planning:generate-horaire {--days=7}';
+    protected $description = 'Génère un planning flexible basé sur les 2 derniers jours du cycle hebdomadaire pour chaque agent individuellement.';
 
-    protected $description = 'Génère un planning basé sur le dernier planning enregistré pour les agents du groupe flexible';
+    protected $horaireMap = [
+        'J'   => 5,
+        'S'   => 7,
+        'OFF' => null,
+    ];
+
+    protected $codeMap = [
+        5    => 'J',
+        7    => 'S',
+        null => 'OFF',
+    ];
 
     public function handle()
     {
         $days = (int) $this->option('days');
         $today = Carbon::now('Africa/Kinshasa')->startOfDay();
-
-        // Cycle fixe à respecter strictement
-        $cycle = [
-            ['horaire_id' => 5, 'is_rest_day' => 0], // jour 1
-            ['horaire_id' => 7, 'is_rest_day' => 0], // jour 2
-            ['horaire_id' => null, 'is_rest_day' => 1], // jour 3
-        ];
-        $cycleLength = count($cycle);
 
         $assignments = AgentGroupAssignment::where('agent_group_id', 8)
             ->where(function ($q) use ($today) {
@@ -40,59 +40,79 @@ class GenerateFlexiblePlanning extends Command
         }
 
         foreach ($assignments as $assignment) {
-            $agentId = $assignment->agent_id;
-            $this->info("➡ Génération du planning pour l'agent ID: $agentId");
+            $agent = $assignment->agent;
+            $matricule = $agent->matricule;
 
-            // Dernier jour déjà planifié
-            $lastPlanning = AgentGroupPlanning::where('agent_id', $agentId)
+            $plannings = AgentGroupPlanning::where('agent_id', $agent->id)
                 ->where('agent_group_id', 8)
-                ->orderByDesc('date')
-                ->first();
+                ->orderBy('date')
+                ->get();
 
-            $startDate = $lastPlanning
-                ? Carbon::parse($lastPlanning->date)->addDay()
-                : $today;
+            if ($plannings->count() < 2) {
+                $this->warn("Pas assez d'historique pour $matricule.");
+                continue;
+            }
 
-            // Position dans le cycle (calculée à partir de l’historique)
-            $previousCount = AgentGroupPlanning::where('agent_id', $agentId)
-                ->where('agent_group_id', 8)
-                ->count();
+            $lastWeekPlannings = $plannings->slice(-7);
+            $lastWeekCodes = $lastWeekPlannings->map(function ($p) {
+                return $this->codeMap[$p->horaire_id] ?? 'OFF';
+            })->implode('-');
 
-            $cyclePointer = $previousCount % $cycleLength;
+            $lastTwoPlannings = $plannings->slice(-2);
+            $lastTwoCodes = $lastTwoPlannings->map(function ($p) {
+                return $this->codeMap[$p->horaire_id] ?? 'OFF';
+            })->values()->toArray();
+
+            $nextCycle = $this->getNextCycleFromLastTwo($lastTwoCodes);
+
+            if (!$nextCycle) {
+                $this->warn("Cycle inconnu pour $matricule avec les jours: " . implode('-', $lastTwoCodes));
+                continue;
+            }
+
+            $startDate = Carbon::parse($plannings->last()->date)->addDay();
+
+            $this->info("🧾 Agent $matricule :");
+            $this->line(" - Dernière semaine : $lastWeekCodes");
+            $this->line(" - Prochain cycle  : " . implode('-', $nextCycle));
 
             for ($i = 0; $i < $days; $i++) {
                 $date = $startDate->copy()->addDays($i);
 
-                // On ne crée rien si la date est déjà planifiée
-                $exists = AgentGroupPlanning::where('agent_id', $agentId)
+                $exists = AgentGroupPlanning::where('agent_id', $agent->id)
                     ->where('agent_group_id', 8)
                     ->whereDate('date', $date->toDateString())
                     ->exists();
 
-                if ($exists) {
-                    $this->line(" - {$date->toDateString()} déjà existant. ➤ Ignoré.");
-                    continue;
-                }
+                if ($exists) continue;
 
-                $cycleDay = $cycle[$cyclePointer];
-
+                $code = $nextCycle[$i % 7];
                 AgentGroupPlanning::create([
-                    'agent_id'       => $agentId,
+                    'agent_id'       => $agent->id,
                     'agent_group_id' => 8,
                     'date'           => $date->toDateString(),
-                    'horaire_id'     => $cycleDay['horaire_id'],
-                    'is_rest_day'    => $cycleDay['is_rest_day'],
+                    'horaire_id'     => $this->horaireMap[$code],
+                    'is_rest_day'    => $code === 'OFF',
                 ]);
-
-                $this->line(" - {$date->toDateString()} → " . ($cycleDay['is_rest_day'] ? "Repos" : "Horaire #{$cycleDay['horaire_id']}"));
-
-                // Avancer dans le cycle
-                $cyclePointer = ($cyclePointer + 1) % $cycleLength;
             }
         }
 
-        $this->info("✅ Planning généré avec succès en suivant la séquence [5 → 7 → repos].");
         return 0;
+    }
+
+    protected function getNextCycleFromLastTwo(array $lastTwo): ?array
+    {
+        $cycleRotations = [
+            'J-OFF' => ['S', 'J', 'OFF', 'S', 'J', 'OFF', 'S'],
+            'OFF-S' => ['J', 'S', 'OFF', 'J', 'S', 'OFF', 'J'],
+            'OFF-J' => ['S', 'J', 'OFF', 'S', 'J', 'OFF', 'S'],
+            'S-J'   => ['OFF', 'S', 'J', 'OFF', 'S', 'J', 'OFF'],
+            'J-S'   => ['OFF', 'J', 'S', 'OFF', 'J', 'S', 'OFF'],
+            'S-OFF' => ['J', 'S', 'OFF', 'J', 'S', 'OFF', 'J'],
+        ];
+
+        $key = implode('-', $lastTwo);
+        return $cycleRotations[$key] ?? null;
     }
 }
 

@@ -70,20 +70,20 @@
                     <div class="truncate text-base font-medium">
                         Plannings rotatifs des agents par poste
                     </div>
-                    <select @change="viewWeeklyPlannings" v-model="offset" class="disabled:bg-slate-100 disabled:cursor-not-allowed disabled:dark:bg-darkmode-800/50 [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md py-2 px-3 pr-8 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 group-[.form-inline]:flex-1 !box mt-3 sm:ml-auto sm:mt-0 sm:w-auto">
+                    <select @change="weeklyPlannings=[];viewWeeklyPlannings();" v-model="offset" class="disabled:bg-slate-100 disabled:cursor-not-allowed disabled:dark:bg-darkmode-800/50 [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md py-2 px-3 pr-8 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 group-[.form-inline]:flex-1 !box mt-3 sm:ml-auto sm:mt-0 sm:w-auto">
                         <option value="0" selected>Semaine en cours</option>
                         <option value="1">Semaine prochaine</option>
                         <option value="-1">Semaine précédente</option>
                     </select>
                 </div>
-                <div class="overflow-x-auto overflow-y-auto" style="height:600px !important" v-if="plannings.length">
+                <div class="overflow-x-auto overflow-y-auto" style="height:500px !important" v-if="plannings.length">
                     <table data-tw-merge class="w-full text-left">
                         <thead data-tw-merge class="">
                             <tr data-tw-merge class="">
                                 <th data-tw-merge class="font-extrabold px-5 py-3 border-b-2 dark:border-darkmode-300 border-l border-r border-t whitespace-nowrap">
                                     AGENT
                                 </th>
-                                <th v-for="jour in jours" :key="jour" class="font-extrabold uppercase px-5 py-3 border-b-2 dark:border-darkmode-300 border-l border-r border-t whitespace-nowrap">
+                                <th v-for="jour in jours" :key="`jdjd${jour}`" class="font-extrabold uppercase px-5 py-3 border-b-2 dark:border-darkmode-300 border-l border-r border-t whitespace-nowrap">
                                     @{{ jour }}
                                 </th>
                             </tr>
@@ -91,21 +91,22 @@
                         <tbody>
                             <template v-for="(site, index) in plannings">
                             <!-- Ligne du nom du site avec colspan -->
-                            <tr class="bg-gray-100 font-bold" :key="index">
+                            <tr class="bg-gray-100 font-bold" :key="`dhfjf${index}`">
                                 <td colspan="8" class="border px-4 py-2 uppercase">
                                 @{{ site.name }}
                                 </td>
                             </tr>
-                            <tr data-tw-merge class="" v-for="(agent, aIndex) in site.agents" :key="aIndex">
+                            <tr data-tw-merge v-for="(agent, aIndex) in site.agents" :key="agent.id">
                                 <td data-tw-merge class="px-5 py-3 border-b dark:border-darkmode-300 border-l border-r border-t">
                                     <span class="font-extrabold mr-2">@{{ agent.matricule }}</span>@{{ agent.fullname }}
                                 </td>
                                 <template v-for="jour in jours">
-                                    <td :key="jour" data-tw-merge class="px-5 py-3 border-b dark:border-darkmode-300 border-l border-r border-t">
+                                    <td :key="`DKLSLL${jour}`" class="px-5 py-3 border-b dark:border-darkmode-300 border-l border-r border-t">
                                         @{{ formatHoraire(mapPlanningsByDay(agent.plannings)[jour]) }}
                                     </td>
                                 </template>
                             </tr>
+                            </template>
                             </template>
                         </tbody>
                     </table>
