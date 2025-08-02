@@ -76,8 +76,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr data-tw-merge="" class="intro-y" v-for="(data, index) in allPatrolReports" :key="index">
-                        <td class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
+                    <tr data-tw-merge="" class="intro-y" v-for="(data, index) in allPatrolReports" :key="index" >
+                        <td  class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
                             <div class="flex items-center">
                                 <div class="image-fit zoom-in h-9 w-9">
                                     <img data-placement="top" data-action="zoom" :src="data.photo ?? 'assets/images/loading.gif'" alt="photo" class="tooltip cursor-pointer rounded-lg border-white shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]">
@@ -115,19 +115,33 @@
                             <div v-if="data.ended_at !== null" class="flex items-center justify-center text-success">
                                 <i data-tw-merge="" data-lucide="check-square" class="stroke-1.5 mr-2 h-4 w-4"></i>
                                 Completed
+
                             </div>
+
                             <div v-else class="flex items-center justify-center text-pending">
                                 <i data-tw-merge="" data-lucide="clock" class="stroke-1.5 mr-2 h-4 w-4"></i>
                                 Pending
                             </div>
+
+                            <div class="mt-0.5 whitespace-nowrap text-xs text-red-600 text-slate-500">
+                            <template v-if="data.zones_scanned < data.zones_expected">
+                               ⚠️ Zone non scannée
+                            </template>
+                            <template  v-if="data.scans_stats.some(z => z.distance_meters > 150)">
+                                <span  v-if="data.zones_scanned < data.zones_expected"> + </span>
+                               ⚠️ QRCode déplacé
+                            </template>
+                            </div>
+
+
                         </td>
                         <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box w-56 rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600 before:absolute before:inset-y-0 before:left-0 before:my-auto before:block before:h-8 before:w-px before:bg-slate-200 before:dark:bg-darkmode-400">
                             <div class="flex items-center">
-                                <button @click="loadChart(data)" data-tw-toggle="modal" data-tw-target="#patrol-info-details"
-                                    class="bg-[#4ab3f4] flex border-0 rounded-md px-2 py-1.5 text-xs hover:bg-[#4ab3f4]/20 text-white shadow-lg mr-2">
+                                <button @click="loadChart(data)" :class="data.zones_scanned < data.zones_expected || data.scans_stats.some(z => z.distance_meters > 150) ? 'bg-blink-red' : 'bg-[#4ab3f4]'" data-tw-toggle="modal" data-tw-target="#patrol-info-details"
+                                    class=" flex border-0 rounded-md px-2 py-1.5 text-xs hover:bg-[#4ab3f4]/20 text-white shadow-lg mr-2">
                                     Voir détails
                                 </button>
-                                <button :disabled="closed_id === data.id" v-if="data.ended_at === null"  @click="closePatrol(data)" 
+                                <button :disabled="closed_id === data.id" v-if="data.ended_at === null"  @click="closePatrol(data)"
                                     class="bg-pending flex border-0 rounded-md px-2 py-1.5 text-xs hover:bg-pending/20 text-white shadow-lg">
                                     Clotûrer
                                     <span v-if="closed_id === data.id" class="ml-2 h-4 w-4">
@@ -147,7 +161,7 @@
                                         </svg>
                                     </span>
                                 </button>
-                                
+
                             </div>
                         </td>
                     </tr>
@@ -163,9 +177,9 @@
             </div>
         </div>
         <!-- END: Data List -->
-        
 
-        
+
+
         <!-- END: Pagination -->
 
         <!-- BEGIN: Pagination -->
@@ -241,7 +255,7 @@
 
                                 <div class="col-span-12"  v-if="selectedPatrol">
                                     <div class="flex">
-                                        <div class="mr-auto flex align-items-center">Efficacité 
+                                        <div class="mr-auto flex align-items-center">Efficacité
                                             <div class="rounded-lg ml-2 bg-dark py-[3px] px-2 text-xs font-normal text-white">
                                                 @{{ selectedPatrol.efficiency_label }}
                                             </div>
@@ -321,4 +335,21 @@
 
 @push("scripts")
 <script type="module" src="{{ asset("assets/js/scripts/reports.js") }}"></script>
+@endpush
+@push("styles")
+<style scoped>
+@keyframes clignote-rouge {
+  0%, 100% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: #f87171;
+  }
+}
+
+.bg-blink-red {
+  animation: clignote-rouge 1s infinite;
+}
+
+</style>
 @endpush

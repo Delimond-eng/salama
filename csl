@@ -1,0 +1,49 @@
+[33m5381ad8[m[33m ([m[1;36mHEAD[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: pull origin master --rebase: checkout 5381ad8c5a9d9ea1c978be9a48453199b006a635
+[33m548cfb3[m[33m ([m[1;32mmaster[m[33m)[m HEAD@{1}: commit: modification systeme de pointage
+[33m5ec51de[m HEAD@{2}: commit: ltast update
+[33mee91513[m HEAD@{3}: commit: update
+[33m4bb358b[m HEAD@{4}: commit: update
+[33m588fcbf[m HEAD@{5}: commit: lts update
+[33mf4c1a91[m HEAD@{6}: commit: lts update
+[33m3040dd2[m HEAD@{7}: commit: upgrade
+[33me5525b2[m HEAD@{8}: commit: update
+[33md3c5b56[m HEAD@{9}: commit: update
+[33m39ff428[m HEAD@{10}: commit: update
+[33m9101539[m HEAD@{11}: commit: conge interface
+[33me1bb8b1[m HEAD@{12}: commit: latest update
+[33m75fa1d3[m HEAD@{13}: commit: lts update
+[33m1db88e0[m HEAD@{14}: commit: update by Gaston
+[33m84c8930[m HEAD@{15}: commit: update by Gaston
+[33mcb37f46[m HEAD@{16}: commit: latest update master
+[33mfe7301a[m HEAD@{17}: commit: latest update master
+[33m742c540[m[33m ([m[1;31morigin/main[m[33m)[m HEAD@{18}: Branch: renamed refs/heads/main to refs/heads/master
+[33m742c540[m[33m ([m[1;31morigin/main[m[33m)[m HEAD@{20}: Branch: renamed refs/heads/master to refs/heads/main
+[33m742c540[m[33m ([m[1;31morigin/main[m[33m)[m HEAD@{22}: Branch: renamed refs/heads/main to refs/heads/master
+[33m742c540[m[33m ([m[1;31morigin/main[m[33m)[m HEAD@{24}: commit (initial): latest update
+[33m0c75155[m HEAD@{25}: commit: supervisor report
+[33m1a4f964[m HEAD@{26}: commit: lts update
+[33m74ace7e[m HEAD@{27}: commit: lts update
+[33m8b688dd[m HEAD@{28}: commit: update by Gaston
+[33m26c4be9[m HEAD@{29}: commit: lts update by Gaston
+[33m875dd45[m HEAD@{30}: commit: lts update
+[33m14fa8dd[m HEAD@{31}: commit: lts update
+[33m1617556[m HEAD@{32}: commit: update
+[33m1955ec4[m HEAD@{33}: commit: update
+[33m7c0a4b8[m HEAD@{34}: commit: lts
+[33m4caf119[m HEAD@{35}: commit: updated
+[33mf6913db[m HEAD@{36}: commit: lts update
+[33m4d492c4[m HEAD@{37}: commit: fix bugs
+[33m57fc27b[m HEAD@{38}: commit (merge): map refresh fix
+[33mfaa1c20[m HEAD@{39}: commit: latest update
+[33m270a395[m HEAD@{40}: commit: latest update
+[33m9fdc2ba[m HEAD@{41}: commit: update
+[33m12528a9[m HEAD@{42}: commit (merge): latest update Gaston
+[33m891d604[m HEAD@{43}: commit: latest update
+[33m7e56141[m HEAD@{44}: pull: Fast-forward
+[33m76a52f0[m HEAD@{45}: commit (merge): update by gaston
+[33meb6b80d[m HEAD@{46}: commit: latest update
+[33mc200f67[m HEAD@{47}: commit: latest update
+[33m4853141[m HEAD@{48}: commit: lts update
+[33m6565342[m HEAD@{49}: commit: latest update
+[33m108d41f[m HEAD@{50}: commit: latest
+[33m82eb740[m HEAD@{51}: commit (initial): lts update
