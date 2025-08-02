@@ -15,12 +15,13 @@ use App\Models\ScheduleSupervisor;
 use App\Models\ScheduleSupervisorSite;
 use App\Models\Site;
 use Carbon\Carbon;
+use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 use Log;
 use Mail;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class PresenceController extends Controller
 {
@@ -843,15 +844,22 @@ class PresenceController extends Controller
 
 
 
-    public function getWeeklyPlannings()
+    public function getWeeklyPlannings(Request $request)
     {
-         $startDate = Carbon::now()->startOfWeek(); // lundi
-        $endDate = Carbon::now()->endOfWeek();     // dimanche 
+        /*  $startDate = Carbon::now()->startOfWeek(); // lundi
+        $endDate = Carbon::now()->endOfWeek();     // dimanche  */
 
         /* $startDate = Carbon::now()->addWeek()->startOfWeek(); // Lundi prochain
         $endDate = Carbon::now()->addWeek()->endOfWeek();   */ 
 
-        $sites = Site::whereHas('agents', function ($query) use ($startDate, $endDate) {
+        $siteId = $request->query("site");
+
+        $weekOffset = (int) $request->query('offset', 0); // 0 = cette semaine, 1 = prochaine, -1 = précédente
+        $startDate = Carbon::now()->addWeeks($weekOffset)->startOfWeek();
+        $endDate = Carbon::now()->addWeeks($weekOffset)->endOfWeek();
+
+        $sites = Site::when($siteId, fn($query) => $query->where('id', $siteId))
+        ->whereHas('agents', function ($query) use ($startDate, $endDate) {
             $query
                 ->whereHas('plannings', function ($q) use ($startDate, $endDate) {
                     $q->whereBetween('date', [$startDate, $endDate]);
@@ -870,6 +878,113 @@ class PresenceController extends Controller
         ->get();
 
         return response()->json($sites);
+    }
+
+
+
+    /**
+     * Import Agents Current Week plannings
+     * @param Request $request
+     * @return mixed
+    */
+    public function importPlanning(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'file' => 'required|file|mimes:xlsx,xls',
+            ]);
+
+            $file = $request->file('file');
+            $spreadsheet = IOFactory::load($file->getPathname());
+            $rows = $spreadsheet->getActiveSheet()->toArray();
+
+            // Vérification de la structure de l'en-tête
+            $expectedHeader = ['MATRICULE', 'LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI', 'DIMANCHE'];
+            $actualHeader = array_map('strtoupper', array_map('trim', $rows[0]));
+
+            if ($actualHeader !== $expectedHeader) {
+                return response()->json([
+                    'errors' => 'Le fichier Excel ne respecte pas le format attendu. Entêtes requis!'
+                ]);
+            }
+            DB::beginTransaction();
+            // Correspondance codes -> horaire_id
+            $horaireMapping = [
+                'J'   => 5,
+                'S'   => 7,
+                'OFF' => null
+            ];
+
+            $startOfWeek = Carbon::now('Africa/Kinshasa')->startOfWeek(); // lundi
+            $daysOfWeek = ['LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI', 'DIMANCHE'];
+
+            // Traitement des lignes (sauter l'en-tête)
+            foreach ($rows as $index => $row) {
+                if ($index === 0) continue;
+
+                $matricule = preg_replace('/\s+/', '', $row[0]);
+
+                $agent = Agent::where('matricule', $matricule)->first();
+                if (!$agent) {
+                    continue; // Agent introuvable → ignorer
+                }
+
+                // Vérifie et crée l’assignation au groupe flexible (id = 8)
+                $alreadyAssigned = AgentGroupAssignment::where('agent_id', $agent->id)
+                    ->where('agent_group_id', 8)
+                    ->exists();
+
+                if (!$alreadyAssigned) {
+                    AgentGroupAssignment::create([
+                        'agent_id'        => $agent->id,
+                        'agent_group_id'  => 8,
+                        'start_date'      => now()->toDateString(),
+                        'end_date'        => null
+                    ]);
+                }
+
+                // Met à jour l’agent pour indiquer qu’il est dans le groupe 8
+                $agent->update(['groupe_id' => 8]);
+
+                // Supprimer les anciens plannings de la semaine en cours (si déjà existants)
+                AgentGroupPlanning::where('agent_id', $agent->id)
+                    ->where('agent_group_id', 8)
+                    ->whereBetween('date', [$startOfWeek->copy()->toDateString(), $startOfWeek->copy()->addDays(6)->toDateString()])
+                    ->delete();
+
+                // Créer le planning de la semaine
+                for ($i = 0; $i < 7; $i++) {
+                    $code = strtoupper(trim($row[$i + 1])); // Colonne 1 à 7
+                    $date = $startOfWeek->copy()->addDays($i)->toDateString();
+
+                    $horaire_id = $horaireMapping[$code] ?? null;
+                    $is_rest_day = ($code === 'OFF') ? 1 : 0;
+
+                    AgentGroupPlanning::create([
+                        'agent_id'       => $agent->id,
+                        'agent_group_id' => 8,
+                        'date'           => $date,
+                        'horaire_id'     => $horaire_id,
+                        'is_rest_day'    => $is_rest_day,
+                    ]);
+                }
+            }
+
+            DB::commit();
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Planning des agents importé avec succès.'
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->validator->errors()->all()]);
+        } catch (\Exception $e) {
+            return response()->json(['errors' => $e->getMessage()]);
+        }
+        catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['errors' => $e->getMessage()]);
+        }
     }
 
 

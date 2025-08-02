@@ -1,6 +1,5 @@
-import { get, postJson } from "../modules/http.js";
+import { get, postJson, post } from "../modules/http.js";
 import Pagination from "../components/pagination.js";
-import { offset } from "@popperjs/core/index.js";
 new Vue({
     el: "#App",
     components: {
@@ -40,6 +39,7 @@ new Vue({
             filterRetards: "",
             years: [2023, 2024, 2025],
             activeRowIndex: null,
+            filter_site_id: "",
             form: {
                 id: "",
                 libelle: "",
@@ -127,12 +127,8 @@ new Vue({
             });
 
             tom.on("change", (value) => {
-                this.filter_by_site = value;
-                if (location.pathname == "/agents.history") {
-                    this.viewAllHistories();
-                } else {
-                    this.viewAllAgents();
-                }
+                this.filter_site_id = value;
+                this.viewWeeklyPlannings();
             });
         },
     },
@@ -150,11 +146,15 @@ new Vue({
 
         viewWeeklyPlannings() {
             this.isDataLoading = true;
-            get(`/weekly.plannings`)
+            get(
+                `/weekly.plannings?offset=${this.offset}&site=${this.filter_site_id}`
+            )
                 .then((res) => {
+                    this.isDataLoading = false;
                     this.weeklyPlannings = res.data;
                 })
                 .catch((err) => {
+                    this.isDataLoading = false;
                     console.log("error");
                 });
         },
@@ -611,24 +611,26 @@ new Vue({
             const formData = new FormData();
             formData.append("file", file);
 
-            /* this.isLoading = true;
-            post("/agents.import.excel", formData).then(({ status, data }) => {
-                this.isLoading = false;
-                if (data.status === "success") {
-                    new Toastify({
-                        node: $("#success-notification-content")
-                            .clone()
-                            .removeClass("hidden")[0],
-                        duration: 3000,
-                        newWindow: true,
-                        close: true,
-                        gravity: "top",
-                        position: "right",
-                        stopOnFocus: true,
-                    }).showToast();
-                    this.viewAllAgents();
+            this.isLoading = true;
+            post("/import.planning.excel", formData).then(
+                ({ status, data }) => {
+                    this.isLoading = false;
+                    if (data.status === "success") {
+                        new Toastify({
+                            node: $("#success-notification-content")
+                                .clone()
+                                .removeClass("hidden")[0],
+                            duration: 3000,
+                            newWindow: true,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            stopOnFocus: true,
+                        }).showToast();
+                        this.viewWeeklyPlannings();
+                    }
                 }
-            }); */
+            );
         },
 
         getJourName(dateStr) {

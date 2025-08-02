@@ -71,18 +71,19 @@
                         Plannings rotatifs des agents par poste
                     </div>
                     <select @change="viewWeeklyPlannings" v-model="offset" class="disabled:bg-slate-100 disabled:cursor-not-allowed disabled:dark:bg-darkmode-800/50 [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md py-2 px-3 pr-8 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 group-[.form-inline]:flex-1 !box mt-3 sm:ml-auto sm:mt-0 sm:w-auto">
-                        <option value="0">Semaine en cours</option>
+                        <option value="0" selected>Semaine en cours</option>
                         <option value="1">Semaine prochaine</option>
+                        <option value="-1">Semaine précédente</option>
                     </select>
                 </div>
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto overflow-y-auto" style="height:600px !important" v-if="plannings.length">
                     <table data-tw-merge class="w-full text-left">
                         <thead data-tw-merge class="">
                             <tr data-tw-merge class="">
                                 <th data-tw-merge class="font-extrabold px-5 py-3 border-b-2 dark:border-darkmode-300 border-l border-r border-t whitespace-nowrap">
                                     AGENT
                                 </th>
-                                <th v-for="jour in jours" :key="jour" class="font-extrabold px-5 py-3 border-b-2 dark:border-darkmode-300 border-l border-r border-t whitespace-nowrap">
+                                <th v-for="jour in jours" :key="jour" class="font-extrabold uppercase px-5 py-3 border-b-2 dark:border-darkmode-300 border-l border-r border-t whitespace-nowrap">
                                     @{{ jour }}
                                 </th>
                             </tr>
@@ -109,28 +110,24 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </div>
-        <!-- END: Data List -->
-        
-
-        <!-- <div class="col-span-12" v-else>
-            <div v-if="isDataLoading">
-                <x-dom-loader></x-dom-loader>
-            </div>
-            <div v-else class="relative mt-5 intro-y before:box before:absolute before:inset-x-3 before:mt-3 before:h-full before:bg-slate-50 before:content-['']">
-                <div class="box">
-                    <x-empty-state message="Aucun agent répertorié !"></x-empty-state>
+                <!-- END: Data List -->
+                <div class="col-span-12" v-else>
+                    <div v-if="isDataLoading">
+                        <x-dom-loader></x-dom-loader>
+                    </div>
+                    <div v-else>
+                        <x-empty-state message="Aucun planning hebdomadaire disponible !"></x-empty-state>
+                    </div>
                 </div>
             </div>
-
-        </div> -->
+        </div>
+        
        
         <div id="success-notification-content" class="py-5 pl-5 pr-14 bg-white border border-slate-200/60 rounded-lg shadow-xl dark:bg-darkmode-600 dark:text-slate-300 dark:border-darkmode-600 hidden flex">
             <i data-tw-merge="" data-lucide="check-circle" class="stroke-1.5 w-5 h-5 text-success"></i>
             <div class="ml-4 mr-4">
                 <div class="font-medium">Opération reussi !</div>
-                <div class="text-slate-500 mt-1">Importation de la liste des agents effectuées ! </div>
+                <div class="text-slate-500 mt-1">Importation du planning hebdomadaire des agent effectués! </div>
             </div>
         </div>
 
@@ -143,5 +140,4 @@
 
 @push("scripts")
 <script type="module" src="{{ asset("assets/js/scripts/presence.js") }}"></script>
-
 @endpush
