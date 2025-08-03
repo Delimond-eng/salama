@@ -22,6 +22,12 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Log;
 use Mail;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class PresenceController extends Controller
 {
@@ -985,6 +991,119 @@ class PresenceController extends Controller
             DB::rollBack();
             return response()->json(['errors' => $e->getMessage()]);
         }
+    }
+
+    public function exportWeeklyPlanningsDirect(Request $request)
+    {
+        $weekOffset = (int) $request->query('offset', 0);
+        $startDate = Carbon::now()->addWeeks($weekOffset)->startOfWeek();
+        $endDate = Carbon::now()->addWeeks($weekOffset)->endOfWeek();
+
+        $sites = Site::whereHas('agents', function ($query) use ($startDate, $endDate) {
+                $query->whereHas('plannings', function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('date', [$startDate, $endDate]);
+                });
+            })
+            ->with(['agents' => function ($query) use ($startDate, $endDate) {
+                $query->whereHas('plannings', function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('date', [$startDate, $endDate]);
+                })
+                ->with(['plannings' => function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('date', [$startDate, $endDate])->with('horaire');
+                }]);
+            }])
+            ->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Insérer logo en haut à gauche (adapte le chemin)
+        $drawing = new Drawing();
+        $drawing->setName('SALAMA Plateforme');
+        $drawing->setDescription('Logo SALAMA');
+        $drawing->setPath(public_path('assets/images/mamba-2.png'));
+        $drawing->setHeight(60);
+        $drawing->setCoordinates('A1');
+        $drawing->setWorksheet($sheet);
+
+        $startRow = 4;
+        $currentRow = $startRow;
+
+        $jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+
+        foreach ($sites as $site) {
+            // Titre site fusionné A à H
+            $sheet->mergeCells("A{$currentRow}:H{$currentRow}");
+            $sheet->setCellValue("A{$currentRow}", 'SITE : ' . strtoupper($site->name));
+            $sheet->getStyle("A{$currentRow}")->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => '004C99'], 'size' => 14],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'B0C4DE']],
+            ]);
+            $currentRow++;
+
+            // En-têtes colonnes
+            $sheet->setCellValue("A{$currentRow}", 'Agent');
+            $col = 'B';
+            foreach ($jours as $jour) {
+                $sheet->setCellValue("{$col}{$currentRow}", $jour);
+                $col++;
+            }
+            $sheet->getStyle("A{$currentRow}:H{$currentRow}")->applyFromArray([
+                'font' => ['bold' => true],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+            ]);
+            $currentRow++;
+
+            foreach ($site->agents as $agent) {
+                $sheet->setCellValue("A{$currentRow}", "{$agent->matricule} {$agent->fullname}");
+
+                // Indexer plannings par date
+                $planningByDate = [];
+                foreach ($agent->plannings as $planning) {
+                    $planningByDate[$planning->date] = $planning;
+                }
+
+                $col = 'B';
+                for ($i = 0; $i < 7; $i++) {
+                    $date = $startDate->copy()->addDays($i)->toDateString();
+                    $planning = $planningByDate[$date] ?? null;
+
+                    // Afficher seulement si horaire_id = 5 (Jour), 7 (Soir), ou null (OFF)
+                    if (!$planning || $planning->is_rest_day || !in_array($planning->horaire_id, [5, 7])) {
+                        $value = 'OFF';
+                    } else {
+                        $value = $planning->horaire->started_at->format('H:s') . ' - ' . $planning->horaire->ended_at->format('H:s') ;
+                    }
+
+                    $sheet->setCellValue("{$col}{$currentRow}", $value);
+                    $col++;
+                }
+
+                $sheet->getStyle("A{$currentRow}:H{$currentRow}")->applyFromArray([
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
+                    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+                ]);
+                $currentRow++;
+            }
+            $currentRow++; // Ligne vide entre sites
+        }
+
+        // Largeur auto des colonnes
+        foreach (range('A', 'H') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $fileName = 'planning_agents_semaine_' . $startDate->format('Y_m_d') . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header("Content-Disposition: attachment; filename=\"$fileName\"");
+        header('Cache-Control: max-age=0');
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
     }
 
 

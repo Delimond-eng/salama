@@ -54,6 +54,9 @@
                     </svg>
                 </span>
             </button>
+            <button onclick="location.href='/export.planning.excel'" class="transition duration-200 border inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-primary border-primary text-white dark:border-primary mr-2 shadow-md"> 
+                Exporter en Excel <i class="w-3 h-3 ml-2 stroke-1.5" data-lucide="download"></i>
+            </button>
             <div class="mx-auto hidden text-slate-500 xl:block">
 
             </div>
@@ -91,7 +94,7 @@
                         <tbody>
                             <template v-for="(site, index) in plannings">
                                 <tr class="bg-gray-100 font-bold" :key="`dhfjf${index}`">
-                                    <td colspan="8" class="border px-4 py-2 uppercase">
+                                    <td colspan="8" class="border px-4 py-2 text-xl uppercase text-blue-500">
                                     @{{ site.name }}
                                     </td>
                                 </tr>
