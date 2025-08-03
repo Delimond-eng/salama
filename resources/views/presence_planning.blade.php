@@ -72,8 +72,10 @@
                     </div>
                     <select @change="weeklyPlannings=[];viewWeeklyPlannings();" v-model="offset" class="disabled:bg-slate-100 disabled:cursor-not-allowed disabled:dark:bg-darkmode-800/50 [&amp;[readonly]]:bg-slate-100 [&amp;[readonly]]:cursor-not-allowed [&amp;[readonly]]:dark:bg-darkmode-800/50 transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md py-2 px-3 pr-8 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 group-[.form-inline]:flex-1 !box mt-3 sm:ml-auto sm:mt-0 sm:w-auto">
                         <option value="0" selected>Semaine en cours</option>
-                        <option value="1">Semaine prochaine</option>
                         <option value="-1">Semaine précédente</option>
+                        <option value="1">Semaine prochaine</option>
+                        <option value="2">Semaine 3</option>
+                        <option value="3">Semaine 4</option>
                     </select>
                 </div>
                 <div class="overflow-x-auto overflow-y-auto" style="height:500px !important" v-if="plannings.length">
@@ -101,7 +103,7 @@
                                     <span class="font-extrabold mr-2">@{{ agent.matricule }}</span>@{{ agent.fullname }}
                                 </td>
                                 <template v-for="jour in jours">
-                                    <td :key="`DKLSLL${jour}`" class="px-5 py-3 border-b dark:border-darkmode-300 border-l border-r border-t">
+                                    <td :key="`DKLSLL${jour}`" :class="{'text-danger font-extrabold': formatHoraire(mapPlanningsByDay(agent.plannings)[jour])=== 'OFF' }" class="px-5 py-3 border-b dark:border-darkmode-300 border-l border-r border-t">
                                         @{{ formatHoraire(mapPlanningsByDay(agent.plannings)[jour]) }}
                                     </td>
                                 </template>

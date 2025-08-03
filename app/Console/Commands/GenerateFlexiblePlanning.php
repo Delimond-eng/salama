@@ -9,9 +9,8 @@ use Illuminate\Console\Command;
 
 class GenerateFlexiblePlanning extends Command
 {
-   protected $signature = 'planning:generate-horaire {--days=7}';
-    protected $description = 'Génère un planning flexible basé sur les 2 derniers jours du cycle hebdomadaire pour chaque agent individuellement.';
-
+    protected $signature = 'planning:generate-horaire {--days=7}';
+    protected $description = 'Génère un planning flexible basé sur la logique du cycle personnel de chaque agent.';
     protected $horaireMap = [
         'J'   => 5,
         'S'   => 7,
@@ -48,7 +47,7 @@ class GenerateFlexiblePlanning extends Command
                 ->orderBy('date')
                 ->get();
 
-            if ($plannings->count() < 2) {
+            if ($plannings->count() < 7) {
                 $this->warn("Pas assez d'historique pour $matricule.");
                 continue;
             }
@@ -56,29 +55,25 @@ class GenerateFlexiblePlanning extends Command
             $lastWeekPlannings = $plannings->slice(-7);
             $lastWeekCodes = $lastWeekPlannings->map(function ($p) {
                 return $this->codeMap[$p->horaire_id] ?? 'OFF';
-            })->implode('-');
-
-            $lastTwoPlannings = $plannings->slice(-2);
-            $lastTwoCodes = $lastTwoPlannings->map(function ($p) {
-                return $this->codeMap[$p->horaire_id] ?? 'OFF';
             })->values()->toArray();
-
-            $nextCycle = $this->getNextCycleFromLastTwo($lastTwoCodes);
-
-            if (!$nextCycle) {
-                $this->warn("Cycle inconnu pour $matricule avec les jours: " . implode('-', $lastTwoCodes));
-                continue;
-            }
 
             $startDate = Carbon::parse($plannings->last()->date)->addDay();
 
-            $this->info("🧾 Agent $matricule :");
-            $this->line(" - Dernière semaine : $lastWeekCodes");
-            $this->line(" - Prochain cycle  : " . implode('-', $nextCycle));
+            $this->info("📜 Agent $matricule :");
+            $this->line(" - Dernière semaine : " . implode('-', $lastWeekCodes));
 
+            $cycle = array_slice($lastWeekCodes, -3); // Ex : S, J, OFF
+            if (count(array_unique($cycle)) < 3 || !in_array('OFF', $cycle)) {
+                $this->warn("Cycle non valide pour $matricule. Données : " . implode('-', $cycle));
+                continue;
+            }
+
+            $generatedCodes = [];
             for ($i = 0; $i < $days; $i++) {
-                $date = $startDate->copy()->addDays($i);
+                $code = $cycle[$i % 3];
+                $generatedCodes[] = $code;
 
+                $date = $startDate->copy()->addDays($i);
                 $exists = AgentGroupPlanning::where('agent_id', $agent->id)
                     ->where('agent_group_id', 8)
                     ->whereDate('date', $date->toDateString())
@@ -86,7 +81,6 @@ class GenerateFlexiblePlanning extends Command
 
                 if ($exists) continue;
 
-                $code = $nextCycle[$i % 7];
                 AgentGroupPlanning::create([
                     'agent_id'       => $agent->id,
                     'agent_group_id' => 8,
@@ -95,24 +89,15 @@ class GenerateFlexiblePlanning extends Command
                     'is_rest_day'    => $code === 'OFF',
                 ]);
             }
+
+            $this->line(" - Semaines générées :");
+            for ($w = 0; $w < ceil($days / 7); $w++) {
+                $week = array_slice($generatedCodes, $w * 7, 7);
+                $this->line("   Semaine " . ($w + 1) . ": " . implode(' | ', $week));
+            }
         }
 
         return 0;
-    }
-
-    protected function getNextCycleFromLastTwo(array $lastTwo): ?array
-    {
-        $cycleRotations = [
-            'J-OFF' => ['S', 'J', 'OFF', 'S', 'J', 'OFF', 'S'],
-            'OFF-S' => ['J', 'S', 'OFF', 'J', 'S', 'OFF', 'J'],
-            'OFF-J' => ['S', 'J', 'OFF', 'S', 'J', 'OFF', 'S'],
-            'S-J'   => ['OFF', 'S', 'J', 'OFF', 'S', 'J', 'OFF'],
-            'J-S'   => ['OFF', 'J', 'S', 'OFF', 'J', 'S', 'OFF'],
-            'S-OFF' => ['J', 'S', 'OFF', 'J', 'S', 'OFF', 'J'],
-        ];
-
-        $key = implode('-', $lastTwo);
-        return $cycleRotations[$key] ?? null;
     }
 }
 
