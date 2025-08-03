@@ -148,27 +148,32 @@ class PresenceController extends Controller
             $groupe = AgentGroup::with('horaire')->find($assignment->agent_group_id);
 
             if ($groupe && $groupe->horaire) {
+                Log::info("Groupe planning non flexible {$groupe->horaire}");
                 $horaire = $groupe->horaire;
                 $dateReference = $this->getDateReference($now, $horaire);
             } else {
-                $planning = AgentGroupPlanning::where('agent_group_id', $assignment->agent_group_id)
-                    ->where('date', $now->toDateString())
-                    ->with('horaire')
-                    ->first();
+                if($data['key'] !== 'check-out'){
+                    $planning = AgentGroupPlanning::where('agent_group_id', $assignment->agent_group_id)
+                        ->where('date', $now->toDateString())
+                        ->with('horaire')
+                        ->first();
 
-                if (!$planning) {
-                    return response()->json(['errors' => ['Aucun planning défini pour cet agent aujourd\'hui.']]);
-                }
+                    Log::info("Groupe planning flexible {$planning->toJson()}");
 
-                if ($planning->is_rest_day) {
-                    return response()->json(['errors' => ['Ce jour est prévu comme jour de repos pour cet agent.']]);
-                }
+                    if (!$planning) {
+                        return response()->json(['errors' => ['Aucun planning défini pour cet agent aujourd\'hui.']]);
+                    }
 
-                if (!$planning->horaire) {
-                    return response()->json(['errors' => ['Aucun horaire associé au planning du jour pour cet agent.']]);
+                    if ($planning->is_rest_day) {
+                        return response()->json(['errors' => ['Ce jour est prévu comme jour de repos pour cet agent.']]);
+                    }
+
+                    if (!$planning->horaire) {
+                        return response()->json(['errors' => ['Aucun horaire associé au planning du jour pour cet agent.']]);
+                    }
+                    $horaire = $planning->horaire;
+                    $dateReference = $this->getDateReference($now, $horaire);
                 }
-                $horaire = $planning->horaire;
-                $dateReference = $this->getDateReference($now, $horaire);
             }
 
             // Upload de la photo
@@ -634,7 +639,7 @@ class PresenceController extends Controller
     public function getPresencesBySiteAndDate(Request $request)
     {
         try {
-            //Récupération de la date cible (par défaut aujourd'hui à Kinshasa)
+            // Date cible (par défaut : aujourd'hui)
             $targetDate = $request->query('date')
                 ? Carbon::parse($request->query('date'))->startOfDay()
                 : Carbon::today('Africa/Kinshasa')->startOfDay();
@@ -642,7 +647,7 @@ class PresenceController extends Controller
             $siteId = $request->query('site_id');
             $search = $request->query('search');
 
-            // Recherche par nom ou matricule
+            // Recherche par matricule ou nom
             $agentId = null;
             if ($search) {
                 $agent = Agent::where('matricule', 'LIKE', "%$search%")
@@ -652,16 +657,14 @@ class PresenceController extends Controller
                 $agentId = $agent?->id;
             }
 
-            // Requête principale avec relations et conditions
-            $presences = PresenceAgents::with(['agent.groupe.horaire', 'agent.site', 'site'])
+            // Récupération des présences
+            $presences = PresenceAgents::with(['agent.groupe', 'agent.site', 'site'])
                 ->when($siteId, fn($query) => $query->where('gps_site_id', $siteId))
                 ->when($agentId, fn($query) => $query->where('agent_id', $agentId))
-                
                 ->whereIn('date_reference', [
                     $targetDate->toDateString(),
                     $targetDate->copy()->subDay()->toDateString()
                 ])
-
                 ->orderByRaw("
                     CASE
                         WHEN retard = 'no' THEN 0
@@ -673,26 +676,53 @@ class PresenceController extends Controller
                 ->orderByDesc('created_at')
                 ->get();
 
-            //Filtrage intelligent selon l'horaire de travail
+            // Filtrage intelligent avec fallback vers AgentGroupPlanning
             $filtered = $presences->filter(function ($presence) use ($targetDate) {
-                $horaire = optional($presence->agent->groupe)->horaire;
-                if (!$horaire) return false;
+                $presenceDate = Carbon::parse($presence->date_reference)->startOfDay();
 
-                try {
-                    $presenceDate = Carbon::parse($presence->date_reference)->startOfDay();
-                    $heureDebut = Carbon::parse($horaire->started_at);
-                    $heureFin   = Carbon::parse($horaire->ended_at);
-                } catch (\Exception $e) {
-                    Log::warning("Erreur parsing horaire : " . $e->getMessage());
-                    return false;
+                // 1. Récupération de l'horaire via le groupe
+                $horaire = optional($presence->agent->groupe)->horaire;
+
+                // 2. Fallback : recherche via AgentGroupPlanning
+                if (!$horaire) {
+                    $agentId = $presence->agent_id;
+                    $groupId = optional($presence->agent)->groupe_id;
+
+                    $planning = AgentGroupPlanning::with('horaire')
+                        ->where('agent_id', $agentId)
+                        ->where('agent_group_id', $groupId)
+                        ->whereDate('date', $presenceDate)
+                        ->first();
+
+                    $horaire = $planning?->horaire;
                 }
 
-                $is24h = $heureDebut->equalTo($heureFin);
-                $isNuit = $heureFin->lessThan($heureDebut);
+                // 3. Aucun horaire trouvé → validation uniquement par date
+                if (!$horaire) {
+                    return $presenceDate->equalTo($targetDate);
+                }
 
-                return $is24h || $isNuit
-                    ? $presenceDate->equalTo($targetDate) || $presenceDate->equalTo($targetDate->copy()->subDay())
-                    : $presenceDate->equalTo($targetDate);
+                try {
+                    $heureDebut = $horaire->started_at ? Carbon::parse($horaire->started_at) : null;
+                    $heureFin   = $horaire->ended_at   ? Carbon::parse($horaire->ended_at)   : null;
+
+                    // Horaire partiellement défini
+                    if (is_null($heureDebut) || is_null($heureFin)) {
+                        return $presenceDate->equalTo($targetDate);
+                    }
+
+                    $is24h = $heureDebut->equalTo($heureFin);
+                    $isNuit = $heureFin->lessThan($heureDebut);
+
+                    // Horaires de nuit ou 24h : autoriser aussi la veille
+                    return $is24h || $isNuit
+                        ? $presenceDate->equalTo($targetDate) || $presenceDate->equalTo($targetDate->copy()->subDay())
+                        : $presenceDate->equalTo($targetDate);
+
+                } catch (\Exception $e) {
+                    Log::warning("Erreur parsing horaire pour présence ID {$presence->id} : " . $e->getMessage());
+                    return false;
+                }
             })->values();
 
             // Pagination manuelle
@@ -711,7 +741,6 @@ class PresenceController extends Controller
                 'date'      => $targetDate->toDateString(),
                 'presences' => $paginated,
             ]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->validator->errors()->all()], 422);
         } catch (\Exception $e) {

@@ -38,6 +38,8 @@ class PresenceAgents extends Model
         return $this->belongsTo(PresenceHoraire::class, 'horaire_id');
     }
 
+    
+
     public function site()
     {
         return $this->belongsTo(Site::class, 'gps_site_id');

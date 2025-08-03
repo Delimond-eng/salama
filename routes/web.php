@@ -298,7 +298,7 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     Route::get('/export.planning.excel', [PresenceController::class, 'exportWeeklyPlanningsDirect'])->name('export.planning.excel')->middleware('check.permission:presences,view');
 
      /*
-    |--------------------------------------------------------------------------
+    |----------------------------presence.create----------------------------------------------
     | CONFIGURATION
     |--------------------------------------------------------------------------
     */
