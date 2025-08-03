@@ -74,8 +74,8 @@
                         <option value="0" selected>Semaine en cours</option>
                         <option value="-1">Semaine précédente</option>
                         <option value="1">Semaine prochaine</option>
-                        <option value="2">Semaine 3</option>
-                        <option value="3">Semaine 4</option>
+                        <!-- <option value="2">Semaine 3</option>
+                        <option value="3">Semaine 4</option> -->
                     </select>
                 </div>
                 <div class="overflow-x-auto overflow-y-auto" style="height:500px !important" v-if="plannings.length">
@@ -92,23 +92,21 @@
                         </thead>
                         <tbody>
                             <template v-for="(site, index) in plannings">
-                            <!-- Ligne du nom du site avec colspan -->
-                            <tr class="bg-gray-100 font-bold" :key="`dhfjf${index}`">
-                                <td colspan="8" class="border px-4 py-2 uppercase">
-                                @{{ site.name }}
-                                </td>
-                            </tr>
-                            <tr data-tw-merge v-for="(agent, aIndex) in site.agents" :key="agent.id">
-                                <td data-tw-merge class="px-5 py-3 border-b dark:border-darkmode-300 border-l border-r border-t">
-                                    <span class="font-extrabold mr-2">@{{ agent.matricule }}</span>@{{ agent.fullname }}
-                                </td>
-                                <template v-for="jour in jours">
-                                    <td :key="`DKLSLL${jour}`" :class="{'text-danger text-center': formatHoraire(mapPlanningsByDay(agent.plannings)[jour])=== 'OFF' }" class="px-5 py-3 border-b dark:border-darkmode-300 border-l border-r border-t">
-                                        @{{ formatHoraire(mapPlanningsByDay(agent.plannings)[jour]) }}
+                                <tr class="bg-gray-100 font-bold" :key="`dhfjf${index}`">
+                                    <td colspan="8" class="border px-4 py-2 uppercase">
+                                    @{{ site.name }}
                                     </td>
-                                </template>
-                            </tr>
-                            </template>
+                                </tr>
+                                <tr data-tw-merge v-for="(agent, aIndex) in site.agents" :key="agent.id">
+                                    <td data-tw-merge class="px-5 py-3 border-b dark:border-darkmode-300 border-l border-r border-t">
+                                        <span class="font-extrabold mr-2">@{{ agent.matricule }}</span>@{{ agent.fullname }}
+                                    </td>
+                                    <template v-for="jour in jours">
+                                        <td :key="`DKLSLL${jour}`" :class="{'text-danger text-center': formatHoraire(mapPlanningsByDay(agent.plannings)[jour])=== 'OFF' }" class="px-5 py-3 border-b dark:border-darkmode-300 border-l border-r border-t">
+                                            @{{ formatHoraire(mapPlanningsByDay(agent.plannings)[jour]) }}
+                                        </td>
+                                    </template>
+                                </tr>
                             </template>
                         </tbody>
                     </table>
