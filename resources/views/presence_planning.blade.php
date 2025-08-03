@@ -74,8 +74,6 @@
                         <option value="0" selected>Semaine en cours</option>
                         <option value="-1">Semaine précédente</option>
                         <option value="1">Semaine prochaine</option>
-                        <!-- <option value="2">Semaine 3</option>
-                        <option value="3">Semaine 4</option> -->
                     </select>
                 </div>
                 <div class="overflow-x-auto overflow-y-auto" style="height:500px !important" v-if="plannings.length">
