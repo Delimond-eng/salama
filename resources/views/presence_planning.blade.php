@@ -103,7 +103,7 @@
                                         <span class="font-extrabold mr-2">@{{ agent.matricule }}</span>@{{ agent.fullname }}
                                     </td>
                                     <template v-for="jour in jours">
-                                        <td :key="`DKLSLL${jour}`" :class="{'text-danger text-center': formatHoraire(mapPlanningsByDay(agent.plannings)[jour])=== 'OFF' }" class="px-5 py-3 border-b dark:border-darkmode-300 border-l border-r border-t">
+                                        <td :key="`DKLSLL${jour}`" :class="{'text-danger text-center': formatHoraire(mapPlanningsByDay(agent.plannings)[jour])=== 'OFF' }" class="px-5 text-xs py-3 border-b dark:border-darkmode-300 border-l border-r border-t">
                                             @{{ formatHoraire(mapPlanningsByDay(agent.plannings)[jour]) }}
                                         </td>
                                     </template>

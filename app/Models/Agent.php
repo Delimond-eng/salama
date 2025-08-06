@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Carbon\Carbon;
 
 class Agent extends Model
 {
@@ -106,5 +107,25 @@ class Agent extends Model
     public function plannings()
     {
         return $this->hasMany(AgentGroupPlanning::class, "agent_id", "id");
+    }
+
+    public function currentAssignment()
+    {
+        return $this->hasOne(AgentGroupAssignment::class)->latestOfMany();
+    }
+
+    public function groupAssignments()
+    {
+        return $this->hasMany(AgentGroupAssignment::class);
+    }
+
+    public function activeGroupAt(Carbon $date)
+    {
+        return $this->groupAssignments
+            ->where('start_date', '<=', $date->toDateString())
+            ->filter(function ($a) use ($date) {
+                return is_null($a->end_date) || $a->end_date >= $date->toDateString();
+            })
+            ->first();
     }
 }

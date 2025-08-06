@@ -52,7 +52,7 @@
         </div>
         <!-- BEGIN: Data List -->
         <div class="intro-y col-span-12 overflow-auto 2xl:overflow-visible">
-            <table data-tw-merge="" class="w-full text-left -mt-2 border-separate border-spacing-y-[10px]" v-if="allPatrolReports.length > 0">
+            <table data-tw-merge="" class="w-full text-left -mt-2 border-separate border-spacing-y-[10px]" v-if="allPatrolReports.length">
                 <thead data-tw-merge="" class="">
                     <tr data-tw-merge="" class="">
                         <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">
@@ -115,7 +115,6 @@
                             <div v-if="data.ended_at !== null" class="flex items-center justify-center text-success">
                                 <i data-tw-merge="" data-lucide="check-square" class="stroke-1.5 mr-2 h-4 w-4"></i>
                                 Completed
-
                             </div>
 
                             <div v-else class="flex items-center justify-center text-pending">
@@ -124,21 +123,21 @@
                             </div>
 
                             <div class="mt-0.5 whitespace-nowrap text-xs text-red-600 text-slate-500">
-                            <template v-if="data.zones_scanned < data.zones_expected">
+                            <!-- <template v-if="data.zones_scanned < data.zones_expected">
                                ⚠️ Zone non scannée
                             </template>
                             <template  v-if="data.scans_stats.some(z => z.distance_meters > 150)">
                                 <span  v-if="data.zones_scanned < data.zones_expected"> + </span>
                                ⚠️ QRCode déplacé
-                            </template>
+                            </template> -->
                             </div>
 
 
                         </td>
                         <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box w-56 rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600 before:absolute before:inset-y-0 before:left-0 before:my-auto before:block before:h-8 before:w-px before:bg-slate-200 before:dark:bg-darkmode-400">
                             <div class="flex items-center">
-                                <button @click="loadChart(data)" :class="data.zones_scanned < data.zones_expected || data.scans_stats.some(z => z.distance_meters > 150) ? 'bg-blink-red' : 'bg-[#4ab3f4]'" data-tw-toggle="modal" data-tw-target="#patrol-info-details"
-                                    class=" flex border-0 rounded-md px-2 py-1.5 text-xs hover:bg-[#4ab3f4]/20 text-white shadow-lg mr-2">
+                                <button @click="loadChart(data)"  data-tw-toggle="modal" data-tw-target="#patrol-info-details"
+                                    class=" flex border-0 bg-[#4ab3f4] rounded-md px-2 py-1.5 text-xs hover:bg-[#4ab3f4]/20 text-white shadow-lg mr-2">
                                     Voir détails
                                 </button>
                                 <button :disabled="closed_id === data.id" v-if="data.ended_at === null"  @click="closePatrol(data)"
@@ -161,13 +160,22 @@
                                         </svg>
                                     </span>
                                 </button>
-
                             </div>
                         </td>
                     </tr>
                 </tbody>
             </table>
-            <div v-else>
+
+            <Pagination
+                :current-page="pagination.current_page"
+                :last-page="pagination.last_page"
+                :total-items="pagination.total"
+                :per-page="pagination.per_page"
+                @page-changed="changePage"
+                @per-page-changed="onPerPageChange"
+            ></Pagination>
+
+            <div v-if="allPatrolReports.length === 0">
                 <div v-if="isDataLoading">
                     <x-dom-loader></x-dom-loader>
                 </div>
@@ -183,14 +191,7 @@
         <!-- END: Pagination -->
 
         <!-- BEGIN: Pagination -->
-        <Pagination
-            :current-page="pagination.current_page"
-            :last-page="pagination.last_page"
-            :total-items="pagination.total"
-            :per-page="pagination.per_page"
-            @page-changed="changePage"
-            @per-page-changed="onPerPageChange"
-        ></Pagination>
+        
 
 
         <div data-tw-backdrop="" aria-hidden="true" tabindex="-1" id="patrol-info-details" class="modal group bg-black/60 transition-[visibility,opacity] w-screen h-screen fixed left-0 top-0 [&:not(.show)]:duration-[0s,0.2s] [&:not(.show)]:delay-[0.2s,0s] [&:not(.show)]:invisible [&:not(.show)]:opacity-0 [&.show]:visible [&.show]:opacity-100 [&.show]:duration-[0s,0.4s]">
@@ -336,20 +337,4 @@
 @push("scripts")
 <script type="module" src="{{ asset("assets/js/scripts/reports.js") }}"></script>
 @endpush
-@push("styles")
-<style scoped>
-@keyframes clignote-rouge {
-  0%, 100% {
-    background-color: transparent;
-  }
-  50% {
-    background-color: #f87171;
-  }
-}
 
-.bg-blink-red {
-  animation: clignote-rouge 1s infinite;
-}
-
-</style>
-@endpush

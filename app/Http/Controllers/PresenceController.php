@@ -198,9 +198,9 @@ class PresenceController extends Controller
                     ->first();
             }
             if ($data['key'] === 'check-in') {
-                if ($this->checkInCancelByPresence($now, $horaire, $agent->id)) {
+                /* if ($this->checkInCancelByPresence($now, $horaire, $agent->id)) {
                     return response()->json(['errors' => ['Check-in refusé : ce pointage est trop tardif pour un horaire de nuit.']]);
-                }
+                } */
                 if ($presence && $presence->started_at) {
                     return response()->json(['errors' => ['L\'agent a déjà effectué un pointage d\'entrée pour ce jour.']]);
                 }
@@ -250,7 +250,6 @@ class PresenceController extends Controller
                     'commentaires'     => $presence->commentaires . " | Sortie à " . $now->format("H:i"),
                     'status'           => 'fin',
                 ]);
-
                 $message = "Présence sortie enregistrée.";
             }
 
@@ -330,7 +329,7 @@ class PresenceController extends Controller
     /**
      * Permet de bloquer le check-in pour les horaires du soir
     */
-   private function checkInCancelByPresence(Carbon $now, $horaire, $agentId): bool
+   /*  private function checkInCancelByPresence(Carbon $now, $horaire, $agentId): bool
     {
         $heureDebut = Carbon::createFromTimeString($horaire->started_at);
         $heureFin = Carbon::createFromTimeString($horaire->ended_at);
@@ -410,7 +409,92 @@ class PresenceController extends Controller
         // Cas horaire normal
         Log::info("Horaires normales, pas de blocage.");
         return false;
+    } */
+
+    private function checkInCancelByPresence(Carbon $now, $horaire, $agentId): bool
+    {
+        $heureDebut = Carbon::createFromTimeString($horaire->started_at);
+        $heureFin = Carbon::createFromTimeString($horaire->ended_at);
+
+        $isHoraireNuit = $heureFin->lt($heureDebut);
+        $isHoraire24h = $heureDebut->eq($heureFin);
+
+        $tempsReposNuit = 8;   // en heures
+        $tempsRepos24h = 24;  // en heures
+
+        $lastPresence = PresenceAgents::where('agent_id', $agentId)
+            ->whereNotNull('started_at')
+            ->whereNull('ended_at')
+            ->orderByDesc('started_at')
+            ->first();
+
+        if (!$lastPresence) {
+            Log::info("Aucune présence ouverte trouvée → check-in autorisé.");
+            return false;
+        }
+
+        $lastCheckIn = Carbon::parse($lastPresence->started_at);
+        Log::info("Dernier check-in: " . $lastCheckIn->toDateTimeString());
+        Log::info("Now: " . $now->toDateTimeString());
+
+        // Vérifier si même jour
+        if (!$now->isSameDay($lastCheckIn)) {
+            Log::info("Date différente → check-in autorisé.");
+            return false;
+        }
+
+        // Cas 24h
+        if ($isHoraire24h) {
+            Log::info("Horaires 24h détectés.");
+            $finShift = $lastCheckIn->copy()->addHours(24);
+            $finRepos = $finShift->copy()->addHours($tempsRepos24h);
+
+            Log::info("Fin shift 24h : " . $finShift->toDateTimeString());
+            Log::info("Fin repos 24h : " . $finRepos->toDateTimeString());
+
+            if ($now->lt($finRepos)) {
+                Log::info("Check-in bloqué : repos 24h non terminé.");
+                return true;
+            }
+
+            Log::info("Check-in autorisé : repos 24h terminé.");
+            return false;
+        }
+
+        // Cas horaire de nuit
+        if ($isHoraireNuit) {
+            Log::info("Horaires de nuit détectés.");
+
+            $shiftStart = $lastCheckIn->copy()->setTimeFromTimeString($horaire->started_at);
+            if ($lastCheckIn->lt($shiftStart)) {
+                $shiftStart->subDay();
+            }
+
+            $shiftEnd = $shiftStart->copy()->setTimeFromTimeString($horaire->ended_at);
+            if ($shiftEnd->lte($shiftStart)) {
+                $shiftEnd->addDay();
+            }
+
+            $finRepos = $shiftEnd->copy()->addHours($tempsReposNuit);
+
+            Log::info("Début shift nuit : " . $shiftStart->toDateTimeString());
+            Log::info("Fin shift nuit : " . $shiftEnd->toDateTimeString());
+            Log::info("Fin repos nuit : " . $finRepos->toDateTimeString());
+
+            if ($now->lt($finRepos)) {
+                Log::info("Check-in bloqué : repos après horaire nuit non terminé.");
+                return true;
+            }
+
+            Log::info("Check-in autorisé : repos après horaire nuit terminé.");
+            return false;
+        }
+
+        // Cas horaire normal
+        Log::info("Horaires normales, pas de blocage.");
+        return false;
     }
+
 
 
     public function getPresenceReport(Request $request)
@@ -639,7 +723,6 @@ class PresenceController extends Controller
     public function getPresencesBySiteAndDate(Request $request)
     {
         try {
-            // Date cible (par défaut : aujourd'hui)
             $targetDate = $request->query('date')
                 ? Carbon::parse($request->query('date'))->startOfDay()
                 : Carbon::today('Africa/Kinshasa')->startOfDay();
@@ -647,7 +730,6 @@ class PresenceController extends Controller
             $siteId = $request->query('site_id');
             $search = $request->query('search');
 
-            // Recherche par matricule ou nom
             $agentId = null;
             if ($search) {
                 $agent = Agent::where('matricule', 'LIKE', "%$search%")
@@ -657,8 +739,12 @@ class PresenceController extends Controller
                 $agentId = $agent?->id;
             }
 
-            // Récupération des présences
-            $presences = PresenceAgents::with(['agent.groupe', 'agent.site', 'site'])
+            // 🔁 Chargement optimisé
+            $presences = PresenceAgents::with([
+                    'agent.groupe',
+                    'agent.site',
+                    'site'
+                ])
                 ->when($siteId, fn($query) => $query->where('gps_site_id', $siteId))
                 ->when($agentId, fn($query) => $query->where('agent_id', $agentId))
                 ->whereIn('date_reference', [
@@ -674,39 +760,25 @@ class PresenceController extends Controller
                     END
                 ")
                 ->orderByDesc('created_at')
-                ->get();
+                ->paginate(5);
 
-            // Filtrage intelligent avec fallback vers AgentGroupPlanning
-            $filtered = $presences->filter(function ($presence) use ($targetDate) {
+            // 🔍 Filtrage intelligent
+            /* $filtered = $presences->filter(function ($presence) use ($targetDate) {
                 $presenceDate = Carbon::parse($presence->date_reference)->startOfDay();
+                $agent = $presence->agent;
 
-                // 1. Récupération de l'horaire via le groupe
-                $horaire = optional($presence->agent->groupe)->horaire;
+                $assignment = $agent->activeGroupAt($presenceDate);
+                $group = $assignment?->group ?? $agent?->groupe;
 
-                // 2. Fallback : recherche via AgentGroupPlanning
-                if (!$horaire) {
-                    $agentId = $presence->agent_id;
-                    $groupId = optional($presence->agent)->groupe_id;
+                $horaire = optional($group)->horaire;
 
-                    $planning = AgentGroupPlanning::with('horaire')
-                        ->where('agent_id', $agentId)
-                        ->where('agent_group_id', $groupId)
-                        ->whereDate('date', $presenceDate)
-                        ->first();
-
-                    $horaire = $planning?->horaire;
-                }
-
-                // 3. Aucun horaire trouvé → validation uniquement par date
                 if (!$horaire) {
                     return $presenceDate->equalTo($targetDate);
                 }
-
                 try {
                     $heureDebut = $horaire->started_at ? Carbon::parse($horaire->started_at) : null;
                     $heureFin   = $horaire->ended_at   ? Carbon::parse($horaire->ended_at)   : null;
 
-                    // Horaire partiellement défini
                     if (is_null($heureDebut) || is_null($heureFin)) {
                         return $presenceDate->equalTo($targetDate);
                     }
@@ -714,7 +786,6 @@ class PresenceController extends Controller
                     $is24h = $heureDebut->equalTo($heureFin);
                     $isNuit = $heureFin->lessThan($heureDebut);
 
-                    // Horaires de nuit ou 24h : autoriser aussi la veille
                     return $is24h || $isNuit
                         ? $presenceDate->equalTo($targetDate) || $presenceDate->equalTo($targetDate->copy()->subDay())
                         : $presenceDate->equalTo($targetDate);
@@ -725,7 +796,7 @@ class PresenceController extends Controller
                 }
             })->values();
 
-            // Pagination manuelle
+            // Pagination
             $perPage = 5;
             $currentPage = LengthAwarePaginator::resolveCurrentPage();
             $paginated = new LengthAwarePaginator(
@@ -734,13 +805,14 @@ class PresenceController extends Controller
                 $perPage,
                 $currentPage,
                 ['path' => LengthAwarePaginator::resolveCurrentPath()]
-            );
+            ); */
 
             return response()->json([
                 'status'    => 'success',
                 'date'      => $targetDate->toDateString(),
-                'presences' => $paginated,
+                'presences' => $presences,
             ]);
+
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->validator->errors()->all()], 422);
         } catch (\Exception $e) {
@@ -946,7 +1018,7 @@ class PresenceController extends Controller
             // Correspondance codes -> horaire_id
             $horaireMapping = [
                 'J'   => 5,
-                'S'   => 7,
+                'N'   => 7,
                 'OFF' => null
             ];
 

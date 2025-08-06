@@ -9,8 +9,8 @@ use App\Http\Controllers\LogController;
 use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\TalkieWalkieController;
 use App\Models\Site;
-use App\Models\AgentGroupPlanning;
-use App\Models\GroupPlanningCycle;
+use App\Models\AgentGroupAssignment;
+use App\Models\Agent;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -163,8 +163,36 @@ Route::get('/0l6TBmFoPk64Mnrm', function () {
     Artisan::call('planning:generate-site-configs'); // nom de ta commande
     return "Command executed!";
 });
+Route::get('/0l7TBmFoPk64Mnrm', function () {
+    Artisan::call('planning:generate-horaire'); // nom de ta commande
+    return "Command executed!";
+});
 
-Route::get("/agent.horaire", function(){
+//ASSIGN ALL AGENT
+Route::get('/0l7TBmFoPk64Mnrmkeksdksjdks', function () {
+
+    $agents = Agent::whereNotNull("groupe_id")->get();
+
+    foreach($agents as $agent){
+        AgentGroupAssignment::updateOrCreate(
+            ["agent_id"=>$agent->id],
+            [
+                "agent_id" => $agent->id,
+                "agent_group_id" => $agent->groupe_id, 
+                "start_date" => Carbon::today()->setTimezone("Africa/Kinshasa"),
+            ]
+        );
+    }
+    return "Command executed!";
+});
+Route::get('/test-mail', function () {
+    Mail::raw('Ceci est un email de test envoyé depuis SALAMA PLATEFORME.', function ($message) {
+        $message->to('gastondev09@gmail.com') // Remplacez par votre email de réception
+                ->subject('Test Email SMTP - SALAMA');
+    });
+    return 'Email de test envoyé avec succès.';
+});
+/* Route::get("/agent.horaire", function(){
     $data = AgentGroupPlanning::all();
     return response()->json([
         "data"=>$data
@@ -176,7 +204,7 @@ Route::get("/agent.cycle", function(){
         "data"=>$data
     ]);
 });
-Route::get("/week.plannings", [PresenceController::class, 'getWeeklyPlannings']);
+Route::get("/week.plannings", [PresenceController::class, 'getWeeklyPlannings']); */
 
 /* Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
