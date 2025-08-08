@@ -25,7 +25,7 @@
     </div>
     <!-- END: Top Bar -->
     <div class="mt-5 grid grid-cols-16 gap-6" id="App" v-cloak>
-        <div class="intro-y box col-span-12 lg:col-span-12">
+        <div class="intro-y box col-span-12 lg:col-span-8">
             <div class="flex flex-wrap items-center border-b border-slate-200/60 px-5 py-5 dark:border-darkmode-400 sm:py-3">
                 <h2 class="mr-auto text-base font-extrabold uppercase">Rapport des présences par site</h2>
                 <div class="mt-3 flex w-full items-center xl:mt-0 xl:w-auto">
@@ -56,7 +56,7 @@
 
                         <!-- Actions -->
                         <div class="flex items-center space-x-2">
-                            <button @click.stop="selectedSiteId = data.id; openAccordion = i; viewPresenceBySite();" class="bg-red-100 text-danger border border-red-300 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
+                            <!-- <button @click.stop="selectedSiteId = data.id; openAccordion = i; viewPresenceBySite();" class="bg-red-100 text-danger border border-red-300 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
                                 <span v-if="delete_id === data.id" class="h-4 w-4">
                                     <svg class="h-full w-full" width="15" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
                                         <defs>
@@ -81,11 +81,15 @@
                                 <i v-if="openAccordion === i" data-lucide="eye-off" class="w-4 h-4"> </i>
                                 <i v-else data-lucide="eye" class="w-4 h-4"></i>
                             </button>
+                            <button data-tw-toggle="modal" data-tw-target="#presence-view-modal" @click="selectedSiteId = data.id; viewPresenceBySite();" class="ml-2 bg-red-100 text-text-blue-500 rounded-lg px-2 py-1.5 text-sm hover:bg-red-200 hover:border-red-400">
+                                <i data-lucide="edit" class="w-4 h-4"></i>
+                            </button> -->
+                            <button data-tw-merge data-tw-toggle="modal" data-tw-target="#presence-view-modal" @click="selectedSiteId = data.id; viewPresenceBySite();" class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed border-primary text-primary dark:border-primary [&:hover:not(:disabled)]:bg-primary/10 mb-2 mr-1 inline-block mb-2 mr-1 inline-block">Voir présences</button>
                         </div>
                     </div>
 
                     <!-- Content -->
-                    <transition name="fade">
+                    <!-- <transition name="fade">
                         <div v-if="openAccordion === i" class="grid grid-cols-12 gap-6 bg-slate-50 border-t border-slate-200 px-6 py-5 overflow-auto 2xl:overflow-visible lg:overflow-visible">
                             <div class="intro-y col-span-12 mt-2 flex flex-wrap items-center xl:flex-nowrap overflow-auto 2xl:overflow-visible">
                                 <button v-show="presences.length !== 0"  @click.stop="exportToExcel" data-tw-merge="" class="transition duration-200 inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-primary text-white dark:border-darkmode-100 mr-2 shadow-md"><i data-tw-merge="" data-lucide="file-text" class="stroke-1.5 mr-2 h-4 w-4"></i>
@@ -182,7 +186,7 @@
                                     </table>
                                 </div>
                             </div>
-                            <!-- BEGIN: Pagination -->
+                          
                              <Pagination
                                 :current-page="pagination.current_page"
                                 :last-page="pagination.last_page"
@@ -190,10 +194,9 @@
                                 :per-page="pagination.per_page"
                                 @page-changed="changePage"
                                 @per-page-changed="onPerPageChange"
-                            />
-                            <!-- END: Pagination -->
+                            ></Pagination>
                         </div>
-                    </transition>
+                    </transition> -->
                 </div>
             </div>
         </div>
@@ -205,7 +208,7 @@
             @page-changed="changePage1"
             @per-page-changed="onPerPageChange1">
         </Pagination>
-         <div data-tw-backdrop="" aria-hidden="true" tabindex="-1" id="presence-details-modal" class="modal group bg-black/60 transition-[visibility,opacity] w-screen h-screen fixed left-0 top-0 [&:not(.show)]:duration-[0s,0.2s] [&:not(.show)]:delay-[0.2s,0s] [&:not(.show)]:invisible [&:not(.show)]:opacity-0 [&.show]:visible [&.show]:opacity-100 [&.show]:duration-[0s,0.4s]">
+        <div data-tw-backdrop="" aria-hidden="true" tabindex="-1" id="presence-details-modal" class="modal group bg-black/60 transition-[visibility,opacity] w-screen h-screen fixed left-0 top-0 [&:not(.show)]:duration-[0s,0.2s] [&:not(.show)]:delay-[0.2s,0s] [&:not(.show)]:invisible [&:not(.show)]:opacity-0 [&.show]:visible [&.show]:opacity-100 [&.show]:duration-[0s,0.4s]">
             <div data-tw-merge="" class="w-[90%] ml-auto h-screen flex flex-col bg-white relative shadow-md transition-[margin-right] duration-[0.6s] -mr-[100%] group-[.show]:mr-0 dark:bg-darkmode-600 sm:w-[460px]"><a class="absolute inset-y-0 left-0 right-auto my-auto -ml-[60px] flex h-8 w-8 items-center justify-center rounded-full border border-white/90 bg-white/5 text-white/90 transition-all hover:rotate-180 hover:scale-105 hover:bg-white/10 focus:outline-none sm:-ml-[105px] sm:h-14 sm:w-14" data-tw-dismiss="modal" href="javascript:;">
                     <i data-tw-merge="" data-lucide="x" class="h-3 w-3 stroke-[1] sm:h-8 sm:w-8"></i>
                 </a>
@@ -302,6 +305,147 @@
                 </div>
             </div>
         </div>
+        <div data-tw-backdrop=""
+            aria-hidden="true"
+            tabindex="-1"
+            id="presence-view-modal"
+            class="modal group bg-black/60 transition-[visibility,opacity] w-screen h-screen fixed left-0 top-0 
+            [&:not(.show)]:duration-[0s,0.2s] 
+            [&:not(.show)]:delay-[0.2s,0s] 
+            [&:not(.show)]:invisible 
+            [&:not(.show)]:opacity-0 
+            [&.show]:visible [&.show]:opacity-100 
+            [&.show]:duration-[0s,0.4s] flex items-end">
+            
+            <!-- Contenu du bottom sheet -->
+            <div style="border-top-left-radius: 30px; border-top-right-radius: 30px;" class="w-full bg-slate-50 p-4 shadow-lg 
+                translate-y-full group-[.show]:translate-y-0 
+                transition-transform duration-300 ease-out">
+                 <div
+                    class="flex items-center px-5 py-3 border-b border-slate-200/60 dark:border-darkmode-400">
+                    <h2 class="mr-auto text-base font-medium uppercase">
+                        Liste des présences journalières
+                    </h2>
+                    <button
+                        data-tw-merge
+                        type="button"
+                        data-tw-dismiss="modal"
+                        class="transition duration-200 border shadow-sm inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed border-secondary text-slate-500 dark:border-darkmode-100/40 dark:text-slate-300 [&:hover:not(:disabled)]:bg-secondary/20 [&:hover:not(:disabled)]:dark:bg-darkmode-100/10 hidden sm:flex hidden sm:flex"><i
+                            data-tw-merge
+                            data-lucide="x"
+                            class="stroke-1.5 h-4 w-4"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-12 gap-6 bg-slate-50 border-t border-slate-200 px-6 py-5 overflow-auto 2xl:overflow-visible lg:overflow-visible">
+                    <div class="intro-y col-span-12 mt-2 flex flex-wrap items-center xl:flex-nowrap overflow-auto 2xl:overflow-visible">
+                        <button v-show="presences.length !== 0"  @click.stop="exportToExcel" data-tw-merge="" class="transition duration-200 inline-flex items-center justify-center py-2 px-3 rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-primary text-white dark:border-darkmode-100 mr-2 shadow-md"><i data-tw-merge="" data-lucide="file-text" class="stroke-1.5 mr-2 h-4 w-4"></i>
+                            Exporter en Excel</button>
+                        <div class="mx-auto hidden text-slate-500 xl:block">
+
+                        </div>
+                        <div class="relative w-56 text-slate-500 mr-1">
+                            <input data-tw-merge="" type="date" v-model="filter_datep"
+                                @change="viewPresenceBySite();" placeholder="Recherche..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
+                            <i data-tw-merge="" data-lucide="search" class="stroke-1.5 absolute inset-y-0 right-0 my-auto mr-3 h-4 w-4"></i>
+                        </div>
+                        <div v-show="presences.length !== 0" class="mt-3 flex w-full items-center xl:mt-0 xl:w-auto gap-2">
+                            <div class="relative w-56 text-slate-500">
+                                <input data-tw-merge="" @input="pagination.current_page=1;viewPresenceBySite();" v-model="search2" type="text" placeholder="Recherche..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 !box w-56 pr-10">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="isPresenceLoading" class="col-span-12 flex justify-center align-items-center">
+                        <span class="h-16 w-16">
+                            <svg class="h-full w-full" width="50" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="#2d3748">
+                                <g fill="none" fill-rule="evenodd">
+                                    <g transform="translate(1 1)" stroke-width="4">
+                                        <circle stroke-opacity=".5" cx="18" cy="18" r="18"></circle>
+                                        <path d="M36 18c0-9.94-8.06-18-18-18">
+                                            <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"></animateTransform>
+                                        </path>
+                                    </g>
+                                </g>
+                            </svg>
+                        </span>
+                    </div>
+
+                    <div class="col-span-12 grid grid-cols-12 overflow-auto 2xl:overflow-visible lg:overflow-visible" v-else>
+                        <div class="col-span-12" v-if="filteredPresences.length === 0">
+                            <x-empty-state message="Aucun rapport de présence disponible"></x-empty-state>
+                        </div>
+                        <div v-else class="intro-y col-span-12 overflow-auto 2xl:overflow-visible lg:overflow-visible">
+                            <table data-tw-merge="" class="w-full text-left -mt-2 border-separate border-spacing-y-[10px]">
+                                <thead ata-tw-merge="" class="text-blue-500 font-extrabold">
+                                    <tr data-tw-merge="" class="">
+                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">AGENT</th>
+                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">HORAIRE</th>
+                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 uppercase">ARRIVée</th>
+                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">DEPART</th>
+                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 uppercase">DURée</th>
+                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0 uppercase">IMG.ARV</th>
+                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">IMG.DPT</th>
+                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">DATE</th>
+                                        <th data-tw-merge="" class="font-medium px-5 py-3 dark:border-darkmode-300 whitespace-nowrap border-b-0">ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr data-tw-merge="" class="intro-y" v-for="presence in filteredPresences" :key="presence.id">
+                                        <td data-tw-merge="" :class="gps_site_id !== null && presence.site_id !== presence.gps_site_id ? 'warning-border' : ''" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
+                                            <div class="flex">
+                                                <div class="image-fit zoom-in h-9 w-9">
+                                                    <img v-if="presence.agent.photo" data-action="zoom" data-placement="top" :src="presence.agent.photo" alt="photo" class="tooltip cursor-pointer rounded-lg border-white shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]">
+                                                    <img v-else data-placement="top" src="{{ asset("assets/images/profil-2.png") }}" alt="avatar" class="tooltip cursor-pointer rounded-lg border-white shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]">
+                                                </div>
+                                                <div class="ml-4">
+                                                    <a class="whitespace-nowrap font-medium" href="#">
+                                                        @{{ presence.agent.fullname || 'N/A' }}
+                                                    </a>
+                                                    <div class="mt-0.5 whitespace-nowrap text-xs text-slate-500">
+                                                        @{{ presence.agent.matricule }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.agent.groupe.libelle }}</td>
+                                        <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.started_at }}</td>
+                                        <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.ended_at || '-' }}</td>
+                                        <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.duree || '-' }}</td>
+                                        <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
+                                            <div class="image-fit zoom-in h-9 w-9">
+                                                <img data-action="zoom" data-placement="top" :src="presence.photos_debut" class="tooltip cursor-pointer rounded-lg border-white shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]">
+                                            </div>
+                                        </td>
+                                        <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
+                                            <div class="image-fit zoom-in h-9 w-9">
+                                                <img data-action="zoom" data-placement="top" :src="presence.photos_fin ?? 'assets/images/loading.gif'" class="tooltip cursor-pointer rounded-lg border-white shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]">
+                                            </div>
+                                        </td>
+                                        <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">@{{ presence.created_at }}</td>
+                                        <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 box whitespace-nowrap rounded-l-none rounded-r-none border-x-0 !py-3.5 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600">
+                                            <button @click="selectedPresence = presence" data-tw-toggle="modal" data-tw-target="#presence-details-modal" class="text-blue-500 underline hover:text-blue-800 tooltip" :title="presence.commentaires">
+                                                Lire details
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- BEGIN: Pagination -->
+                    <Pagination
+                        :current-page="pagination.current_page"
+                        :last-page="pagination.last_page"
+                        :total-items="pagination.total"
+                        :per-page="pagination.per_page"
+                        @page-changed="changePage"
+                        @per-page-changed="onPerPageChange"
+                    ></Pagination>
+                    <!-- END: Pagination -->
+                </div>
+            </div>
+        </div>
+        <!-- END: Pagination -->
     </div>
     <x-dom-loader></x-dom-loader>
 </div>

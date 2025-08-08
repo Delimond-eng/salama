@@ -21,7 +21,7 @@ class CheckApiKey
         // Optionnel : nettoyer l'entrée
         $providedKey = trim($headerKey);
         // Clé attendue (ex: encodée en base64)
-        $expectedKey = env('API_SECRET_KEY');
+        $expectedKey = "16jA/0l6TBmFoPk64MnrmLzVp2MRL2Do0yD5N6K4e54=";
 
         if (!$providedKey || !hash_equals($expectedKey, $providedKey)) {
             return response()->json(['errors' => 'Unauthorized'], 401);

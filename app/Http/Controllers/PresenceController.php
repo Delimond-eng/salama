@@ -104,6 +104,8 @@ class PresenceController extends Controller
             $photoUrl = null;
 
             $agent = Agent::with("site")->where('matricule', $data['matricule'])->firstOrFail();
+
+            Log::info($agent->toJson());
             $site = $agent->site;
 
             // Détection du site à proximité
@@ -145,7 +147,7 @@ class PresenceController extends Controller
                 return response()->json(['errors' => ['Aucune assignation de groupe active trouvée.']]);
             }
 
-            $groupe = AgentGroup::with('horaire')->find($assignment->agent_group_id);
+            $groupe = AgentGroup::with('horaire')->find($agent->group_id);
 
             if ($groupe && $groupe->horaire) {
                 Log::info("Groupe planning non flexible {$groupe->horaire}");
@@ -153,7 +155,7 @@ class PresenceController extends Controller
                 $dateReference = $this->getDateReference($now, $horaire);
             } else {
                 if($data['key'] !== 'check-out'){
-                    $planning = AgentGroupPlanning::where('agent_group_id', $assignment->agent_group_id)
+                    $planning = AgentGroupPlanning::where('agent_id', $agent->id)
                         ->where('date', $now->toDateString())
                         ->with('horaire')
                         ->first();

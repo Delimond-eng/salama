@@ -8,6 +8,7 @@ use App\Http\Controllers\FCMController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\TalkieWalkieController;
+use App\Models\AgentGroupPlanning;
 use App\Models\Site;
 use App\Models\AgentGroupAssignment;
 use App\Models\Agent;
@@ -185,6 +186,17 @@ Route::get('/0l7TBmFoPk64Mnrmkeksdksjdks', function () {
     }
     return "Command executed!";
 });
+
+
+Route::get('/rmkeksdksjdks0l7TBmFoPk64Mn', function () {
+    $startDate = Carbon::now()->addWeek()->startOfWeek(); // Lundi prochain
+    $endDate = Carbon::now()->addWeek()->endOfWeek();     // Dimanche prochain
+    // Supprimer les plannings compris entre ces dates
+    AgentGroupPlanning::whereBetween('date', [$startDate, $endDate])->delete();
+    return "Command executed!";
+});
+
+
 Route::get('/test-mail', function () {
     Mail::raw('Ceci est un email de test envoyé depuis SALAMA PLATEFORME.', function ($message) {
         $message->to('gastondev09@gmail.com') // Remplacez par votre email de réception
@@ -192,6 +204,8 @@ Route::get('/test-mail', function () {
     });
     return 'Email de test envoyé avec succès.';
 });
+
+
 /* Route::get("/agent.horaire", function(){
     $data = AgentGroupPlanning::all();
     return response()->json([
