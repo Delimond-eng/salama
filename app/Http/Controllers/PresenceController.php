@@ -732,37 +732,34 @@ class PresenceController extends Controller
             $siteId = $request->query('site_id');
             $search = $request->query('search');
 
-            $agentId = null;
-            if ($search) {
-                $agent = Agent::where('matricule', 'LIKE', "%$search%")
-                    ->orWhere('fullname', 'LIKE', "%$search%")
-                    ->first();
-
-                $agentId = $agent?->id;
-            }
 
             // 🔁 Chargement optimisé
             $presences = PresenceAgents::with([
-                    'agent.groupe',
-                    'agent.site',
-                    'site'
-                ])
-                ->when($siteId, fn($query) => $query->where('gps_site_id', $siteId))
-                ->when($agentId, fn($query) => $query->where('agent_id', $agentId))
-                ->whereIn('date_reference', [
-                    $targetDate->toDateString(),
-                    $targetDate->copy()->subDay()->toDateString()
-                ])
-                ->orderByRaw("
-                    CASE
-                        WHEN retard = 'no' THEN 0
-                        WHEN retard IS NULL THEN 1
-                        WHEN retard = 'yes' THEN 2
-                        ELSE 3
-                    END
-                ")
-                ->orderByDesc('created_at')
-                ->paginate(5);
+                'agent.groupe',
+                'agent.site',
+                'site'
+            ])
+            ->when($siteId, fn($query) => $query->where('gps_site_id', $siteId))
+            ->when($search, function ($query, $search) {
+                $query->whereHas('agent', function ($q) use ($search) {
+                    $q->where('matricule', 'LIKE', "%$search%")
+                    ->orWhere('fullname', 'LIKE', "%$search%");
+                });
+            })
+            ->whereIn('date_reference', [
+                $targetDate->toDateString(),
+                $targetDate->copy()->subDay()->toDateString()
+            ])
+            ->orderByRaw("
+                CASE
+                    WHEN retard = 'no' THEN 0
+                    WHEN retard IS NULL THEN 1
+                    WHEN retard = 'yes' THEN 2
+                    ELSE 3
+                END
+            ")
+            ->orderByDesc('created_at')
+            ->paginate(5);
 
             // 🔍 Filtrage intelligent
             /* $filtered = $presences->filter(function ($presence) use ($targetDate) {
