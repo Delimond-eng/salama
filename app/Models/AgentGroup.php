@@ -16,11 +16,6 @@ class AgentGroup extends Model
      */
     protected $table = 'agent_groups';
 
-    /**
-     * The primary key for the model.
-     *
-     * @var string
-     */
     protected $primaryKey = 'id';
 
     protected $fillable = ["libelle", "horaire_id"];

@@ -309,6 +309,7 @@
             aria-hidden="true"
             tabindex="-1"
             id="presence-view-modal"
+            style="z-index: 100 !important;"
             class="modal group bg-black/60 transition-[visibility,opacity] w-screen h-screen fixed left-0 top-0 
             [&:not(.show)]:duration-[0s,0.2s] 
             [&:not(.show)]:delay-[0.2s,0s] 

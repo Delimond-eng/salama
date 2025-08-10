@@ -235,7 +235,6 @@ new Vue({
 
         viewPresenceBySite() {
             this.isPresenceLoading = true;
-            this.presences = [];
             const selectedDate = this.filter_datep || this.presenceDate;
             get(
                 `/presences?site_id=${this.selectedSiteId}&date=${selectedDate}&page=${this.pagination.current_page}&per_page=${this.pagination.per_page}&search=${this.search2}`
