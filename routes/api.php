@@ -12,6 +12,7 @@ use App\Models\AgentGroupPlanning;
 use App\Models\Site;
 use App\Models\AgentGroupAssignment;
 use App\Models\Agent;
+use App\Models\AgentGroup;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -169,6 +170,11 @@ Route::get('/0l7TBmFoPk64Mnrm', function () {
     return "Command executed!";
 });
 
+Route::get('/erieorreoreiroie087z', function () {
+    Artisan::call('report:absences'); // nom de ta commande
+    return "Command executed!";
+});
+
 //ASSIGN ALL AGENT
 Route::get('/0l7TBmFoPk64Mnrmkeksdksjdks', function () {
 
@@ -203,6 +209,13 @@ Route::get('/test-mail', function () {
                 ->subject('Test Email SMTP - SALAMA');
     });
     return 'Email de test envoyé avec succès.';
+});
+
+Route::get("/groups", function(){
+    $data = AgentGroup::all();
+    return response()->json([
+        "data"=>$data
+    ]);
 });
 
 

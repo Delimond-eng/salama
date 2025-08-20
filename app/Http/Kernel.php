@@ -76,7 +76,8 @@ class Kernel extends HttpKernel
         \App\Console\Commands\SendDatabaseBackup::class,
         \App\Console\Commands\GenerateSitePlanningConfigs::class,
         \App\Console\Commands\GenerateFillCycle::class,
-        \App\Console\Commands\GenerateFlexiblePlanning::class
+        \App\Console\Commands\GenerateFlexiblePlanning::class,
+        \App\Console\Commands\SendAbsenceReport::class,
     ];
 
 

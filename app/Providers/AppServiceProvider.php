@@ -25,9 +25,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-         DB::statement("SET time_zone = '+01:00'");
+        DB::statement("SET time_zone = '+01:00'");
 
-         Blade::directive('active', function ($routes) {
+        Blade::directive('active', function ($routes) {
             return "<?php
                 \$active = '';
                 foreach ($routes as \$route) {

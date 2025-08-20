@@ -133,6 +133,9 @@ class PresenceController extends Controller
             if ($siteProche) {
                 $siteProcheId = $siteProche->id;
             }
+            else{
+                $siteProcheId = $agent->site_id;
+            }
             // Recherche du groupe de l'agent
             $assignment = AgentGroupAssignment::where('agent_id', $agent->id)
                 ->whereDate('start_date', '<=', $now)
@@ -1000,15 +1003,17 @@ class PresenceController extends Controller
             $spreadsheet = IOFactory::load($file->getPathname());
             $rows = $spreadsheet->getActiveSheet()->toArray();
 
+            Log::info($rows);
+
             // Vérification de la structure de l'en-tête
             $expectedHeader = ['MATRICULE', 'LUNDI', 'MARDI', 'MERCREDI', 'JEUDI', 'VENDREDI', 'SAMEDI', 'DIMANCHE'];
             $actualHeader = array_map('strtoupper', array_map('trim', $rows[0]));
 
-            if ($actualHeader !== $expectedHeader) {
+            /* if ($actualHeader !== $expectedHeader) {
                 return response()->json([
                     'errors' => 'Le fichier Excel ne respecte pas le format attendu. Entêtes requis!'
                 ]);
-            }
+            } */
             DB::beginTransaction();
             // Correspondance codes -> horaire_id
             $horaireMapping = [

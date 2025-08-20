@@ -185,8 +185,12 @@ class ClientController extends Controller
 
     public function getAgentPresences(Request $request){
         $id = $request->query("id") ?? null;
-        $presences = PresenceAgents::with("agent")
-            ->whereDate("created_at", Carbon::today())
+        $targetDate = Carbon::today('Africa/Kinshasa')->startOfDay();
+        $presences = PresenceAgents::with("agent")->
+            whereIn('date_reference', [
+                $targetDate->toDateString(),
+                $targetDate->copy()->subDay()->toDateString()
+            ])
             ->whereNotNull("started_at")
             ->whereNull("ended_at")
             ->where("site_id", $id)

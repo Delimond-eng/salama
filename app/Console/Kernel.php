@@ -25,7 +25,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('presence:send-daily-report')->dailyAt('20:00')->timezone("Africa/Kinshasa");
 
         $schedule->command('plannings:create')->dailyAt('20:45')->timezone("Africa/Kinshasa");
-        $schedule->command('planning:generate-horaire')->sundays()->at('23:00')->timezone('Africa/Kinshasa');
+        //$schedule->command('planning:generate-horaire')->sundays()->at('23:00')->timezone('Africa/Kinshasa');
 
         $schedule->command('backup:send')->dailyAt('00:00')
         ->timezone("Africa/Kinshasa")
