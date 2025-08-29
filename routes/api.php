@@ -178,7 +178,7 @@ Route::get('/erieorreoreiroie087z', function () {
 //ASSIGN ALL AGENT
 Route::get('/0l7TBmFoPk64Mnrmkeksdksjdks', function () {
 
-    $agents = Agent::whereNotNull("groupe_id")->get();
+    /* $agents = Agent::whereNotNull("groupe_id")->get();
 
     foreach($agents as $agent){
         AgentGroupAssignment::updateOrCreate(
@@ -190,7 +190,17 @@ Route::get('/0l7TBmFoPk64Mnrmkeksdksjdks', function () {
             ]
         );
     }
-    return "Command executed!";
+    return "Command executed!"; */
+    $sites = Site::whereHas('areas')->get();
+
+    $emails = $sites->pluck('emails')   // récupère les emails de chaque site
+                ->filter()          // supprime les valeurs nulles ou vides
+                ->map(fn($e) => explode(';', $e)) // sépare par ";"
+                ->flatten()         // aplatie en une seule collection
+                ->map(fn($e) => trim($e)) // supprime les espaces inutiles
+                ->unique()          // retire les doublons
+                ->implode(';');   
+                return $emails;
 });
 
 

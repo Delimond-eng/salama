@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Site;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 use App\Services\AbsenceReportService;
@@ -25,11 +26,25 @@ class SendAbsenceReport extends Command
         ]);
 
 
-        $emails = "gastondelimond@gmail.com;lionnelnawej11@gmail.com";
+        $emails = $this->getEmails();
         $to = array_map('trim', explode(';', $emails));
         Mail::to($to)->send(new AbsenceReportPerSite( $now, $pdf->output()));
 
         $this->info('Rapports envoyés.');
         return Command::SUCCESS;
+    }
+
+
+    private function getEmails(){
+        $sites = Site::whereHas('areas')->get();
+
+        $emails = $sites->pluck('emails')   
+                ->filter()         
+                ->map(fn($e) => explode(';', $e)) 
+                ->flatten()         
+                ->map(fn($e) => trim($e)) 
+                ->unique()        
+                ->implode(';');   
+        return $emails;
     }
 }

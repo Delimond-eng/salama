@@ -18,7 +18,6 @@ use Carbon\Carbon;
 use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Log;
 use Mail;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -28,6 +27,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use Illuminate\Support\Str;
 
 class PresenceController extends Controller
 {
@@ -131,9 +131,12 @@ class PresenceController extends Controller
                 ->first();
 
             if ($siteProche) {
-                $siteProcheId = $siteProche->id;
-            }
-            else{
+                if (Str::contains(Str::lower($siteProche->name), 'monaco')) {
+                    $siteProcheId = $agent->site_id;
+                } else {
+                    $siteProcheId = $siteProche->id;
+                }
+            } else {
                 $siteProcheId = $agent->site_id;
             }
             // Recherche du groupe de l'agent

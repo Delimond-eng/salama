@@ -21,8 +21,14 @@ class Kernel extends ConsoleKernel
         ->timezone('Africa/Kinshasa')
         ->withoutOverlapping(); 
 
+        //GENERATION DES RAPPORTS DES PRESENCES
         $schedule->command('presence:send-daily-report')->dailyAt('10:00')->timezone("Africa/Kinshasa");
         $schedule->command('presence:send-daily-report')->dailyAt('20:00')->timezone("Africa/Kinshasa");
+
+        //GENERATION DES RAPPORTS DES ABSENCES
+        $schedule->command('report:absences')->dailyAt('10:00')->timezone("Africa/Kinshasa");
+        $schedule->command('report:absences')->dailyAt('20:00')->timezone("Africa/Kinshasa");
+
 
         $schedule->command('plannings:create')->dailyAt('20:45')->timezone("Africa/Kinshasa");
         //$schedule->command('planning:generate-horaire')->sundays()->at('23:00')->timezone('Africa/Kinshasa');

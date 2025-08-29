@@ -30,7 +30,7 @@ class AbsenceReportService
         $today = $now->toDateString();
         $bySite = [];
 
-        $agents = Agent::with(['site', 'groupe.horaire'])
+        $agents = Agent::with(['site.areas', 'groupe.horaire'])
             ->whereNotNull('site_id')
             ->whereNotNull('groupe_id')
             ->get();
@@ -38,6 +38,11 @@ class AbsenceReportService
         foreach ($agents as $agent) {
             $site = $agent->site;
             if (!$site) continue;
+
+            $areas = $site->areas;
+            if ($areas->isEmpty()) {
+                continue;
+            }
 
             // Doit avoir une assignation active
             if (!$this->hasActiveAssignment($agent->id, $now)) continue;
