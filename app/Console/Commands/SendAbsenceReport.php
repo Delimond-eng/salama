@@ -25,7 +25,6 @@ class SendAbsenceReport extends Command
             'now'   => Carbon::now('Africa/Kinshasa'),
         ]);
 
-
         $emails = $this->getEmails();
         $to = array_map('trim', explode(';', $emails));
         Mail::to($to)->send(new AbsenceReportPerSite( $now, $pdf->output()));

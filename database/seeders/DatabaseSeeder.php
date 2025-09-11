@@ -23,8 +23,8 @@ class DatabaseSeeder extends Seeder
         \App\Models\Agencie::updateOrCreate([
             "id"=>1
         ], [
-            "name"=>"MAMBA Security",
-            "adresse"=>"9304, Av. Tombalbay, Gombe Kinshasa",
+            "name"=>"Tango Protection",
+            "adresse"=>"Kinshasa",
         ]);
         // \App\Models\User::factory(10)->create();
         \App\Models\User::updateOrCreate(

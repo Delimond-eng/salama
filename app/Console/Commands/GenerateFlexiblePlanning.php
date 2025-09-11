@@ -25,7 +25,7 @@ class GenerateFlexiblePlanning extends Command
 
     public function handle()
     {
-        $days = (int) $this->option('days');
+        $days = (int) $this->option('days'); // tu peux garder 7 pour une semaine
         $today = Carbon::now('Africa/Kinshasa')->startOfDay();
 
         $assignments = AgentGroupAssignment::where('agent_group_id', 8)
@@ -57,8 +57,6 @@ class GenerateFlexiblePlanning extends Command
                 return $this->codeMap[$p->horaire_id] ?? 'OFF';
             })->values()->toArray();
 
-            $startDate = Carbon::parse($plannings->last()->date)->addDay();
-
             $this->info("Agent $matricule :");
             $this->line(" - Dernière semaine : " . implode('-', $lastWeekCodes));
 
@@ -68,18 +66,15 @@ class GenerateFlexiblePlanning extends Command
                 continue;
             }
 
+            // --- Nouveau planning : commencer après le dernier planning existant ---
+            $startDate = $plannings->last()->date ? Carbon::parse($plannings->last()->date)->addDay() : Carbon::now('Africa/Kinshasa')->startOfDay();
+
             $generatedCodes = [];
-            for ($i = 0; $i < $days; $i++) {
+            for ($i = 0; $i < 7; $i++) { // Générer exactement 7 jours pour la nouvelle semaine
                 $code = $cycle[$i % 3];
                 $generatedCodes[] = $code;
 
                 $date = $startDate->copy()->addDays($i);
-                $exists = AgentGroupPlanning::where('agent_id', $agent->id)
-                    ->where('agent_group_id', 8)
-                    ->whereDate('date', $date->toDateString())
-                    ->exists();
-
-                if ($exists) continue;
 
                 AgentGroupPlanning::create([
                     'agent_id'       => $agent->id,
@@ -90,15 +85,12 @@ class GenerateFlexiblePlanning extends Command
                 ]);
             }
 
-            $this->line(" - Semaines générées :");
-            for ($w = 0; $w < ceil($days / 7); $w++) {
-                $week = array_slice($generatedCodes, $w * 7, 7);
-                $this->line("   Semaine " . ($w + 1) . ": " . implode(' | ', $week));
-            }
+            $this->line(" - Nouvelle semaine générée : " . implode(' | ', $generatedCodes));
         }
 
         return 0;
     }
+
 }
 /* class GenerateFlexiblePlanning extends Command
 {

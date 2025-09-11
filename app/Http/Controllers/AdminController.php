@@ -791,7 +791,7 @@ class AdminController extends Controller
                 $query->whereIn('date_reference', [
                     $targetDate->toDateString(), 
                     $yesterday->toDateString()
-                ]);
+                ])->whereNull("ended_at");
             },
             'presences.agent.groupe.horaire',
             'agents',
@@ -807,11 +807,11 @@ class AdminController extends Controller
         $totalAgentsAttendus = 0;
 
         foreach ($presenceBySites->items() as $site) {
-            $agentsAttendus = $site->presence ?? 0; // Vérifie bien que $site->presence correspond au nombre attendu
+            $agentsAttendus = $site->presence ?? $site->presences->count(); // Vérifie bien que $site->presence correspond au nombre attendu
             $totalAgentsAttendus += $agentsAttendus;
 
             // Filtrage intelligent des présences
-            $filteredPresences = $site->presences->filter(function ($presence) use ($targetDate) {
+            /* $filteredPresences = $site->presences->filter(function ($presence) use ($targetDate) {
                 $horaire = optional($presence->agent->groupe)->horaire;
                 if (!$horaire) return false;
 
@@ -843,10 +843,10 @@ class AdminController extends Controller
 
                 // Horaires classiques : présence le jour même uniquement
                 return $presenceDate->equalTo($targetDate);
-            })->values();
+            })->values(); */
 
-            $site->filteredPresences = $filteredPresences;
-            $site->presence_effective = $filteredPresences->count();
+            $site->filteredPresences = $site->presences;
+            $site->presence_effective = $site->presences->count();
             $totalPresences += $site->presence_effective;
 
             $site->presence_rate = $agentsAttendus > 0
