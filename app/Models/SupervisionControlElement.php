@@ -16,6 +16,11 @@ class SupervisionControlElement extends Model
         'active',
     ];
 
+
+    protected $hidden = [
+        "created_at","updated_at"
+    ];
+
     public function controls()
     {
         return $this->hasMany(PresenceSupervisorControl::class, 'element_id');

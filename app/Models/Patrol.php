@@ -39,6 +39,7 @@ class Patrol extends Model
         "site_id",
         "agent_id",
         "schedule_id",
+        "supervision_id",
         "photo",
         "agency_id",
         "status",
@@ -104,5 +105,9 @@ class Patrol extends Model
 
     public function planning(): BelongsTo{
         return $this->belongsTo(Schedules::class, foreignKey:"schedule_id");
+    }
+
+    public function supervision(){
+        return $this->belongsTo(Supervision::class, "supervision_id");
     }
 }

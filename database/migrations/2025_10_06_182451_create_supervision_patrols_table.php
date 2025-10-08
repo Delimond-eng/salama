@@ -13,16 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        // migration create_permissions_table
-        if (!Schema::hasTable('permissions')) {
-    Schema::create('permissions', function (Blueprint $table) {
+        Schema::create('supervision_patrols', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('menu_id');
-            $table->unsignedBigInteger('action_id');
+            $table->unsignedBigInteger('supervision_id');
+            $table->unsignedBigInteger('patrol_id');
             $table->timestamps();
         });
-}
     }
 
     /**
@@ -32,6 +28,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('permissions');
+        Schema::dropIfExists('supervision_patrols');
     }
 };

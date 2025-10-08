@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SupervisionController;
 use App\Models\SitePlanningConfig;
 use Google\Service\AnalyticsData\OrderBy;
 use Illuminate\Support\Facades\Route;
@@ -310,8 +311,8 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     Route::post("/element.create", [\App\Http\Controllers\ConfigController::class, 'createElement'])->name("element.create");
 
 
-    //==================== ROUND 011 ====================//
-    Route::get("/ronde.reports", [AppManagerController::class, "getRonde011Report"])->name("ronde.reports");
+    //==================== RAPPORTS DES RONDES DE VEHICULE SUPERVISION ====================//
+    Route::get("/ronde.reports", [SupervisionController::class, "reports"])->name("ronde.reports");
     Route::view("/round.reports", "round011_report")->name("round.reports");
 
 

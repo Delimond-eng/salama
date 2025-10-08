@@ -12,6 +12,7 @@ PASSWORD : salama@2025
 #MAIL_FROM_ADDRESS=tech@salama-drc.com
 #MAIL_FROM_NAME="SALAMA PLATEFORME"
 
+Tt2%-BpL:,b}9x,
 
 # MAIL_MAILER=smtp  
 # MAIL_HOST=smtp.gmail.com  

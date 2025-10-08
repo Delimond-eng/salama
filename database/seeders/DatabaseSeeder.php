@@ -10,6 +10,7 @@ use App\Models\Secteur;
 use App\Models\SupervisionControlElement;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
@@ -27,39 +28,18 @@ class DatabaseSeeder extends Seeder
             "adresse"=>"Kinshasa",
         ]);
         // \App\Models\User::factory(10)->create();
-        \App\Models\User::updateOrCreate(
-            ['email'=>'test@gmail.com'],
+        $user = \App\Models\User::updateOrCreate(
+            ['email'=>'admin.tango@salama-drc.com'],
             [
-             'name' => 'Gaston delimond',
-             'email' => 'test@gmail.com',
-             'password'=>bcrypt('test@12345'),
+             'name' => 'Admin Tango',
+             'role' => 'admin',
+             'email' => 'admin.tango@salama-drc.com',
+             'password'=>bcrypt('123456'),
              'agency_id'=> 1
          ]);
 
-
-        $menus = [
-            'Gestion Patrouilles',
-            'Gestion Sites',
-            'Gestion Agents',
-            'Gestion Tâches',
-            'Gestion visiteurs',
-            'Gestion Présences',
-            'Gestion Planning',
-            'Requêtes',
-            'Communiqués',
-            'Signalements',
-            'Gestion Utilisateurs',
-            'Rapport des logs',
-        ];
-
-        foreach ($menus as $menu) {
-            Menu::updateOrCreate(["name"=>$menu],[
-                'name' => $menu,
-                'slug' => Str::slug($menu),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+        $roleAdmin = Role::firstOrCreate(['name' => 'admin']);
+        $user->assignRole($roleAdmin);
 
 
          $elements = [

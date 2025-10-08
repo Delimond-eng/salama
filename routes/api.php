@@ -7,6 +7,7 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\FCMController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\PresenceController;
+use App\Http\Controllers\SupervisionController;
 use App\Http\Controllers\TalkieWalkieController;
 use App\Models\AgentGroupPlanning;
 use App\Models\Site;
@@ -50,7 +51,6 @@ Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function
 
     //ALLOW TO CREATE ROND 011
     Route::post("ronde.scan", [AppManagerController::class, "confirmRonde011"])->name("ronde.scan");
-
 
     //ALLOW TO VIEW PENDING PATROLS
     Route::get("/patrols.pending", [AppManagerController::class, "viewPendingPatrols"])->name("patrols.pending");
@@ -108,27 +108,6 @@ Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function
     Route::post("/send.mail", [EmailController::class, "sendMail"])->name("send.mail");
     Route::post("/send.notication", [FCMController::class, "sendNotification"])->name("send.notification");
 
-    /* Route::post("/parse.date", function(Request $req){
-        Carbon::setLocale('fr');
-        $date = Carbon::parse($req->input("date"));
-        $today = Carbon::today();
-        $tomorrow = Carbon::tomorrow();
-
-        if ($date->isSameDay($today)) {
-            $formattedDate = "aujourd'hui";
-        } elseif ($date->isSameDay($tomorrow)) {
-            $formattedDate = "demain";
-        } else {
-            // Exemple : Jeudi 10 avril 2025
-            $formattedDate = $date->translatedFormat('l j F Y');
-        }
-        $body = "Vous avez une nouvelle patrouille $formattedDate";
-
-        return response()->json([
-            "message"=>$body
-        ]);
-    }); */
-
     // GET SUPERVISOR DATAS
     Route::get("/supervisor.datas", [AppManagerController::class, "getSupervisorDatas"])->name("supervisor.datas");
 
@@ -150,9 +129,15 @@ Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function
     Route::get("/sup.reports", [AdminController::class, "getDashboardData"])->name("sup.reports");
     //UPDATE CLIENT TOKEN 
     Route::post("/client.token", [ClientController::class, "updateFcmToken"])->name("client.token");
+
+    //SUPERVISION MANAGEMENT
+    Route::get("/supervision.agents",[SupervisionController::class, "showStationAgents"])->name("supervision.agents");
+    Route::post("/supervision.start",[SupervisionController::class, "start"])->name("supervision.start");
+    Route::post("/supervision.close",[SupervisionController::class, "close"])->name("supervision.close");
+    Route::get("/supervisions.reports",[SupervisionController::class, "reports"])->name("supervisions.reports");
+    Route::get("/supervision.elements",[SupervisionController::class, "getElements"])->name("supervision.elements");
 });
-/* Route::get('/schedules.all', [AppManagerController::class, 'viewAllSchedulesByAdmin']);
-Route::get('/schedules.generate', [AppManagerController::class, 'autoCreateNightPlannings']); */
+
 Route::get("/check.update", function(){
     return response()->json([
         'version_code' => 3,
@@ -161,88 +146,3 @@ Route::get("/check.update", function(){
     ]);
 });
 
-Route::get('/0l6TBmFoPk64Mnrm', function () {
-    Artisan::call('planning:generate-site-configs'); // nom de ta commande
-    return "Command executed!";
-});
-Route::get('/0l7TBmFoPk64Mnrm', function () {
-    Artisan::call('planning:generate-horaire'); // nom de ta commande
-    return "Command executed!";
-});
-
-Route::get('/erieorreoreiroie087z', function () {
-    Artisan::call('report:absences'); // nom de ta commande
-    return "Command executed!";
-});
-
-//ASSIGN ALL AGENT
-Route::get('/0l7TBmFoPk64Mnrmkeksdksjdks', function () {
-
-    /* $agents = Agent::whereNotNull("groupe_id")->get();
-
-    foreach($agents as $agent){
-        AgentGroupAssignment::updateOrCreate(
-            ["agent_id"=>$agent->id],
-            [
-                "agent_id" => $agent->id,
-                "agent_group_id" => $agent->groupe_id, 
-                "start_date" => Carbon::today()->setTimezone("Africa/Kinshasa"),
-            ]
-        );
-    }
-    return "Command executed!"; */
-    $sites = Site::whereHas('areas')->get();
-
-    $emails = $sites->pluck('emails')   // récupère les emails de chaque site
-                ->filter()          // supprime les valeurs nulles ou vides
-                ->map(fn($e) => explode(';', $e)) // sépare par ";"
-                ->flatten()         // aplatie en une seule collection
-                ->map(fn($e) => trim($e)) // supprime les espaces inutiles
-                ->unique()          // retire les doublons
-                ->implode(';');   
-                return $emails;
-});
-
-
-Route::get('/rmkeksdksjdks0l7TBmFoPk64Mn', function () {
-    $startDate = Carbon::now()->addWeek()->startOfWeek(); // Lundi prochain
-    $endDate = Carbon::now()->addWeek()->endOfWeek();     // Dimanche prochain
-    // Supprimer les plannings compris entre ces dates
-    AgentGroupPlanning::whereBetween('date', [$startDate, $endDate])->delete();
-    return "Command executed!";
-});
-
-
-Route::get('/test-mail', function () {
-    Mail::raw('Ceci est un email de test envoyé depuis SALAMA PLATEFORME.', function ($message) {
-        $message->to('gastondev09@gmail.com') // Remplacez par votre email de réception
-                ->subject('Test Email SMTP - SALAMA');
-    });
-    return 'Email de test envoyé avec succès.';
-});
-
-Route::get("/groups", function(){
-    $data = AgentGroup::all();
-    return response()->json([
-        "data"=>$data
-    ]);
-});
-
-
-/* Route::get("/agent.horaire", function(){
-    $data = AgentGroupPlanning::all();
-    return response()->json([
-        "data"=>$data
-    ]);
-});
-Route::get("/agent.cycle", function(){
-    $data = GroupPlanningCycle::all();
-    return response()->json([
-        "data"=>$data
-    ]);
-});
-Route::get("/week.plannings", [PresenceController::class, 'getWeeklyPlannings']); */
-
-/* Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-}); */
