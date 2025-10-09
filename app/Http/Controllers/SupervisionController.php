@@ -158,6 +158,8 @@ class SupervisionController extends Controller
      * @param Request $request
      */
     public function reports(Request $request){
+        $date = $request->query("date");
+        $siteId = $request->query("site");
         $query = Supervision::with([
             'supervisor',
             'site',
@@ -166,23 +168,21 @@ class SupervisionController extends Controller
             'patrols.scans'
         ]);
 
-        if ($request->has('start_date') && $request->has('end_date')) {
-            $query->whereBetween('started_at', [
-                $request->start_date,
-                $request->end_date
-            ]);
+        if ($date) {
+            $query->whereDate('created_at', $date);
         }
-        if ($request->has('site_id')) {
-            $query->where('site_id', $request->site_id);
+        if ($siteId) {
+            $query->where('site_id', $siteId);
         }
         if ($request->has('supervisor_id')) {
             $query->where('supervisor_id', $request->supervisor_id);
         }
-        $results = $query->orderBy('started_at', 'desc')->get();
+        
+        $results = $query->orderBy('started_at', 'desc')->paginate(10);
 
         return response()->json([
             "status" => "success",
-            "reports" => $results
+            "rondes" => $results
         ]);
     }
 

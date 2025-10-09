@@ -34,21 +34,23 @@ new Vue({
                     text: site.name,
                 })),
             ];
-            const tom = new TomSelect(".select-site", {
-                plugins: {
-                    dropdown_input: {},
-                },
-                create: false,
-                placeholder: "Filtrez par site",
-                options: options,
-            });
+            if ($(".select-site").length) {
+                const tom = new TomSelect(".select-site", {
+                    plugins: {
+                        dropdown_input: {},
+                    },
+                    create: false,
+                    placeholder: "Filtrez par site",
+                    options: options,
+                });
 
-            tom.on("change", (value) => {
-                this.filter_date = "";
-                this.pagination.current_page = 1;
-                this.filter_site = value;
-                this.viewAllReports();
-            });
+                tom.on("change", (value) => {
+                    this.filter_date = "";
+                    this.pagination.current_page = 1;
+                    this.filter_site = value;
+                    this.viewAllReports();
+                });
+            }
         },
     },
 

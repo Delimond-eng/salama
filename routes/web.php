@@ -314,6 +314,7 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     //==================== RAPPORTS DES RONDES DE VEHICULE SUPERVISION ====================//
     Route::get("/ronde.reports", [SupervisionController::class, "reports"])->name("ronde.reports");
     Route::view("/round.reports", "round011_report")->name("round.reports");
+    Route::view("/round.details", "round011_report_details")->name("round.details");
 
 
     //=================== CONFIGS =========================//
