@@ -35,6 +35,7 @@ Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function
     Route::post("/agency.create", [AdminController::class, "createAgencie"])->name("agency.create");
 
     //ALLOW TO COMPLETE AREA WITH GPS DATA LATLNG
+    Route::post("site.complete", [AdminController::class, "completeSite"])->name("site.complete");
     Route::post("area.complete", [AdminController::class, "completeArea"])->name("area.complete");
 
     //Insert site token

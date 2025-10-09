@@ -213,6 +213,41 @@ class AdminController extends Controller
 
 
     /**
+     * complete existing area with GPS DATA
+     * @return JsonResponse
+    */
+    public function completeSite(Request $request) : JsonResponse{
+        try {
+            $data = $request->validate([
+                "site_id"=>"required|int|exists:sites,id",
+                "latlng"=>"required|string",
+            ]);
+
+            $site = Site::where("id", $data["site_id"])->first();
+            if($site){
+                $site->latlng = $data["latlng"];
+                $site->save();
+                return response()->json([
+                    "status" => "success",
+                    "result" => $site
+                ]);
+            }
+            else{
+                return response()->json(['errors' => "Station scannée non valide ." ]);
+            }
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->validator->errors()->all();
+            return response()->json(['errors' => $errors ]);
+        }
+        catch (\Illuminate\Database\QueryException $e){
+            return response()->json(['errors' => $e->getMessage() ]);
+        }
+    }
+
+
+
+    /**
      *Generate Site Qrcodes
      * @return mixed
     */
