@@ -87,7 +87,7 @@
                                 <div class="image-fit zoom-in h-9 w-9">
                                     <img data-placement="top" data-action="zoom" :src="data.supervisor.photo ?? 'assets/images/loading.gif'" alt="photo" class="tooltip cursor-pointer rounded-lg border-white shadow-[0px_0px_0px_2px_#fff,_1px_1px_5px_rgba(0,0,0,0.32)] dark:shadow-[0px_0px_0px_2px_#3f4865,_1px_1px_5px_rgba(0,0,0,0.32)]">
                                 </div>
-                                <div class="ml-4" v-if="data.agent">
+                                <div class="ml-4" v-if="data.supervisor">
                                     <a class="whitespace-nowrap font-medium" href="#">
                                         @{{ data.supervisor.fullname }}
                                     </a>
