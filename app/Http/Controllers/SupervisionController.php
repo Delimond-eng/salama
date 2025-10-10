@@ -151,9 +151,9 @@ class SupervisionController extends Controller
             });
 
             $this->pushNotification([
-                "type"=>"arrivée",
-                "nom"=>$supervision->agent->fullname,
-                "matricule"=>$supervision->agent->matricule,
+                "type"=>"depart",
+                "nom"=>$supervision->supervisor->fullname,
+                "matricule"=>$supervision->supervisor->matricule,
                 "station"=>$supervision->site->name,
                 "photo"=>$data['photo_fin']  ?? null,
             ]);

@@ -45,18 +45,19 @@
                     <div class="intro-x mt-5 text-center xl:mt-8 xl:text-left">
                         <button :disabled="isLoading" type="submit" data-tw-merge=""
                             class="transition duration-200 border shadow-sm inline-flex items-center justify-center rounded-md font-medium cursor-pointer focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus-visible:outline-none dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&:hover:not(:disabled)]:bg-opacity-90 [&:hover:not(:disabled)]:border-opacity-90 [&:not(button)]:text-center disabled:opacity-70 disabled:cursor-not-allowed bg-primary border-primary text-white dark:border-primary w-full px-4 py-3 align-top xl:mr-3 xl:w-full">
-                            Connecter   <span class="ml-2 h-4 w-4" v-if="isLoading">
-                                            <svg class="h-full w-full" width="25" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="white">
-                                                <g fill="none" fill-rule="evenodd">
-                                                    <g transform="translate(1 1)" stroke-width="4">
-                                                        <circle stroke-opacity=".5" cx="18" cy="18" r="18"></circle>
-                                                        <path d="M36 18c0-9.94-8.06-18-18-18">
-                                                            <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"></animateTransform>
-                                                        </path>
-                                                    </g>
-                                                </g>
-                                            </svg>
-                                        </span> 
+                            Connecter  
+                            <span class="ml-2 h-4 w-4" v-if="isLoading">
+                                <svg class="h-full w-full" width="25" viewBox="-2 -2 42 42" xmlns="http://www.w3.org/2000/svg" stroke="white">
+                                    <g fill="none" fill-rule="evenodd">
+                                        <g transform="translate(1 1)" stroke-width="4">
+                                            <circle stroke-opacity=".5" cx="18" cy="18" r="18"></circle>
+                                            <path d="M36 18c0-9.94-8.06-18-18-18">
+                                                <animateTransform type="rotate" attributeName="transform" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"></animateTransform>
+                                            </path>
+                                        </g>
+                                    </g>
+                                </svg>
+                            </span> 
                         </button>
                     </div>
                     <div class="intro-x mt-10 flex items-center justify-center text-slate-600 dark:text-slate-500 xl:mt-24 xl:text-left">

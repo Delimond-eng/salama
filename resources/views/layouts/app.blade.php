@@ -46,6 +46,15 @@
     </div>
 </div>
 
+<div id="supervision--toast" class="py-5 pl-5 pr-14 bg-white border border-slate-200/60 rounded-lg shadow-xl dark:bg-darkmode-600 dark:text-slate-300 dark:border-darkmode-600 hidden flex">
+    <img title="photo agent"  src="assets/images/profil-2.png" alt="photo agent" style="width:70px; height:70px;" class="notif-photo rounded-lg border-2 border-white shadow-md">
+    <div class="ml-4 mr-4">
+        <div class="font-medium"> <span class="notif-matricule font-bold"></span> <span class="notif-nom font-semibold text-base">Nom Superviseur</span></div>
+        <div class="text-slate-500 mt-1 notif-station">notif-station</div>
+        <div class="text-slate-500 mt-1 text-xs notif-heure">à --:--</div>
+    </div>
+</div>
+
 
 <!-- BEGIN: Js assets -->
  <!-- @vite('resources/js/app.js') -->
@@ -87,6 +96,64 @@
 <script src="{{ asset('dist/js/themes/rubick.js') }}"></script>
 <script src="{{ asset('dist/js/components/mobile-menu.js') }}"></script>
 <script src="{{ asset('dist/js/components/themes/rubick/top-bar.js') }}"></script>
+<script>
+async function checkNotifications() {
+    try {
+        const res = await fetch('/notifications.push');
+        const data = await res.json();
+
+        if (data.new) {
+            const n = data.data;
+            const heure = new Date(n.heure_action).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const couleur = n.type === 'arrivée' ? '#16a34a' : '#dc2626';
+            const libelle = n.type === 'arrivée' ? 'arrivé(e) à' : 'parti(e) de';
+
+            const toastNode = $("#supervision--toast")
+                .clone()
+                .removeClass("hidden")[0];
+
+            $(toastNode).find(".notif-photo").attr("src", n.photo ?? "assets/images/profil-2.png");
+            $(toastNode).find(".notif-nom").text(n.nom_superviseur);
+            $(toastNode).find(".notif-matricule").text(`${n.matricule}`);
+            $(toastNode).find(".notif-station").text(`${libelle} ${n.station}`);
+            $(toastNode).find(".notif-heure").text(`à ${heure}`);
+
+            $(toastNode).css({
+                borderLeft: `6px solid ${couleur}`,
+            });
+
+            new Toastify({
+                node: toastNode,
+                duration: 10000,
+                newWindow: true,
+                close: true,
+                gravity: "top",
+                position: "right",
+                stopOnFocus: true,
+            }).showToast();
+            // 🗣️ Text-to-Speech
+            const message = `Le superviseur ${n.nom_superviseur}, matricule ${n.matricule}, est ${libelle} la station ${n.station}, à ${heure}.`;
+
+            const utterance = new SpeechSynthesisUtterance(message);
+            utterance.lang = 'fr-FR';
+            utterance.pitch = 1;
+            utterance.rate = 1;
+            utterance.volume = 1;
+
+            const voices = window.speechSynthesis.getVoices();
+            const frenchVoice = voices.find(v => v.lang.startsWith('fr'));
+            if (frenchVoice) utterance.voice = frenchVoice;
+
+            // 🔊 Lecture
+            window.speechSynthesis.speak(utterance);
+        }
+    } catch (e) {
+        console.error("Erreur lors de la vérification de notification :", e);
+    }
+}
+// 🔁 Vérification toutes les 3 secondes
+setInterval(checkNotifications, 3000);
+</script>
 
 <script src="{{ asset("assets/js/libs/vue2.js") }}"></script>
 {{-- For pusher notification  --}}
