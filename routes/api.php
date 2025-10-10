@@ -11,6 +11,7 @@ use App\Http\Controllers\SupervisionController;
 use App\Http\Controllers\TalkieWalkieController;
 use App\Models\AgentGroupPlanning;
 use App\Models\Site;
+use App\Models\Area;
 use App\Models\AgentGroupAssignment;
 use App\Models\Agent;
 use App\Models\AgentGroup;
@@ -138,6 +139,9 @@ Route::middleware(["geo.restricted.api","check.api.key","cors"])->group(function
     Route::get("/supervisions.reports",[SupervisionController::class, "reports"])->name("supervisions.reports");
     Route::get("/supervision.elements",[SupervisionController::class, "getElements"])->name("supervision.elements");
 });
+
+
+Route::get('/areas.generate', [AdminController::class, 'generateAreaQRCODE']);
 
 Route::get("/check.update", function(){
     return response()->json([

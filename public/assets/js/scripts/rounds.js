@@ -16,6 +16,8 @@ new Vue({
             reports: [],
             filter_site: "",
             filter_date: "",
+            roundDetails: null,
+            selectedAgent: null,
             pagination: {
                 current_page: 1,
                 last_page: 1,
@@ -55,6 +57,7 @@ new Vue({
     },
 
     mounted() {
+        this.refreshDetails();
         // Une fois que Vue.js est chargé, on cache le loader
         if ($("#loader").length) {
             document.getElementById("loader").style.display = "none";
@@ -106,6 +109,20 @@ new Vue({
             this.pagination.per_page = perPage;
             this.pagination.current_page = 1;
             this.viewAllReports();
+        },
+
+        goToDetails(detail) {
+            var strDetails = JSON.stringify(detail);
+            localStorage.setItem("round_details", strDetails);
+            location.href = "/round.details";
+        },
+
+        refreshDetails() {
+            var strDetails = localStorage.getItem("round_details");
+            if (strDetails !== null) {
+                var details = JSON.parse(strDetails);
+                this.roundDetails = details;
+            }
         },
     },
 

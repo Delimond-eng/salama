@@ -34,315 +34,106 @@
         </div>
         <!-- BEGIN: Transaction Details -->
         <div class="intro-y mt-5 grid grid-cols-11 gap-5">
-            <div class="col-span-12 lg:col-span-4 2xl:col-span-3">
-                <div class="box rounded-md p-5">
-                    <div class="mb-5 flex items-center border-b border-slate-200/60 pb-5 dark:border-darkmode-400">
-                        <div class="truncate text-base font-medium">
-                            Transaction Details
+            <div class="lg:col-span-6 2xl:col-span-6">
+                <div class="grid grid-cols-11 gap-5">
+                    <div class="col-span-12 ">
+                        <div class="intro-y box p-5">
+                            <div class="mb-5 flex items-center border-b border-slate-200/60 pb-5 dark:border-darkmode-400">
+                                <div class="truncate text-base uppercase font-medium">
+                                    Détails de la supervision
+                                </div>
+                            </div>
+                            <div class="mb-2 border-b border-slate-200/60 pb-3 dark:border-darkmode-400">
+                                <div class="w-100 text-lg font-medium sm:whitespace-normal">
+                                    @{{ roundDetails.supervisor.fullname }}
+                                </div>
+                                <div class="text-slate-500">Superviseur</div>
+                            </div>
+                            <div
+                                class="-mx-5 flex flex-col border-b border-slate-200/60 pb-5 dark:border-darkmode-400 lg:flex-row">
+                                <div class="flex flex-1 items-center justify-center px-5 lg:justify-start">
+                                    <div class="image-fit relative h-20 w-20 flex-none sm:h-24 sm:w-24 lg:h-32 lg:w-32 mr-2">
+                                        <div style="position: absolute; top:0; z-index:999" class="cursor-pointer rounded-2 bg-success px-2 py-1 text-xs font-medium text-white">
+                                            Photo debut
+                                        </div>
+                                        <img  data-action="zoom" data-placement="top" class="rounded-full border-2 border-white" :src="roundDetails.photo_debut"
+                                            alt="photo début">
+                                    </div>
+                                    <div class="image-fit relative h-20 w-20 flex-none sm:h-24 sm:w-24 lg:h-32 lg:w-32">
+                                        <div style="position: absolute; top:0; z-index:999" class="cursor-pointer rounded-2 bg-dark px-2 py-1 text-xs font-medium text-white">
+                                            Photo fin
+                                        </div>
+                                        <img  data-action="zoom" data-placement="top" class="rounded-full border-2 border-white" :src="roundDetails.photo_fin ?? 'assets/images/profil-2.png'"
+                                            alt="photo fin">
+                                    </div>
+                                    
+                                </div>
+                                <div
+                                    class="mt-6 flex-1 border-l border-r border-t border-slate-200/60 px-5 pt-5 dark:border-darkmode-400 lg:mt-0 lg:border-t-0 lg:pt-0">
+                                    <div class="text-center font-medium lg:mt-3 lg:text-left">
+                                        Supervision infos.
+                                    </div>
+                                    <div class="mt-4 flex flex-col items-center justify-center lg:items-start">
+                                        <div class="flex items-center truncate sm:whitespace-normal">
+                                            <i data-tw-merge="" data-lucide="home" class="stroke-1.5 mr-2 h-4 w-4"></i>
+                                            Station : @{{ roundDetails.site.name }}
+                                        </div>
+                                        <div class="mt-3 flex items-center truncate sm:whitespace-normal">
+                                            <i data-tw-merge="" data-lucide="calendar" class="stroke-1.5 mr-2 h-4 w-4"></i>
+                                            Début : @{{ roundDetails.started_at }}
+                                        </div>
+                                        <div class="mt-3 flex items-center truncate sm:whitespace-normal">
+                                            <i data-tw-merge="" data-lucide="calendar" class="stroke-1.5 mr-2 h-4 w-4"></i>
+                                            Fin : @{{ roundDetails.ended_at }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <a class="ml-auto flex items-center text-primary" href="#">
-                            <i data-tw-merge="" data-lucide="edit" class="stroke-1.5 mr-2 h-4 w-4"></i>
-                            Change Status
-                        </a>
-                    </div>
-                    <div class="flex items-center">
-                        <i data-tw-merge="" data-lucide="clipboard" class="stroke-1.5 mr-2 h-4 w-4 text-slate-500"></i>
-                        Invoice:
-                        <a class="ml-1 underline decoration-dotted" href="#">
-                            INV/20220217/MPL/2053411933
-                        </a>
-                    </div>
-                    <div class="mt-3 flex items-center">
-                        <i data-tw-merge="" data-lucide="calendar" class="stroke-1.5 mr-2 h-4 w-4 text-slate-500"></i>
-                        Purchase Date: 24 March 2022
-                    </div>
-                    <div class="mt-3 flex items-center">
-                        <i data-tw-merge="" data-lucide="clock" class="stroke-1.5 mr-2 h-4 w-4 text-slate-500"></i>
-                        Transaction Status:
-                        <span class="ml-1 rounded bg-success/20 px-2 text-success">
-                            Completed
-                        </span>
-                    </div>
-                </div>
-                <div class="box mt-5 rounded-md p-5">
-                    <div class="mb-5 flex items-center border-b border-slate-200/60 pb-5 dark:border-darkmode-400">
-                        <div class="truncate text-base font-medium">
-                            Buyer Details
-                        </div>
-                        <a class="ml-auto flex items-center text-primary" href="#">
-                            <i data-tw-merge="" data-lucide="edit" class="stroke-1.5 mr-2 h-4 w-4"></i>
-                            View Details
-                        </a>
-                    </div>
-                    <div class="flex items-center">
-                        <i data-tw-merge="" data-lucide="clipboard" class="stroke-1.5 mr-2 h-4 w-4 text-slate-500"></i>
-                        Name:
-                        <a class="ml-1 underline decoration-dotted" href="#">
-                            Christian Bale
-                        </a>
-                    </div>
-                    <div class="mt-3 flex items-center">
-                        <i data-tw-merge="" data-lucide="calendar" class="stroke-1.5 mr-2 h-4 w-4 text-slate-500"></i>
-                        Phone Number: +71828273732
-                    </div>
-                    <div class="mt-3 flex items-center">
-                        <i data-tw-merge="" data-lucide="map-pin" class="stroke-1.5 mr-2 h-4 w-4 text-slate-500"></i>
-                        Address: 260 W. Storm Street New York, NY 10025.
-                    </div>
-                </div>
-                <div class="box mt-5 rounded-md p-5">
-                    <div class="mb-5 flex items-center border-b border-slate-200/60 pb-5 dark:border-darkmode-400">
-                        <div class="truncate text-base font-medium">
-                            Payment Details
-                        </div>
-                    </div>
-                    <div class="flex items-center">
-                        <i data-tw-merge="" data-lucide="clipboard" class="stroke-1.5 mr-2 h-4 w-4 text-slate-500"></i>
-                        Payment Method:
-                        <div class="ml-auto">Direct bank transfer</div>
-                    </div>
-                    <div class="mt-3 flex items-center">
-                        <i data-tw-merge="" data-lucide="credit-card" class="stroke-1.5 mr-2 h-4 w-4 text-slate-500"></i>
-                        Total Price (2 items):
-                        <div class="ml-auto">$12,500.00</div>
-                    </div>
-                    <div class="mt-3 flex items-center">
-                        <i data-tw-merge="" data-lucide="credit-card" class="stroke-1.5 mr-2 h-4 w-4 text-slate-500"></i>
-                        Total Shipping Cost (800 gr):
-                        <div class="ml-auto">$1,500.00</div>
-                    </div>
-                    <div class="mt-3 flex items-center">
-                        <i data-tw-merge="" data-lucide="credit-card" class="stroke-1.5 mr-2 h-4 w-4 text-slate-500"></i>
-                        Shipping Insurance:
-                        <div class="ml-auto">$600.00</div>
-                    </div>
-                    <div class="mt-5 flex items-center border-t border-slate-200/60 pt-5 font-medium dark:border-darkmode-400">
-                        <i data-tw-merge="" data-lucide="credit-card" class="stroke-1.5 mr-2 h-4 w-4 text-slate-500"></i>
-                        Grand Total:
-                        <div class="ml-auto">$15,000.00</div>
-                    </div>
-                </div>
-                <div class="box mt-5 rounded-md p-5">
-                    <div class="mb-5 flex items-center border-b border-slate-200/60 pb-5 dark:border-darkmode-400">
-                        <div class="truncate text-base font-medium">
-                            Shipping Information
-                        </div>
-                        <a class="ml-auto flex items-center text-primary" href="#">
-                            <i data-tw-merge="" data-lucide="map-pin" class="stroke-1.5 mr-2 h-4 w-4"></i>
-                            Tracking Info
-                        </a>
-                    </div>
-                    <div class="flex items-center">
-                        <i data-tw-merge="" data-lucide="clipboard" class="stroke-1.5 mr-2 h-4 w-4 text-slate-500"></i>
-                        Courier: Left4code Express
-                    </div>
-                    <div class="mt-3 flex items-center">
-                        <i data-tw-merge="" data-lucide="calendar" class="stroke-1.5 mr-2 h-4 w-4 text-slate-500"></i>
-                        Tracking Number: 003005580322
-                        <i data-tw-merge="" data-lucide="copy" class="stroke-1.5 ml-2 h-4 w-4 text-slate-500"></i>
-                    </div>
-                    <div class="mt-3 flex items-center">
-                        <i data-tw-merge="" data-lucide="map-pin" class="stroke-1.5 mr-2 h-4 w-4 text-slate-500"></i>
-                        Address: 260 W. Storm Street New York, NY 10025.
                     </div>
                 </div>
             </div>
-            <div class="col-span-12 lg:col-span-7 2xl:col-span-8">
+            <div class="col-span-12 lg:col-span-5 2xl:col-span-5">
                 <div class="box rounded-md p-5">
                     <div class="mb-5 flex items-center border-b border-slate-200/60 pb-5 dark:border-darkmode-400">
-                        <div class="truncate text-base font-medium">
-                            Order Details
+                        <div class="truncate text-base uppercase font-medium">
+                            AGENTS présents supervisés
                         </div>
-                        <a class="ml-auto flex items-center text-primary" href="#">
-                            <i data-tw-merge="" data-lucide="plus" class="stroke-1.5 mr-2 h-4 w-4"></i>
-                            Add Notes
-                        </a>
                     </div>
                     <div class="-mt-3 overflow-auto lg:overflow-visible">
                         <table data-tw-merge="" class="w-full text-left">
                             <thead data-tw-merge="" class="">
                                 <tr data-tw-merge="" class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
                                     <th data-tw-merge="" class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap !py-5">
-                                        Product
+                                        AGENT
                                     </th>
+        
                                     <th data-tw-merge="" class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap text-right">
-                                        Unit Price
-                                    </th>
-                                    <th data-tw-merge="" class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap text-right">
-                                        Qty
-                                    </th>
-                                    <th data-tw-merge="" class="font-medium px-5 py-3 border-b-2 dark:border-darkmode-300 whitespace-nowrap text-right">
-                                        Total
+                                        ACTIONS
                                     </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr data-tw-merge="" class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
+                                <tr v-for="(data, index) in roundDetails.agents" data-tw-merge="" class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
                                     <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 !py-4">
                                         <div class="flex items-center">
                                             <div class="image-fit zoom-in h-10 w-10">
-                                                <img data-placement="top" title="Uploaded at 5 March 2022" src="dist/images/fakers/preview-11.jpg" alt="Midone - Tailwind Admin Dashboard Template" class="tooltip cursor-pointer rounded-lg border-2 border-white shadow-md">
+                                                <img data-action="zoom" data-placement="top" title="photo agent" :src="data.photo ?? 'assets/images/profil-2.png'" alt="photo agent" class="tooltip cursor-pointer rounded-lg border-2 border-white shadow-md">
                                             </div>
-                                            <a class="ml-4 whitespace-nowrap font-medium" href="#">
-                                                Samsung Galaxy S20 Ultra
-                                            </a>
+                                            <div class="ml-4">
+                                                <a class="whitespace-nowrap font-medium" href="#">
+                                                    @{{ data.agent.fullname }}
+                                                </a>
+                                                <div class="mt-0.5 whitespace-nowrap text-xs text-slate-500">
+                                                    @{{ data.agent.matricule }}
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
                                     <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        $90,000.00
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        2
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        $180,000.00
-                                    </td>
-                                </tr>
-                                <tr data-tw-merge="" class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 !py-4">
-                                        <div class="flex items-center">
-                                            <div class="image-fit zoom-in h-10 w-10">
-                                                <img data-placement="top" title="Uploaded at 22 May 2021" src="dist/images/fakers/preview-4.jpg" alt="Midone - Tailwind Admin Dashboard Template" class="tooltip cursor-pointer rounded-lg border-2 border-white shadow-md">
-                                            </div>
-                                            <a class="ml-4 whitespace-nowrap font-medium" href="#">
-                                                Nikon Z6
-                                            </a>
-                                        </div>
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        $47,000.00
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        2
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        $94,000.00
-                                    </td>
-                                </tr>
-                                <tr data-tw-merge="" class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 !py-4">
-                                        <div class="flex items-center">
-                                            <div class="image-fit zoom-in h-10 w-10">
-                                                <img data-placement="top" title="Uploaded at 29 December 2022" src="dist/images/fakers/preview-14.jpg" alt="Midone - Tailwind Admin Dashboard Template" class="tooltip cursor-pointer rounded-lg border-2 border-white shadow-md">
-                                            </div>
-                                            <a class="ml-4 whitespace-nowrap font-medium" href="#">
-                                                Apple MacBook Pro 13
-                                            </a>
-                                        </div>
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        $47,000.00
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        2
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        $94,000.00
-                                    </td>
-                                </tr>
-                                <tr data-tw-merge="" class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 !py-4">
-                                        <div class="flex items-center">
-                                            <div class="image-fit zoom-in h-10 w-10">
-                                                <img data-placement="top" title="Uploaded at 9 July 2021" src="dist/images/fakers/preview-2.jpg" alt="Midone - Tailwind Admin Dashboard Template" class="tooltip cursor-pointer rounded-lg border-2 border-white shadow-md">
-                                            </div>
-                                            <a class="ml-4 whitespace-nowrap font-medium" href="#">
-                                                Samsung Q90 QLED TV
-                                            </a>
-                                        </div>
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        $118,000.00
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        2
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        $236,000.00
-                                    </td>
-                                </tr>
-                                <tr data-tw-merge="" class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 !py-4">
-                                        <div class="flex items-center">
-                                            <div class="image-fit zoom-in h-10 w-10">
-                                                <img data-placement="top" title="Uploaded at 7 February 2022" src="dist/images/fakers/preview-3.jpg" alt="Midone - Tailwind Admin Dashboard Template" class="tooltip cursor-pointer rounded-lg border-2 border-white shadow-md">
-                                            </div>
-                                            <a class="ml-4 whitespace-nowrap font-medium" href="#">
-                                                Sony Master Series A9G
-                                            </a>
-                                        </div>
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        $212,000.00
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        2
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        $424,000.00
-                                    </td>
-                                </tr>
-                                <tr data-tw-merge="" class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 !py-4">
-                                        <div class="flex items-center">
-                                            <div class="image-fit zoom-in h-10 w-10">
-                                                <img data-placement="top" title="Uploaded at 9 September 2021" src="dist/images/fakers/preview-13.jpg" alt="Midone - Tailwind Admin Dashboard Template" class="tooltip cursor-pointer rounded-lg border-2 border-white shadow-md">
-                                            </div>
-                                            <a class="ml-4 whitespace-nowrap font-medium" href="#">
-                                                Nike Tanjun
-                                            </a>
-                                        </div>
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        $82,000.00
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        2
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        $164,000.00
-                                    </td>
-                                </tr>
-                                <tr data-tw-merge="" class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 !py-4">
-                                        <div class="flex items-center">
-                                            <div class="image-fit zoom-in h-10 w-10">
-                                                <img data-placement="top" title="Uploaded at 6 March 2021" src="dist/images/fakers/preview-8.jpg" alt="Midone - Tailwind Admin Dashboard Template" class="tooltip cursor-pointer rounded-lg border-2 border-white shadow-md">
-                                            </div>
-                                            <a class="ml-4 whitespace-nowrap font-medium" href="#">
-                                                Nike Tanjun
-                                            </a>
-                                        </div>
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        $49,000.00
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        2
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        $98,000.00
-                                    </td>
-                                </tr>
-                                <tr data-tw-merge="" class="[&:nth-of-type(odd)_td]:bg-slate-100 [&:nth-of-type(odd)_td]:dark:bg-darkmode-300 [&:nth-of-type(odd)_td]:dark:bg-opacity-50">
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 !py-4">
-                                        <div class="flex items-center">
-                                            <div class="image-fit zoom-in h-10 w-10">
-                                                <img data-placement="top" title="Uploaded at 29 May 2021" src="dist/images/fakers/preview-11.jpg" alt="Midone - Tailwind Admin Dashboard Template" class="tooltip cursor-pointer rounded-lg border-2 border-white shadow-md">
-                                            </div>
-                                            <a class="ml-4 whitespace-nowrap font-medium" href="#">
-                                                Oppo Find X2 Pro
-                                            </a>
-                                        </div>
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        $173,000.00
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        2
-                                    </td>
-                                    <td data-tw-merge="" class="px-5 py-3 border-b dark:border-darkmode-300 text-right">
-                                        $346,000.00
+                                       <button class="text-blue-500 underline hover:text-blue-800 tooltip"   data-tw-toggle="modal" data-tw-target="#round-detail-modal" @click="selectedAgent = data">
+                                            Voir notes
+                                        </button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -352,6 +143,47 @@
             </div>
         </div>
         <!-- END: Transaction Details -->
+
+        <div data-tw-backdrop="" aria-hidden="true" tabindex="-1" id="round-detail-modal" class="modal group bg-black/60 transition-[visibility,opacity] w-screen h-screen fixed left-0 top-0 [&:not(.show)]:duration-[0s,0.2s] [&:not(.show)]:delay-[0.2s,0s] [&:not(.show)]:invisible [&:not(.show)]:opacity-0 [&.show]:visible [&.show]:opacity-100 [&.show]:duration-[0s,0.4s]">
+            <div data-tw-merge="" class="w-[90%] ml-auto h-screen flex flex-col bg-white relative shadow-md transition-[margin-right] duration-[0.6s] -mr-[100%] group-[.show]:mr-0 dark:bg-darkmode-600 sm:w-[460px]"><a class="absolute inset-y-0 left-0 right-auto my-auto -ml-[60px] flex h-8 w-8 items-center justify-center rounded-full border border-white/90 bg-white/5 text-white/90 transition-all hover:rotate-180 hover:scale-105 hover:bg-white/10 focus:outline-none sm:-ml-[105px] sm:h-14 sm:w-14" data-tw-dismiss="modal" href="javascript:;">
+                    <i data-tw-merge="" data-lucide="x" class="h-3 w-3 stroke-[1] sm:h-8 sm:w-8"></i>
+                </a>
+                <div data-tw-merge="" class="overflow-y-auto flex-1 p-0">
+                    <div class="flex flex-col">
+                        <div class="px-8 pt-6 pb-8">
+                            <div class="text-base font-extrabold">Elements de supervision prélèvés </div>
+                            <div class="mt-0.5 font-medium text-slate-500 flex items-center border-b border-slate-200/60 pb-4" v-if="selectedAgent">
+                                <i data-lucide="user" class="w-3 h-3 mr-1 text-primary"></i>
+                                <span v-if="selectedAgent.agent">@{{ selectedAgent.agent.matricule }} @{{ selectedAgent.agent.fullname }}</span>
+                            </div>
+
+                            <div class="mt-5 grid grid-cols-2 gap-4" v-if="selectedAgent">
+                                <div class="col-span-12">
+                                    <a class="flex cursor-pointer items-center rounded-md bg-white p-3 border-b dark:border-darkmode-300 transition duration-300 ease-in-out hover:bg-slate-100 dark:bg-darkmode-600 dark:hover:bg-darkmode-400" href="#">
+                                        <div class="mr-1 font-extrabold uppercase max-w-[50%] truncate">
+                                            Elément
+                                        </div>
+
+                                        <div class="ml-auto font-extrabold uppercase">
+                                            Note
+                                        </div>
+                                    </a>
+                                    <a v-for="(item, index) in selectedAgent.notes" class="flex cursor-pointer items-center rounded-md bg-white p-3 border-b dark:border-darkmode-300 transition duration-300 ease-in-out hover:bg-slate-100 dark:bg-darkmode-600 dark:hover:bg-darkmode-400" href="#">
+                                        <div class="mr-1 font-italic max-w-[50%] truncate">
+                                        @{{ item.element.libelle }}
+                                        </div>
+
+                                        <div class="ml-auto font-medium">
+                                            @{{ item.note }}
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <x-dom-loader></x-dom-loader>
 </div>

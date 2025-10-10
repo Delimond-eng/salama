@@ -1,4 +1,4 @@
-import { get, postJson } from "../modules/http.js";
+import { get, postJson, post } from "../modules/http.js";
 import Pagination from "../components/pagination.js";
 new Vue({
     el: "#App",
@@ -107,6 +107,39 @@ new Vue({
                     this.error = err;
                     console.log(err);
                 });
+        },
+
+        pickExcelFile() {
+            this.$refs.excelInput.click();
+        },
+        handleExcelFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            console.log("Fichier sélectionné :", file.name);
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            this.isLoading = true;
+            post("/stations.import.excel", formData).then(
+                ({ status, data }) => {
+                    this.isLoading = false;
+                    if (data.status === "success") {
+                        new Toastify({
+                            node: $("#success-notification-content")
+                                .clone()
+                                .removeClass("hidden")[0],
+                            duration: 3000,
+                            newWindow: true,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            stopOnFocus: true,
+                        }).showToast();
+                        this.viewAllSites();
+                    }
+                }
+            );
         },
 
         toggleAccordion(index) {

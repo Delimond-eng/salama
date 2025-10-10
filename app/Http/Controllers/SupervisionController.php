@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notification;
 use App\Models\Site;
 use App\Models\Agent;
 use App\Models\Supervision;
@@ -68,6 +69,14 @@ class SupervisionController extends Controller
             $data["distance"] = $distance;
 
             $supervision = Supervision::create($data);
+
+            $this->pushNotification([
+                "type"=>"arrivée",
+                "nom"=>$agent->fullname,
+                "matricule"=>$agent->matricule,
+                "station"=>$site->name,
+                "photo"=>$data['photo_debut']  ?? null,
+            ]);
 
             return response()->json([
                 "status" => "success",
@@ -140,6 +149,14 @@ class SupervisionController extends Controller
                     }
                 }
             });
+
+            $this->pushNotification([
+                "type"=>"arrivée",
+                "nom"=>$supervision->agent->fullname,
+                "matricule"=>$supervision->agent->matricule,
+                "station"=>$supervision->site->name,
+                "photo"=>$data['photo_fin']  ?? null,
+            ]);
             return response()->json([
                 'message' => 'Supervision clôturée avec succès',
                 'result'=> $supervision
@@ -184,6 +201,37 @@ class SupervisionController extends Controller
             "status" => "success",
             "rondes" => $results
         ]);
+    }
+
+    public function pushNotification($data)
+    {
+        $notify = Notification::create([
+            'type' => $data["type"],
+            'nom_superviseur' =>$data["nom"],
+            'matricule' => $data["matricule"],
+            'station' => $data["station"],
+            'photo' => $data["photo"],
+            'heure_action' => Carbon::now(tz: "Africa/Kinshasa"),
+        ]);
+        return $notify;
+    }
+
+    public function getNotifications()
+    {
+        $notif = Notification::where('is_read', false)
+            ->latest()
+            ->first();
+
+        if ($notif) {
+            $notif->update(['is_read' => true]);
+
+            return response()->json([
+                'new' => true,
+                'data' => $notif
+            ]);
+        }
+
+        return response()->json(['new' => false]);
     }
 
 

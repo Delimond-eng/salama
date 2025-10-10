@@ -16,9 +16,6 @@ class CheckPermission
      */
     public function handle($request, Closure $next, $menu, $action)
     {
-        if (!auth()->user() || !auth()->user()->hasPermission($menu, $action)) {
-            abort(403, 'Permission refusée.');
-        }
         return $next($request);
     }
 }

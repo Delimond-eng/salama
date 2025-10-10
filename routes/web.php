@@ -44,6 +44,7 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
 
     Route::post('agent.create', [AdminController::class, 'createAgent'])->name('agent.create')->middleware('check.permission:agents,create');
     Route::post('agents.import.excel', [AdminController::class, 'importAgentsListToExcel'])->name('agents.import.excel')->middleware('check.permission:agents,create');
+    Route::post('stations.import.excel', [AdminController::class, 'importStationsListToExcel'])->name('stations.import.excel')->middleware('check.permission:agents,create');
 
     Route::get('/agents.list', function () {
         $agencyId = Auth::user()->agency_id;
@@ -343,5 +344,7 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     //Emettre sur un canal de talkie walkie
     Route::post('/send.talk', [\App\Http\Controllers\TalkieWalkieController::class, 'sendTalkAudio'])->name('send.talk');
     Route::post('/table.delete', [AdminController::class, 'triggerDelete'])->name('table.delete');
+
+    Route::get('/notifications.push', [SupervisionController::class, 'getNotifications'])->name("notifications.push");
 
 });

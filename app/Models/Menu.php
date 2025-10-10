@@ -9,7 +9,6 @@ class Menu extends Model
 {
     use HasFactory;
 
-
     public function actions()
     {
         return $this->belongsToMany(Action::class, 'permissions')->withTimestamps();

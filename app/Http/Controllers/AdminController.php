@@ -14,6 +14,7 @@ use App\Models\Patrol;
 use App\Models\Schedules;
 use App\Models\Site;
 use App\Models\User;
+use App\Models\Secteur;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -72,7 +73,7 @@ class AdminController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-   public function createAgencieSite(Request $request): JsonResponse
+    public function createAgencieSite(Request $request): JsonResponse
     {
         try {
             // Si un ID est présent, on met à jour le site existant
@@ -165,6 +166,31 @@ class AdminController extends Controller
                     "result" => $site
                 ]);
             }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->validator->errors()->all()], 422);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json(['errors' => $e->getMessage()], 500);
+        }
+    }
+    public function generateAreaQRCODE(Request $request): JsonResponse
+    {
+        try {
+            for ($i = 0; $i<500; $i++) {
+                    $latestArea = Area::create(
+                        [
+                            "site_id" => 1,
+                            "libelle" => "ZONE $i"
+                        ],
+                    );
+                    $json = $latestArea->toJson();
+                    $qrCode = $this->generateQRCode($json);
+                    $latestArea->qrcode = $qrCode;
+                    $latestArea->save();
+                }
+                return response()->json([
+                    "status" => "success",
+                    "result" => 'Generated'
+                ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->validator->errors()->all()], 422);
         } catch (\Illuminate\Database\QueryException $e) {
@@ -527,6 +553,69 @@ class AdminController extends Controller
                     "total" => $total,
                     "ajoutes" => $ajoutes,
                     "ignores" => $ignores,
+                    "nouveaux_sites" => $newSites
+                ]
+            ]);
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['status' => 'error', 'errors' => $e->validator->errors()->all()]);
+        }
+        catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['status' => 'error', 'errors' => $e->getMessage()]);
+        }
+    }
+    public function importStationsListToExcel(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'file' => 'required|file|mimes:xlsx,xls',
+            ]);
+
+            DB::beginTransaction(); // Sécurise les insertions
+
+            $file = $request->file('file');
+            $spreadsheet = IOFactory::load($file->getPathname());
+            $rows = $spreadsheet->getActiveSheet()->toArray();
+
+            $total = 0;
+            $newSites = 0;
+
+            foreach ($rows as $index => $row) {
+                if ($index === 0) continue; // Ignorer l'en-tête
+
+                $noms = trim($row[0]);
+                $total++;
+
+                // Chercher le site existant
+                $site = Site::where('name', 'LIKE', "%{$noms}%")->first();
+
+                // S'il n'existe pas, le créer avec nouveau code
+                $secteur = Secteur::orderBy("id", "DESC")->first();
+                if (!$site) {
+                    $lastSite = Site::latest('id')->first();
+                    $lastCode = $lastSite->code;
+                    $code = $this->incrementCode($lastCode);
+                    $site = Site::updateOrCreate(
+                        ["code"=>$code],
+                        [
+                        'code'    => $code,
+                        'name'    => $noms,
+                        'adresse' => "Kinshasa",
+                        'secteur_id'=> $secteur->id,
+                        'agency_id'=>1
+                    ]);
+                    $newSites++;
+                }
+            }
+
+            DB::commit(); // Tout s’est bien passé
+
+            return response()->json([
+                "status" => "success",
+                "message" => "Import terminé",
+                "summary" => [
+                    "total" => $total,
                     "nouveaux_sites" => $newSites
                 ]
             ]);
