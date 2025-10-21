@@ -128,14 +128,13 @@ class ScheduleService
                 $start = $this->parseDateTime($schedule->date, $schedule->start_time);
                 $end = $schedule->end_time
                     ? $this->parseDateTime($schedule->date, $schedule->end_time)
-                    : $start->copy()->addHours(2); // ✅ end par défaut si absent
+                    : $start->copy()->addHours(2); 
 
                 $toleranceStart = $start->copy()->subMinutes($toleranceMinutes);
                 $toleranceEnd = $end->copy()->addMinutes($toleranceMinutes);
 
                 Log::info("Plage tolérée : {$toleranceStart} → {$toleranceEnd}");
 
-                // ✅ On ignore les plannings pas encore commencés
                 if ($now->lt($toleranceStart)) {
                     Log::info("⏳ Le planning ID {$schedule->id} n’a pas encore commencé. On attend (start = {$start}).");
                     continue;
@@ -149,7 +148,7 @@ class ScheduleService
 
                 if (!$patrol) {
                     if ($now->gt($toleranceEnd)) {
-                        Log::warning("❌ Aucune patrouille trouvée pour le planning ID {$schedule->id}.");
+                        Log::warning("Aucune patrouille trouvée pour le planning ID {$schedule->id}.");
                         $this->sendFailureEmail($schedule, null, null, $now);
                         $schedule->status = 'fail';
                         $schedule->save();
@@ -191,11 +190,11 @@ class ScheduleService
                 if ($schedule->status !== 'fail') {
                     $schedule->status = $newStatus;
                     $schedule->save();
-                    Log::info("✅ Planning ID {$schedule->id} → statut mis à jour : {$newStatus}");
+                    Log::info("Planning ID {$schedule->id} → statut mis à jour : {$newStatus}");
                 }
 
             } catch (\Exception $e) {
-                Log::error("💥 Erreur sur le planning ID {$schedule->id} : " . $e->getMessage());
+                Log::error("Erreur sur le planning ID {$schedule->id} : " . $e->getMessage());
             }
         }
     }

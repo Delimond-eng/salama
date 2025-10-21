@@ -1,8 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
-use App\Models\Action;
 use App\Models\Agencie;
 use App\Models\Agent;
 use App\Models\AgentHistory;
@@ -24,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Spatie\Permission\Models\Role;
 
 class AdminController extends Controller
 {
@@ -280,9 +279,21 @@ class AdminController extends Controller
     public function generateSiteQrcodes(Request $request)
     {
         try {
-            $sites = Site::select("id","name","code","latlng")->orderBy("name")->get();
-            $data = [];
+            // ✅ Récupération de la liste des codes si présente
+            $query = $request->query('sites');
+            $sites = Site::select('id', 'name', 'code', 'latlng')
+                ->when($query, function ($q) use ($query) {
+                    $codes = explode('-', $query);
+                    $q->whereIn('code', $codes);
+                })
+                ->orderBy('name')
+                ->get();
 
+            if ($sites->isEmpty()) {
+                return response()->json([
+                    'message' => 'Aucun site trouvé pour les critères spécifiés.'
+                ], 404);
+            }
             foreach ($sites as $site) {
                 $json = $site->toJson();
                 $qrCode = $this->generateQRCode($json);
@@ -295,8 +306,15 @@ class AdminController extends Controller
             $pdf = PDF::loadView('pdf.qrcodes', ['areas' => $data])
                     ->setPaper('A4', 'portrait');
             return $pdf->download('qrcodes-sites.pdf');
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
+
+        } catch (\Throwable $e) {
+            Log::error('Erreur lors de la génération des QR Codes : '.$e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'message' => 'Une erreur est survenue lors de la génération des QR Codes.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -500,9 +518,8 @@ class AdminController extends Controller
 
                 $matricule = preg_replace('/\s+/', '', $row[0]);
                 $noms = trim($row[1]);
-                $siteName = trim((string)$row[2]);
-                $siteAdresse = trim((string)$row[3]);
-
+                $siteName = trim((string)$row[1]);
+                $siteAdresse = ""/* trim((string)$row[3]) */;
                 $total++;
 
                 // Chercher le site existant
@@ -535,7 +552,7 @@ class AdminController extends Controller
                 Agent::updateOrCreate(
                     ['matricule' => $matricule],
                     [
-                        'fullname' => $noms,
+                        'fullname' => "AGENT_$matricule",
                         'site_id'  => $site ? $site->id : null,
                         'password' => str_pad(rand(0, 999999), rand(4, 6), '0', STR_PAD_LEFT),
                         'agency_id'=> 1
@@ -851,34 +868,12 @@ class AdminController extends Controller
                 'password' => bcrypt($data['password'])
             ]);
 
-            // Attribution des permissions
-            if ($user->role === 'admin') {
-                // Admin : toutes les permissions
-                $menus = Menu::all();
-                $actions = Action::all();
-                foreach ($menus as $menu) {
-                    foreach ($actions as $action) {
-                        $user->permissions()->create([
-                            'menu_id' => $menu->id,
-                            'action_id' => $action->id,
-                        ]);
-                    }
-                }
-            } else {
-                // Permissions personnalisées
-                if (!empty($data['permissions'])) {
-                    foreach ($data['permissions'] as $perm) {
-                        if (!empty($perm['actions'])) {
-                            foreach ($perm['actions'] as $action) {
-                                $user->permissions()->create([
-                                    'menu_id' => $perm['menu_id'],
-                                    'action_id' => $action["id"],
-                                ]);
-                            }
-                        }
-                    }
-                }
-            }
+             // Assigner le rôle
+            $user->assignRole($data["role"]);
+
+            // Synchroniser les permissions du rôle vers l'utilisateur
+            $role = Role::findByName($data["role"]);
+            $user->syncPermissions($role->permissions->pluck('name')->toArray());
 
             DB::commit();
 

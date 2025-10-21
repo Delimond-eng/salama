@@ -2,23 +2,20 @@
 
 use App\Http\Controllers\SupervisionController;
 use App\Models\SitePlanningConfig;
-use Google\Service\AnalyticsData\OrderBy;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\ApiController;
 use App\Http\Controllers\AppManagerController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\PresenceController;
-use App\Models\Action;
 use App\Models\Agent;
 use App\Models\Announce;
-use App\Models\Menu;
+use Spatie\Permission\Models\Permission;
 use App\Models\Secteur;
 use App\Models\Site;
 use App\Models\User;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Artisan;  
 use Illuminate\Http\Request; 
 
 Auth::routes();
@@ -266,11 +263,9 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get("/user.add", function(){
-        $menus = Menu::all();
-        $actions = Action::all();
+        
         return view("add_user", [
-            "actions"=>$actions,
-            "menus"=>$menus
+            "permissions"=>Permission::all()
         ]);
     })->name("user.add")->middleware('check.permission:utilisateurs,create');
 

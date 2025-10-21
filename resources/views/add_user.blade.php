@@ -103,60 +103,14 @@
                     <div class="intro-x box">
                         <div class="flex flex-col items-center border-b border-slate-200/60 p-5 dark:border-darkmode-400 sm:flex-row">
                             <h2 class="mr-auto text-base font-medium">
-                                Menus & Permissions
+                                Permissions
                             </h2>
                         </div>
                         <div class="p-5">
-                            <div
-                                data-tw-merge
-                                class="accordion">
-                                @foreach ($menus as $menu)
-                                <div
-                                    data-tw-merge
-                                    class="accordion-item py-4 first:-mt-4 last:-mb-4 [&:not(:last-child)]:border-b [&:not(:last-child)]:border-slate-200 [&:not(:last-child)]:dark:border-darkmode-400 p-4 first:mt-0 last:mb-0 mt-3 dark:border-darkmode-400 rounded-md">
-                                    <div
-                                        class="accordion-header"
-                                        id="faq-accordion-{{ $menu->slug }}">
-                                        <button
-                                            data-tw-merge
-                                            data-tw-toggle="collapse"
-                                            data-tw-target="#faq-accordion-{{ $menu->slug }}-collapse"
-                                            type="button"
-                                            aria-expanded="true"
-                                            aria-controls="faq-accordion-5-collapse"
-                                            class="accordion-button outline-none py-4 -my-4 font-medium w-full text-left flex items-center dark:text-slate-400 [&:not(.collapsed)]:text-primary [&:not(.collapsed)]:dark:text-slate-300">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="align-left" class="lucide lucide-align-left stroke-1.5 mr-2 h-4 w-4">
-                                                <line x1="21" x2="3" y1="6" y2="6"></line>
-                                                <line x1="15" x2="3" y1="12" y2="12"></line>
-                                                <line x1="17" x2="3" y1="18" y2="18"></line>
-                                            </svg>{{ $menu->name }}</button>
-                                    </div>
-                                    <div
-                                        id="faq-accordion-{{ $menu->slug }}-collapse"
-                                        aria-labelledby="faq-accordion-5"
-                                        class="accordion-collapse collapse mt-3 text-slate-700 leading-relaxed dark:text-slate-400 [&.collapse:not(.show)]:hidden [&.collapse.show]:visible">
-                                        <div
-                                            data-tw-merge
-                                            class="accordion-body leading-relaxed text-slate-600 dark:text-slate-500 leading-relaxed text-slate-600 dark:text-slate-500">
-                                            <div class="mt-2 flex flex-col sm:flex-row">
-                                                @foreach ($actions as $action )
-                                                <div class="flex items-center mr-2">
-                                                    <input
-                                                        class="transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer rounded focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&[type='radio']]:checked:bg-primary [&[type='radio']]:checked:border-primary [&[type='radio']]:checked:border-opacity-10 [&[type='checkbox']]:checked:bg-primary [&[type='checkbox']]:checked:border-primary [&[type='checkbox']]:checked:border-opacity-10 [&:disabled:not(:checked)]:bg-slate-100 [&:disabled:not(:checked)]:cursor-not-allowed [&:disabled:not(:checked)]:dark:bg-darkmode-800/50 [&:disabled:checked]:opacity-70 [&:disabled:checked]:cursor-not-allowed [&:disabled:checked]:dark:bg-darkmode-800/50"
-                                                        type="checkbox"
-                                                        id="checkbox-switch-{{ $action->slug }}"
-                                                        :value="{{ $action->id }}"
-                                                        :data-menu-id="{{ $menu->id }}"
-                                                        @change="togglePermission($event)">
-                                                    <label for="checkbox-switch-{{ $action->slug }}" class="cursor-pointer ml-2">{{ $action->name }}</label>
-                                                </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                @endforeach
-                            </div>
+
+                            @foreach ($permissions as $p )
+                                <p>{{ $p->name }}</p> 
+                            @endforeach
                         </div>
                     </div>
                 </div>
