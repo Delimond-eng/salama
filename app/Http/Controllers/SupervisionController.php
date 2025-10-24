@@ -7,8 +7,10 @@ use App\Models\Site;
 use App\Models\Agent;
 use App\Models\Supervision;
 use App\Models\SupervisionControlElement;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class SupervisionController extends Controller
@@ -203,27 +205,36 @@ class SupervisionController extends Controller
         ]);
     }
 
+
     public function pushNotification($data)
     {
         $notify = Notification::create([
             'type' => $data["type"],
-            'nom_superviseur' =>$data["nom"],
+            'nom_superviseur' => $data["nom"],
             'matricule' => $data["matricule"],
             'station' => $data["station"],
             'photo' => $data["photo"],
-            'heure_action' => Carbon::now(tz: "Africa/Kinshasa"),
+            'heure_action' => Carbon::now('Africa/Kinshasa'),
         ]);
+
+        // Lier à tous les utilisateurs (ou à un certain rôle)
+        $userIds = User::pluck('id'); // ou User::where('role', 'superviseur')->pluck('id')
+        $notify->users()->attach($userIds);
+
         return $notify;
     }
 
     public function getNotifications()
     {
-        $notif = Notification::where('is_read', false)
+        $user = Auth::user();
+        $notif = $user->notifications()
+            ->wherePivot('is_read', false)
             ->latest()
             ->first();
 
         if ($notif) {
-            $notif->update(['is_read' => true]);
+            // Marquer uniquement pour cet utilisateur
+            $user->notifications()->updateExistingPivot($notif->id, ['is_read' => true]);
 
             return response()->json([
                 'new' => true,

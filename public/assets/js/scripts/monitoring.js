@@ -280,7 +280,10 @@ new Vue({
                 </svg>`);
 
                     const markerCluster = L.markerClusterGroup({
-                        maxClusterRadius: 30,
+                        maxClusterRadius: 30, // Réduit si tu veux qu’ils se séparent plus vite
+                        spiderfyOnMaxZoom: true, // Déplie les points superposés au zoom max
+                        showCoverageOnHover: false,
+                        zoomToBoundsOnClick: true, // Active le zoom automatique au clic
                         iconCreateFunction: (cluster) =>
                             L.divIcon({
                                 html: `
@@ -294,8 +297,18 @@ new Vue({
                                 iconSize: L.point(30, 30),
                                 iconAnchor: L.point(10, 20),
                             }),
-                        spiderfyOnMaxZoom: false,
-                        showCoverageOnHover: false,
+                    });
+
+                    markerCluster.on("clusterclick", function (a) {
+                        // Calculer la zone des marqueurs du cluster
+                        const bounds = a.layer.getBounds();
+                        const map = a.target._map;
+
+                        // Zoomer un peu plus que le zoom automatique
+                        map.fitBounds(bounds, {
+                            padding: [50, 50],
+                            maxZoom: 18, // force un zoom plus fort si nécessaire
+                        });
                     });
 
                     map.addLayer(markerCluster);

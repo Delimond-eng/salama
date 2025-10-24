@@ -15,7 +15,13 @@ class Notification extends Model
         'matricule',
         'station',
         'photo',
-        'heure_action',
-        'is_read',
+        'heure_action'
     ];
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'notification_user')
+                    ->withPivot('is_read')
+                    ->withTimestamps();
+    }
 }

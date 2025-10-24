@@ -47,7 +47,7 @@
 </div>
 
 <div id="supervision--toast" class="py-5 pl-5 pr-14 bg-white border border-slate-200/60 rounded-lg shadow-xl dark:bg-darkmode-600 dark:text-slate-300 dark:border-darkmode-600 hidden flex">
-    <img title="photo agent"  src="assets/images/profil-2.png" alt="photo agent" style="width:70px; height:70px;" class="notif-photo rounded-lg border-2 border-white shadow-md">
+    <img title="photo agent"  src="assets/images/profil-2.png" alt="photo agent" style="width:70px; height:70px; object-fit: cover; object-position: center;" class="notif-photo rounded-lg border-2 border-white shadow-md">
     <div class="ml-4 mr-4">
         <div class="font-medium"> <span class="notif-matricule font-bold"></span> <span class="notif-nom font-semibold text-base">Nom Superviseur</span></div>
         <div class="text-slate-500 mt-1 notif-station">notif-station</div>
@@ -106,7 +106,7 @@ async function checkNotifications() {
             const n = data.data;
             const heure = new Date(n.heure_action).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const couleur = n.type === 'arrivée' ? '#16a34a' : '#dc2626';
-            const libelle = n.type === 'arrivée' ? 'arrivé(e) à' : 'parti(e) de';
+            const libelle = n.type === 'arrivée' ? 'arrivé à' : 'parti de';
 
             const toastNode = $("#supervision--toast")
                 .clone()
@@ -124,7 +124,7 @@ async function checkNotifications() {
 
             new Toastify({
                 node: toastNode,
-                duration: 10000,
+                duration: 30000,
                 newWindow: true,
                 close: true,
                 gravity: "top",

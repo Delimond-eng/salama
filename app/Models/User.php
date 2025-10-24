@@ -64,4 +64,11 @@ class User extends Authenticatable
     {
         return $this->can("$menu.$action");
     }
+
+    public function notifications()
+    {
+        return $this->belongsToMany(Notification::class, 'notification_user')
+                    ->withPivot('is_read')
+                    ->withTimestamps();
+    }
 }
