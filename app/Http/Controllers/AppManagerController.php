@@ -8,6 +8,7 @@ use App\Models\Announce;
 use App\Models\Area;
 use App\Models\Cessation;
 use App\Models\Conge;
+use App\Models\Notification;
 use App\Models\Patrol;
 use App\Models\PatrolScan;
 use App\Models\Schedules;
@@ -16,6 +17,7 @@ use App\Models\ScheduleSupervisor;
 use App\Models\Signalement;
 use App\Models\Site;
 use App\Models\SupervisionControlElement;
+use App\Models\User;
 use App\Services\FcmService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -28,6 +30,24 @@ use Illuminate\Support\Facades\Mail;
 
 class AppManagerController extends Controller
 {
+    public function pushNotification($data, $cat = null)
+    {
+        $notify = Notification::create([
+            'type' => $data["type"],
+            'nom_superviseur' => $data["nom"],
+            'matricule' => $data["matricule"],
+            'category' => $cat,
+            'station' => $data["station"],
+            'photo' => $data["photo"],
+            'heure_action' => Carbon::now('Africa/Kinshasa'),
+        ]);
+
+        // Lier à tous les utilisateurs (ou à un certain rôle)
+        $userIds = User::pluck('id'); // ou User::where('role', 'superviseur')->pluck('id')
+        $notify->users()->attach($userIds);
+
+        return $notify;
+    }
     /**
      * Start patrol tag
      * @param Request $request
@@ -48,7 +68,6 @@ class AppManagerController extends Controller
                 "matricule"   => "nullable|string",
             ]);
             $area = Area::find($data['area_id']);
-
             // Traitement de la photo
             if ($request->hasFile('photo') && !isset($data["patrol_id"])) {
                 $file = $request->file('photo');
@@ -118,6 +137,14 @@ class AppManagerController extends Controller
                 $site->status = 'pending';
                 $site->save();
                 $agent = Agent::find($patrol->agent_id);
+
+                $this->pushNotification([
+                    "type"=>"start",
+                    "nom"=>$agent->fullname,
+                    "matricule"=>$agent->matricule,
+                    "station"=>$site->name,
+                    "photo"=>$data["photo"]  ?? null,
+                ], "round");
                 //Send mails not
                 try{
                     if($site->emails){
@@ -594,6 +621,14 @@ class AppManagerController extends Controller
             $site->save();
 
             $agent = Agent::find($patrol->agent_id);
+
+             $this->pushNotification([
+                    "type"=>"end",
+                    "nom"=>$agent->fullname,
+                    "matricule"=>$agent->matricule,
+                    "station"=>$site->name,
+                    "photo"=>$data["photo"]  ?? null,
+            ], "round");
 
             $this->updateScheduleStatusFromPatrol($patrol);
 

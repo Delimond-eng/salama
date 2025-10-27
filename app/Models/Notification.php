@@ -12,6 +12,7 @@ class Notification extends Model
     protected $fillable = [
         'type',
         'nom_superviseur',
+        'category',
         'matricule',
         'station',
         'photo',

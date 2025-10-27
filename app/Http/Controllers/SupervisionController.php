@@ -78,7 +78,7 @@ class SupervisionController extends Controller
                 "matricule"=>$agent->matricule,
                 "station"=>$site->name,
                 "photo"=>$data['photo_debut']  ?? null,
-            ]);
+            ], "sup");
 
             return response()->json([
                 "status" => "success",
@@ -158,7 +158,7 @@ class SupervisionController extends Controller
                 "matricule"=>$supervision->supervisor->matricule,
                 "station"=>$supervision->site->name,
                 "photo"=>$data['photo_fin']  ?? null,
-            ]);
+            ], "sup");
             return response()->json([
                 'message' => 'Supervision clôturée avec succès',
                 'result'=> $supervision
@@ -206,12 +206,13 @@ class SupervisionController extends Controller
     }
 
 
-    public function pushNotification($data)
+    public function pushNotification($data, $cat = null)
     {
         $notify = Notification::create([
             'type' => $data["type"],
             'nom_superviseur' => $data["nom"],
             'matricule' => $data["matricule"],
+            'category' => $cat,
             'station' => $data["station"],
             'photo' => $data["photo"],
             'heure_action' => Carbon::now('Africa/Kinshasa'),
