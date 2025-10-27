@@ -35,7 +35,7 @@
             </div>
             <div class="intro-y col-span-12 lg:col-span-6">
                 <!-- BEGIN: Vertical Form -->
-                <div class="relative mt-5 intro-y before:box before:absolute before:inset-x-3 before:mt-3 before:h-full before:bg-slate-50 before:content-['']">
+                <div class="relative intro-y before:box before:absolute before:inset-x-3 before:mt-3 before:h-full before:bg-slate-50 before:content-['']">
                     <div class="intro-x box">
                         <div class="flex flex-col items-center border-b border-slate-200/60 p-5 dark:border-darkmode-400 sm:flex-row">
                             <h2 class="mr-auto text-base font-medium">
@@ -66,10 +66,10 @@
                                     <label for="vertical-form-1" class="inline-block mb-2 group-[.form-inline]:mb-2 group-[.form-inline]:sm:mb-0 group-[.form-inline]:sm:mr-5 group-[.form-inline]:sm:text-right">
                                         Rôle *
                                     </label>
-                                    <select v-model="form.role" class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10" required>
+                                    <select v-model="form.role" @change="form.permissions = []" class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10" required>
                                         <option value="" selected hidden label="--Sélectionnez un rôle"></option>
                                         <option value="admin">Administrateur</option>
-                                        <option value="user">Utilisateur</option>
+                                        <option value="manager">Manager</option>
                                     </select>
                                 </div>
 
@@ -97,19 +97,29 @@
 
                 <!-- END: Vertical Form -->
             </div>
-            <div v-if="form.role==='user'" class="intro-y col-span-12 lg:col-span-6">
+            <div v-if="form.role==='manager'" class="intro-y col-span-12 lg:col-span-6">
                 <!-- BEGIN: Vertical Form -->
-                <div class="relative mt-5 intro-y before:box before:absolute before:inset-x-3 before:mt-3 before:h-full before:bg-slate-50 before:content-['']">
-                    <div class="intro-x box">
-                        <div class="flex flex-col items-center border-b border-slate-200/60 p-5 dark:border-darkmode-400 sm:flex-row">
-                            <h2 class="mr-auto text-base font-medium">
-                                Permissions
-                            </h2>
-                        </div>
-                        <div class="p-5">
-
-                            @foreach ($permissions as $p )
-                                <p>{{ $p->name }}</p> 
+                <div class="intro-x box">
+                    <div class="flex flex-col items-center border-b border-slate-200/60 p-5 dark:border-darkmode-400 sm:flex-row">
+                        <h2 class="mr-auto text-base font-medium">
+                            Permissions
+                        </h2>
+                    </div>
+                    <div class="p-5">
+                        <div class="mt-2 flex flex-wrap gap-3">
+                            @foreach ($permissions as $k => $v)
+                                <div class="flex items-center mr-2">
+                                    <input
+                                        type="checkbox"
+                                        id="checkbox-switch-{{ $k }}"
+                                        value="{{ $v->id }}"
+                                        @change="togglePermission"
+                                        class="transition-all duration-100 ease-in-out shadow-sm border-slate-200 cursor-pointer rounded focus:ring-4 focus:ring-offset-0 focus:ring-primary focus:ring-opacity-20 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 [&[type='checkbox']]:checked:bg-primary [&[type='checkbox']]:checked:border-primary [&[type='checkbox']]:checked:border-opacity-10 [&:disabled:not(:checked)]:bg-slate-100 [&:disabled:not(:checked)]:cursor-not-allowed [&:disabled:checked]:opacity-70"
+                                    >
+                                    <label style="font-weight: 400 !important; font-size: 12px !important;" for="checkbox-switch-{{ $k }}" class="cursor-pointer font-medium ml-2">
+                                        @permissionLabel($v->name)
+                                    </label>
+                                </div>
                             @endforeach
                         </div>
                     </div>

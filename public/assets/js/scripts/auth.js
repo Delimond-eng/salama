@@ -136,45 +136,19 @@ new Vue({
 
         togglePermission(event) {
             const checkbox = event.target;
-            const actionId = checkbox.value;
-            const menuId = checkbox.dataset.menuId;
-
-            let menuPermission = this.form.permissions.find(
-                (p) => p.menu_id == menuId
-            );
+            const permissionId = parseInt(checkbox.value);
 
             if (checkbox.checked) {
-                // Si le menu n'existe pas encore, on l'ajoute avec l'action
-                if (!menuPermission) {
-                    this.form.permissions.push({
-                        menu_id: menuId,
-                        actions: [{ id: actionId }],
-                    });
-                } else {
-                    // On vérifie si l'action n'est pas déjà présente
-                    const alreadyExists = menuPermission.actions.some(
-                        (a) => a.id === actionId
-                    );
-                    if (!alreadyExists) {
-                        menuPermission.actions.push({ id: actionId });
-                    }
+                // Ajouter la permission si elle n'existe pas
+                if (!this.form.permissions.some((p) => p.id === permissionId)) {
+                    this.form.permissions.push({ id: permissionId });
                 }
             } else {
-                // Si décoché, on retire l'action
-                if (menuPermission) {
-                    menuPermission.actions = menuPermission.actions.filter(
-                        (a) => a.id !== actionId
-                    );
-
-                    // Si plus aucune action, on retire aussi le menu
-                    if (menuPermission.actions.length === 0) {
-                        this.form.permissions = this.form.permissions.filter(
-                            (p) => p.menu_id !== menuId
-                        );
-                    }
-                }
+                // Retirer la permission si décochée
+                this.form.permissions = this.form.permissions.filter(
+                    (p) => p.id !== permissionId
+                );
             }
-
             console.log(JSON.stringify(this.form.permissions, null, 2));
         },
 

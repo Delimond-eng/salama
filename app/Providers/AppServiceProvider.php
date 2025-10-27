@@ -39,5 +39,28 @@ class AppServiceProvider extends ServiceProvider
                 echo \$active;
             ?>";
         });
+
+        Blade::directive('permissionLabel', function ($expression) {
+            return "<?php
+                if (strpos($expression, '.') !== false) {
+                    [\$module, \$action] = explode('.', $expression);
+                    \$actions = [
+                        'view' => 'Voir',
+                        'create' => 'Créer',
+                        'edit' => 'Modifier',
+                        'delete' => 'Supprimer',
+                        'export' => 'Exporter',
+                        'import' => 'Importer',
+                        'manage' => 'Gérer',
+                    ];
+                    \$module = ucfirst(str_replace('_', ' ', \$module));
+                    echo isset(\$actions[\$action])
+                        ? \$actions[\$action] . ' ' . \$module
+                        : ucfirst(\$module . ' ' . \$action);
+                } else {
+                    echo ucfirst($expression);
+                }
+            ?>";
+        });
     }
 }

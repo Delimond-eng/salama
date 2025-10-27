@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('type'); // 'arrivee' ou 'depart'
             $table->string('nom_superviseur');
+            $table->enum('category',['round', 'sup'])->default("sup");
             $table->string('matricule');
             $table->string('station');
             $table->string('photo')->nullable(); // chemin de la photo

@@ -263,7 +263,6 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get("/user.add", function(){
-        
         return view("add_user", [
             "permissions"=>Permission::all()
         ]);
@@ -273,7 +272,7 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     Route::view("/user.list", 'user_list')->name("user.list")->middleware('check.permission:utilisateurs,view');
 
     Route::get("/users.all", function(){
-        $users = User::with("permissions.menu")->with("permissions.action")->orderByDesc("id")->paginate(10);
+        $users = User::orderByDesc("id")->paginate(10);
         return response()->json([
             "status"=>"success",
             "users"=>$users

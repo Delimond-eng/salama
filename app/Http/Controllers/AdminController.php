@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class AdminController extends Controller
 {
@@ -847,14 +848,13 @@ class AdminController extends Controller
     */
     public function createUser(Request $request){
         try{
-            $data = $request->validate([
-                'name' => 'required|string',
+             $data = $request->validate([
+                'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
                 'role' => 'required|string',
                 'password' => 'required|string|min:6',
                 'permissions' => 'nullable|array',
-                'permissions.*.menu_id' => 'nullable|exists:menus,id',
-                'permissions.*.actions' => 'nullable|array',
+                'permissions.*.id' => 'integer|exists:permissions,id',
             ]);
 
             DB::beginTransaction();
@@ -864,16 +864,25 @@ class AdminController extends Controller
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'role' => $data['role'],
-                'agency_id'=> 1,
-                'password' => bcrypt($data['password'])
+                'agency_id' => 1,
+                'password' => bcrypt($data['password']),
             ]);
 
-             // Assigner le rôle
-            $user->assignRole($data["role"]);
+            // Attribution du rôle
+            $user->assignRole($data['role']);
 
-            // Synchroniser les permissions du rôle vers l'utilisateur
-            $role = Role::findByName($data["role"]);
-            $user->syncPermissions($role->permissions->pluck('name')->toArray());
+            // Si c’est un admin → toutes les permissions du rôle
+            if (strtolower($data['role']) === 'admin') {
+                $role = Role::findByName($data['role']);
+                $user->syncPermissions($role->permissions->pluck('name')->toArray());
+            } else {
+                // Sinon, lui assigner seulement les permissions cochées
+                if (!empty($data['permissions'])) {
+                    $permissionIds = collect($data['permissions'])->pluck('id')->toArray();
+                    $permissions = Permission::whereIn('id', $permissionIds)->get();
+                    $user->syncPermissions($permissions);
+                }
+            }
 
             DB::commit();
 
