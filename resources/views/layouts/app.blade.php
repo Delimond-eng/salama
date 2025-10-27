@@ -101,12 +101,15 @@ async function checkNotifications() {
     try {
         const res = await fetch('/notifications.push');
         const data = await res.json();
-        
+
         if (data.new) {
             const n = data.data;
+            const heure = new Date(n.heure_action).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             let message = '';
+            let couleur = '';
 
             if (n.category === 'sup') {
+                couleur = n.type === 'arrivée' ? '#16a347ff' : '#dc6626ff'; 
                 const action = n.type === 'arrivée' 
                     ? 'est arrivé à la station' 
                     : 'est parti de la station';
@@ -115,27 +118,49 @@ async function checkNotifications() {
                 const action = n.type === 'start'
                     ? 'a démarré sa ronde'
                     : 'a terminé sa ronde';
+                couleur = n.type === 'start' ? '#161fa3ff' : '#4edc26ff'; 
                 message = `L'agent ${n.nom_superviseur}, matricule ${n.matricule}, ${action} à la station ${n.station}, à ${heure}.`;
             }
+
+            // Création du toast
+            const toastNode = $("#supervision--toast").clone().removeClass("hidden")[0];
+            $(toastNode).find(".notif-photo").attr("src", n.photo ?? "assets/images/profil-2.png"); 
+            $(toastNode).find(".notif-nom").text(n.nom_superviseur); 
+            $(toastNode).find(".notif-matricule").text(n.matricule); 
+            $(toastNode).find(".notif-station").text(`${n.station}`); 
+            $(toastNode).find(".notif-heure").text(`à ${heure}`); 
+            $(toastNode).css({ borderLeft: `6px solid ${couleur}` }); 
+
+            new Toastify({ 
+                node: toastNode, 
+                duration: 30000, 
+                newWindow: true, 
+                close: true, 
+                gravity: "top", 
+                position: "right", 
+                stopOnFocus: true 
+            }).showToast();
 
             // Création de la voix
             const utterance = new SpeechSynthesisUtterance(message);
             utterance.lang = 'fr-FR';
             utterance.pitch = 1;
-            utterance.rate = 0.95; // un peu plus lent, plus naturel
+            utterance.rate = 0.95;
             utterance.volume = 1;
 
             const voices = window.speechSynthesis.getVoices();
             const frenchVoice = voices.find(v => v.lang.startsWith('fr'));
             if (frenchVoice) utterance.voice = frenchVoice;
-            // 🔊 Lecture
-            window.speechSynthesis.cancel(); // stoppe la lecture précédente
+
+            // Lecture de la notification
+            window.speechSynthesis.cancel();
             window.speechSynthesis.speak(utterance);
         }
     } catch (e) {
         console.error("Erreur lors de la vérification de notification :", e);
     }
 }
+
 // 🔁 Vérification toutes les 3 secondes
 setInterval(checkNotifications, 3000);
 </script>
