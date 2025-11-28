@@ -70,9 +70,13 @@ new Vue({
         if ($("#loader").length) {
             document.getElementById("loader").style.display = "none";
         }
-        if (location.pathname == "/presence.plannings") {
+        if (
+            location.pathname == "/presence.plannings" ||
+            location.pathname == "/pointages.agents"
+        ) {
             this.viewAllSites();
             this.viewWeeklyPlannings();
+            this.loadPresenceReports();
         } else {
             if ($(".form-horaire").length) {
                 this.pristine = new Pristine(
@@ -100,7 +104,6 @@ new Vue({
                 });
             }
 
-            this.loadPresenceReports();
             this.refreshDatas();
         }
     },
@@ -128,7 +131,11 @@ new Vue({
 
             tom.on("change", (value) => {
                 this.filter_site_id = value;
-                this.viewWeeklyPlannings();
+                if (location.pathname == "/pointages.agents") {
+                    this.loadPresenceReports();
+                } else {
+                    this.viewWeeklyPlannings();
+                }
             });
         },
     },
@@ -351,6 +358,7 @@ new Vue({
                 }
             });
         },
+
         deleteGroup(data) {
             const self = this;
             new Swal({
@@ -373,11 +381,12 @@ new Vue({
                 }
             });
         },
+
         loadPresenceReports() {
             this.isDataLoading = true;
 
             get(
-                `/presences.report?month=${this.currentMonth}&year=${this.currentYear}`
+                `/presences.report?month=${this.currentMonth}&year=${this.currentYear}&site_id=${this.filter_site_id}`
             )
                 .then((res) => {
                     this.isDataLoading = false;

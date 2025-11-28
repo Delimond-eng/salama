@@ -228,6 +228,10 @@ new Vue({
             this.preview = data.photo ?? null;
         },
 
+        getReport(data) {
+            location.href = `/agent.presences.report/${data.id}`;
+        },
+
         deleteAgent(data) {
             const self = this;
             new Swal({

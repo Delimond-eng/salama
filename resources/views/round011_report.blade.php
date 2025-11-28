@@ -142,9 +142,6 @@
             </div>
         </div>
         <!-- END: Data List -->
-        
-
-        
         <!-- END: Pagination -->
 
         <!-- BEGIN: Pagination -->

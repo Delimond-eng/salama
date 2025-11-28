@@ -15,26 +15,20 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
-        $schedule->command('schedules:verify')
-        ->everyFiveMinutes()// ou ->everyMinute(), ->hourly(), etc.
-        ->timezone('Africa/Kinshasa')
-        ->withoutOverlapping(); 
+        $schedule->command('schedules:verify')->everyFiveMinutes()->timezone('Africa/Kinshasa')->withoutOverlapping(); 
 
         //GENERATION DES RAPPORTS DES PRESENCES
-        $schedule->command('presence:send-daily-report')->dailyAt('10:00')->timezone("Africa/Kinshasa");
-        $schedule->command('presence:send-daily-report')->dailyAt('20:00')->timezone("Africa/Kinshasa");
+        $schedule->command('presence:send-daily-report')->dailyAt('10:00')->timezone("Africa/Kinshasa")->withoutOverlapping();
+        $schedule->command('presence:send-daily-report')->dailyAt('20:00')->timezone("Africa/Kinshasa")->withoutOverlapping();
 
         //GENERATION DES RAPPORTS DES ABSENCES
-        $schedule->command('report:absences')->dailyAt('10:00')->timezone("Africa/Kinshasa");
-        $schedule->command('report:absences')->dailyAt('20:00')->timezone("Africa/Kinshasa");
+        $schedule->command('report:absences')->dailyAt('10:00')->timezone("Africa/Kinshasa")->withoutOverlapping();
+        $schedule->command('report:absences')->dailyAt('20:00')->timezone("Africa/Kinshasa")->withoutOverlapping();
 
-        $schedule->command('plannings:create')->dailyAt('20:45')->timezone("Africa/Kinshasa");
-        $schedule->command('planning:generate-horaire')->sundays()->at('23:00')->timezone('Africa/Kinshasa');
+        $schedule->command('plannings:create')->dailyAt('20:30')->timezone("Africa/Kinshasa")->withoutOverlapping();
+        $schedule->command('planning:generate-horaire')->sundays()->at('23:00')->timezone('Africa/Kinshasa')->withoutOverlapping();
 
-        $schedule->command('backup:send')->dailyAt('00:00')
-        ->timezone("Africa/Kinshasa")
-        ->withoutOverlapping();
+        $schedule->command('backup:send')->dailyAt('00:00')->timezone("Africa/Kinshasa")->withoutOverlapping();
     }
 
     /**

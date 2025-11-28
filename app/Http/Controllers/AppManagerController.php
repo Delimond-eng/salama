@@ -287,7 +287,7 @@ class AppManagerController extends Controller
                 "title" => "required|string",
                 "description" => "required|string",
                 "media" => "nullable|file",
-                "site_id" => "required|int|exists:sites,id",
+                "site_id" => "nullable|int|exists:sites,id",
                 "agent_id" => "required|int|exists:agents,id",
                 "agency_id" => "required|int"
             ]);
@@ -1138,7 +1138,7 @@ class AppManagerController extends Controller
 
                     if (!$exists) {
                         Schedules::create([
-                            'libelle'    => "Patrouille de {$startTime}",
+                            'libelle'    => "RONDE DE {$startTime}",
                             'start_time' => $startTime,
                             'end_time'   => $endTime,
                             'date'       => $date->toDateString(),

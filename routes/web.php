@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SupervisionController;
 use App\Models\SitePlanningConfig;
 use Illuminate\Support\Facades\Route;
@@ -35,7 +36,7 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     */
     Route::get('/agent.create', function () {
         $agencyId = Auth::user()->agency_id;
-        $sites = Site::where('agency_id', $agencyId)->get();
+        $sites = Site::orderBy("name", "ASC")->get();
         return view('add_agent', ['sites' => $sites]);
     })->name('agent.create')->middleware('check.permission:agents,create');
 
@@ -45,7 +46,7 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
 
     Route::get('/agents.list', function () {
         $agencyId = Auth::user()->agency_id;
-        $sites = Site::all();
+        $sites = Site::orderBy("name", "ASC")->get();
         return view('agent_list', ['sites' => $sites]);
     })->name('agents.list')->middleware('check.permission:agents,view');
 
@@ -201,6 +202,7 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     Route::view('/reports.presences.filter', 'presence_report_filter')->name('reports.presences.filter')->middleware('check.permission:presences,view');
 
     Route::get('/pdf.patrols.reports', [AppManagerController::class, 'generatePatrolPdfReport'])->name('pdf.patrols.reports')->middleware('check.permission:patrouilles,export');
+    Route::get('/agent.presences.report/{agentId}', [ReportController::class, 'agentPresencePdf'])->name('agent.presences.report');
 
     Route::get('/patrols.pending', [AppManagerController::class, 'viewPendingPatrols'])->name('patrols.pending')->middleware('check.permission:patrouilles,view');
     Route::get('/patrols.reports', [AppManagerController::class, 'viewPatrolReports'])->name('patrols.reports')->middleware('check.permission:patrouilles,view');
@@ -340,5 +342,10 @@ Route::middleware(['geo.restricted','auth'])->group(function () {
     Route::post('/table.delete', [AdminController::class, 'triggerDelete'])->name('table.delete');
 
     Route::get('/notifications.push', [SupervisionController::class, 'getNotifications'])->name("notifications.push");
+});
 
+
+Route::get("/load.planning", function(){
+    Artisan::call("plannings:create");
+    return "Commande executée avec succès";
 });

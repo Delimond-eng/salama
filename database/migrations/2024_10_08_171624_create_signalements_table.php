@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string("description");
             $table->string("media")->nullable();
             $table->unsignedBigInteger("agent_id");
-            $table->unsignedBigInteger("site_id");
+            $table->unsignedBigInteger("site_id")->nullable();
             $table->unsignedBigInteger("agency_id");
             $table->timestamps();
         });

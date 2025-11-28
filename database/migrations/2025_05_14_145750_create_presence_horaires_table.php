@@ -14,14 +14,14 @@ return new class extends Migration
     public function up()
     {
         if (!Schema::hasTable('presence_horaires')) {
-    Schema::create('presence_horaires', function (Blueprint $table) {
-            $table->id();
-            $table->string("libelle");
-            $table->time("started_at");
-            $table->time("ended_at");
-            $table->time("tolerence")->nullable();
-            $table->timestamps();
-        });
+            Schema::create('presence_horaires', function (Blueprint $table) {
+                $table->id();
+                $table->string("libelle");
+                $table->time("started_at");
+                $table->time("ended_at");
+                $table->time("tolerence")->nullable();
+                $table->timestamps();
+            });
         }
     }
 

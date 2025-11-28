@@ -146,9 +146,11 @@
                         </td>
                         <td data-tw-merge="" class="px-5 py-3 border-b box dark:border-darkmode-300 rounded-l-none rounded-r-none border-x-0 shadow-[5px_3px_5px_#00000005] first:rounded-l-[0.6rem] first:border-l last:rounded-r-[0.6rem] last:border-r dark:bg-darkmode-600 before:absolute before:inset-y-0 before:left-0 before:my-auto before:block before:h-8 before:w-px before:bg-slate-200 before:dark:bg-darkmode-400">
                             <div class="flex items-center justify-center">
+                                <button class="mr-3 flex items-center text-primary txt-xs" @click="getReport(data)">
+                                    <i data-tw-merge="" data-lucide="calendar" class="stroke-1.5 mr-1 h-3 w-3"></i>
+                                </button>
                                 <button class="mr-3 flex items-center text-blue-500 txt-xs" data-tw-toggle="modal" data-tw-target="#agent-edit-modal" @click="editAgent(data)">
                                     <i data-tw-merge="" data-lucide="edit" class="stroke-1.5 mr-1 h-3 w-3"></i>
-                                    Editer
                                 </button>
                                 <button @click="getStory(data)" class="flex border-0 items-center justify-center mx-2 txt-xs text-primary">
                                     <svg class="w-3 h-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right-left-icon lucide-arrow-right-left"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>

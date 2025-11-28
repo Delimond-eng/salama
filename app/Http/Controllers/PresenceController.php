@@ -499,9 +499,210 @@ class PresenceController extends Controller
         return false;
     }
 
-
-
     public function getPresenceReport(Request $request)
+    {
+        $month = (int) $request->input('month', Carbon::now()->month);
+        $year  = (int) $request->input('year', Carbon::now()->year);
+        $siteId  = (int) $request->input('site_id', null);
+
+        $startDate   = Carbon::createFromDate($year, $month, 1);
+        $daysInMonth = $startDate->daysInMonth;
+
+        // Récupère tous les agents actifs avec leur site
+        $agents = Agent::whereHas('site', function ($q) {
+            $q->whereNotNull('latlng');
+        })->when($siteId, fn($query) => $query->where('site_id', $siteId))
+        ->with('site')->get();
+
+        $results = [];
+
+        foreach ($agents as $agent) {
+            $presenceByDay       = [];
+            // compteurs
+            $pp = $a = $m = $c = $mp = $au = $c1 = $a1 = $ca1 = $l = $d = $dm = $ds = 0;
+            $absencesSuccessives = 0;
+
+            // récupération assignment actif (existant toute la période)
+            $assignment = AgentGroupAssignment::where('agent_id', $agent->id)
+                ->whereDate('start_date', '<=', Carbon::createFromDate($year, $month, $daysInMonth))
+                ->where(function ($q) use ($year, $month, $daysInMonth) {
+                    // s'il y a end_date, on le respecte ; sinon open
+                    $q->whereNull('end_date')->orWhere('end_date', '>=', Carbon::createFromDate($year, $month, 1));
+                })->first();
+
+            for ($day = 1; $day <= $daysInMonth; $day++) {
+                $dateCarbon = Carbon::createFromDate($year, $month, $day)->startOfDay();
+                $date       = $dateCarbon->toDateString();
+
+                $code = '';
+
+                // 1) Vérifier congés (priorité)
+                $conge = Conge::where('agent_id', $agent->id)
+                    ->where('status', 'actif')
+                    ->whereDate('date_debut', '<=', $date)
+                    ->whereDate('date_fin', '>=', $date)
+                    ->first();
+
+                if ($conge) {
+                    $type = strtolower($conge->type);
+                    if ($type === 'conge maladie') {
+                        $m++;
+                        $code = 'M';
+                    } elseif ($type === 'conge annuel') {
+                        $c++;
+                        $code = 'C';
+                    } elseif ($type === 'mise a pied') {
+                        $mp++;
+                        $code = 'MP';
+                    } elseif ($type === 'absence autorisee') {
+                        $au++;
+                        $code = 'AU';
+                    } else {
+                        // type inconnu => marque comme congé générique
+                        $code = 'CNG';
+                    }
+                    $absencesSuccessives = 0;
+                    $presenceByDay[$day] = $code;
+                    continue;
+                }
+
+                // 2) Vérifier cessations (licenciement, deces, demission)
+                $cessation = Cessation::where('agent_id', $agent->id)
+                    ->where('status', 'actif')
+                    ->whereDate('date', '<=', $date)
+                    ->first();
+
+                if ($cessation) {
+                    $type = strtoupper($cessation->type);
+                    if ($type === 'LICENCIEMENT') {
+                        $l++;
+                        $code = 'L';
+                    } elseif ($type === 'DECES') {
+                        $d++;
+                        $code = 'D';
+                    } elseif ($type === 'DEMISSION') {
+                        $dm++;
+                        $code = 'DM';
+                    } else {
+                        $code = 'CST'; // cessation autre
+                    }
+                    $absencesSuccessives = 0;
+                    $presenceByDay[$day] = $code;
+                    continue;
+                }
+
+                // 3) Déterminer le planning/horaire applicable pour ce jour
+                $planning = AgentGroupPlanning::where('agent_id', $agent->id)
+                    ->whereDate('date', $date)
+                    ->with('horaire')
+                    ->first();
+
+                $horaire = null;
+                $isRestDay = false;
+                if ($planning) {
+                    $isRestDay = (bool) $planning->is_rest_day;
+                    if ($planning->horaire) {
+                        $horaire = $planning->horaire;
+                    }
+                } else {
+                    // pas de planning journalier, tomber sur le groupe (via assignment)
+                    if ($assignment) {
+                        $groupe = AgentGroup::with('horaire')->find($assignment->agent_group_id ?? $agent->groupe_id);
+                        if ($groupe && $groupe->horaire) {
+                            $horaire = $groupe->horaire;
+                        }
+                        // note: on ne marque pas isRestDay à partir du groupe ici (les repos sont généralement en planning)
+                    }
+                }
+
+                if ($isRestDay) {
+                    $code = 'OFF'; // jour de repos
+                    $absencesSuccessives = 0;
+                    $presenceByDay[$day] = $code;
+                    continue;
+                }
+
+                if (!$horaire) {
+                    // Pas d'horaire/planning trouvé -> marquer NJ (No Job / non planifié)
+                    $code = 'NJ';
+                    $absencesSuccessives = 0;
+                    $presenceByDay[$day] = $code;
+                    continue;
+                }
+
+                // 4) Obtenir la date de référence (utile pour horaires de nuit)
+                // getDateReference doit accepter Carbon et horaire et retourner Carbon date_reference
+                try {
+                    $dateReference = $this->getDateReference($dateCarbon->copy()->setTime(0, 0), $horaire);
+                } catch (\Exception $e) {
+                    // fallback : utiliser la date du jour
+                    $dateReference = $dateCarbon->copy();
+                }
+
+                // 5) Récupérer toutes les présences liées à cette date_reference
+                $presences = PresenceAgents::where('agent_id', $agent->id)
+                    ->whereDate('date_reference', $dateReference->toDateString())
+                    ->orderBy('created_at', 'asc')
+                    ->get();
+
+                if ($presences->isNotEmpty()) {
+                    // Au moins une présence trouvée pour la date_reference -> on considère le jour comme présent
+                    $pp++;
+                    $absencesSuccessives = 0;
+
+                    // Regarder s'il y a retard (au moins un retard -> compte comme retard)
+                    $hasRetard = $presences->contains(fn($p) => isset($p->retard) && $p->retard === 'oui');
+
+                    // Si au moins un started_at exists -> marquer '1' (ou '1-C1' si retard)
+                    $hasStarted = $presences->contains(fn($p) => !is_null($p->started_at));
+                    $hasEnded   = $presences->contains(fn($p) => !is_null($p->ended_at));
+
+                    if ($hasRetard) {
+                        $c1++;
+                        $code = $hasStarted ? '1-C1' : 'C1';
+                    } else {
+                        $code = $hasStarted ? '1' : ($hasEnded ? '1-E' : 'P'); // 'P' = present sans détail
+                    }
+
+                    $presenceByDay[$day] = $code;
+                    continue;
+                }
+
+                // 6) Pas de présence -> vérifier absence justifiée déjà testée (congé, cessation)
+                // marque comme Absence non justifiée
+                $a++;
+                $absencesSuccessives++;
+                $code = 'A';
+
+                if ($absencesSuccessives == 3) {
+                    $ds++;
+                    $code = 'DS';
+                    $absencesSuccessives = 0; // reset après désertion
+                }
+
+                $presenceByDay[$day] = $code;
+            }
+
+            $results[] = [
+                'matricule' => $agent->matricule,
+                'fullname'  => $agent->fullname,
+                'poste'     => $agent->site->name ?? 'Non attribué',
+                'days'      => $presenceByDay,
+                'stats'     => compact('pp', 'a', 'm', 'c', 'mp', 'au', 'c1', 'a1', 'ca1', 'l', 'd', 'dm', 'ds'),
+            ];
+        }
+
+        return response()->json([
+            'status'      => 'success',
+            'month'       => $month,
+            'year'        => $year,
+            'daysInMonth' => $daysInMonth,
+            'data'        => $results,
+        ]);
+    }
+
+
+    /*public function getPresenceReport(Request $request)
     {
         $month = $request->input('month', Carbon::now()->month);
         $year  = $request->input('year', Carbon::now()->year);
@@ -614,7 +815,7 @@ class PresenceController extends Controller
             'daysInMonth' => $daysInMonth,
             'data'        => $results,
         ]);
-    }
+    }*/
 
     /**
      * Creation de la presence visite du superviseur dans les sites

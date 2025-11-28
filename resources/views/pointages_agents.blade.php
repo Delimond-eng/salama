@@ -63,12 +63,14 @@
                         </div>
 
                         <div class="mt-2 items-center sm:mr-4 sm:flex xl:mt-0">
-                            <input data-tw-merge="" v-model="searchMatricule" id="tabulator-html-filter-value" type="text" placeholder="Recherche par matricule..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 mt-2 sm:mt-0 sm:w-40 2xl:w-full">
+                           <select data-tw-merge="" class="tom-select select-site rounded-md bg-white w-48 ml-2">
+                                <option value="" selected hidden>Filtrez par site</option>
+                            </select>
+                        </div>
+                        <div class="mt-2 items-center sm:mr-4 sm:flex xl:mt-0">
+                            <input data-tw-merge="" v-model="searchMatricule" id="tabulator-html-filter-value" type="text" placeholder="Recherche Par matricule..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 mt-2 sm:mt-0 sm:w-40 2xl:w-full">
                         </div>
 
-                        <div class="mt-2 items-center sm:mr-4 sm:flex xl:mt-0">
-                            <input data-tw-merge="" v-model="searchName" id="tabulator-html-filter-value" type="text" placeholder="Cherche par nom..." class="disabled:bg-slate-100 disabled:cursor-not-allowed dark:disabled:bg-darkmode-800/50 dark:disabled:border-transparent [&[readonly]]:bg-slate-100 [&[readonly]]:cursor-not-allowed [&[readonly]]:dark:bg-darkmode-800/50 [&[readonly]]:dark:border-transparent transition duration-200 ease-in-out w-full text-sm border-slate-200 shadow-sm rounded-md placeholder:text-slate-400/90 focus:ring-4 focus:ring-primary focus:ring-opacity-20 focus:border-primary focus:border-opacity-40 dark:bg-darkmode-800 dark:border-transparent dark:focus:ring-slate-700 dark:focus:ring-opacity-50 dark:placeholder:text-slate-500/80 group-[.form-inline]:flex-1 group-[.input-group]:rounded-none group-[.input-group]:[&:not(:first-child)]:border-l-transparent group-[.input-group]:first:rounded-l group-[.input-group]:last:rounded-r group-[.input-group]:z-10 mt-2 sm:mt-0 sm:w-40 2xl:w-full">
-                        </div>
                     </div>
                     <div class="mt-5 flex flex-wrap sm:mt-0 ml-2">
                         <div data-tw-merge="" data-tw-placement="bottom-end" class="dropdown relative w-1/2 sm:w-auto">
@@ -181,6 +183,15 @@
                     </table>
                 </div>
             </div>
+
+            <Pagination
+                :current-page="pagination.current_page"
+                :last-page="pagination.last_page"
+                :total-items="pagination.total"
+                :per-page="pagination.per_page"
+                @page-changed="changePage"
+                @per-page-changed="onPerPageChange"
+            ></Pagination>
         </div>
 
     </div>
